@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRコード印刷 | O中の封印を解け！（運営用）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    padding: 24px;
+    color: #222;
+    line-height: 1.7;
+  }
+  .setup { max-width: 640px; margin: 0 auto 24px; }
+  .setup h1 { font-size: 1.2rem; margin-bottom: 8px; }
+  .setup p { font-size: 0.9rem; color: #555; }
+  input[type="url"] {
+    width: 100%; padding: 12px; font-size: 1rem;
+    border: 1.5px solid #bbb; border-radius: 8px; margin: 10px 0;
+  }
+  button {
+    padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px;
+    background: #4c3cae; color: #fff; cursor: pointer; margin-right: 8px;
+  }
+  button.print { background: #1a7f42; }
+
+  .cards { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .qr-card {
+    width: 340px;
+    border: 2px solid #222;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .qr-card .head { font-size: 0.85rem; letter-spacing: 0.2em; color: #555; }
+  .qr-card h2 { font-size: 1.3rem; margin: 4px 0 14px; }
+  .qr-card .qr { display: flex; justify-content: center; margin-bottom: 14px; }
+  .qr-card .fallback {
+    border-top: 1.5px dashed #999; padding-top: 10px;
+    font-size: 0.85rem; color: #444;
+  }
+  .qr-card .fallback .num {
+    font-size: 1.8rem; font-weight: bold; letter-spacing: 0.1em;
+  }
+
+  @media print {
+    .setup { display: none; }
+    .qr-card { width: 46%; margin: 2%; }
+  }
+</style>
+</head>
+<body>
+  <div class="setup">
+    <h1>🖨 設置用QRコードの一括生成（運営用ツール）</h1>
+    <p>
+      公開したサイトのURL（index.htmlがある場所）を入力して「生成」を押すと、
+      5か所分のQRコードが表示されます。ブラウザの印刷（Ctrl/Cmd+P）でそのまま印刷できます。
+      QRの下の番号は、読み取れない参加者向けの手動入力フォールバック用です。
+    </p>
+    <input type="url" id="baseUrl" placeholder="例）https://ユーザー名.github.io/ManabiMatsuri/">
+    <button id="gen">生成</button>
+    <button class="print" onclick="window.print()">印刷する</button>
+  </div>
+  <div class="cards" id="cards"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../js/puzzles.js"></script>
+<script>
+  document.getElementById("gen").addEventListener("click", function () {
+    let base = document.getElementById("baseUrl").value.trim();
+    if (!base) { alert("サイトのURLを入力してください"); return; }
+    if (!base.endsWith("/")) base += "/";
+
+    const cards = document.getElementById("cards");
+    cards.innerHTML = "";
+    POINT_ORDER.forEach(function (p) {
+      const url = base + "point.html?p=" + p;
+      const card = document.createElement("div");
+      card.className = "qr-card";
+      card.innerHTML =
+        '<div class="head">O中の封印を解け！</div>' +
+        "<h2>" + "①②③④⑤".charAt(p - 1) + " " + PUZZLES[p].place + "</h2>" +
+        '<div class="qr" id="qr' + p + '"></div>' +
+        '<div class="fallback">QRが読み取れないときは、サイトの「番号入力」に<br>' +
+        '<span class="num">' + p + "</span><br>と入力してください</div>";
+      cards.appendChild(card);
+      new QRCode(document.getElementById("qr" + p), {
+        text: url,
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1>O中の封印を解け</h1>
+    <div class="ornament">◆</div>
+  </header>
+
+  <!-- チーム登録（未登録のときだけ表示） -->
+  <section id="register" class="card" hidden>
+    <h2>チーム登録</h2>
+    <p style="font-size:0.92rem;">親子ペアで1チームです。チーム名を入力してスタートしましょう。</p>
+    <label class="field">チーム名（必須）</label>
+    <input type="text" id="teamName" maxlength="20" placeholder="例）やまだチーム" autocomplete="off">
+    <label class="field">代表者名（任意）</label>
+    <input type="text" id="repName" maxlength="20" placeholder="例）山田 太郎" autocomplete="off">
+    <button class="btn gold" id="registerBtn" style="margin-top:16px;">冒険をはじめる</button>
+    <p class="note">※ 入力した名前は運営の進捗確認のためだけに使い、イベント終了後に削除します。</p>
+  </section>
+
+  <!-- ホーム（登録済みのとき表示） -->
+  <section id="home" hidden>
+    <div class="card">
+      <h2 id="welcome"></h2>
+      <div class="stars" id="stars"></div>
+      <p class="center note" id="progressText"></p>
+      <ul class="point-list" id="pointList"></ul>
+    </div>
+
+    <!-- 全クリア表示 -->
+    <div class="card" id="clearCard" hidden>
+      <div class="clear-banner">
+        <div class="big">封印解除</div>
+        <div class="keys-row" id="keysRow"></div>
+        <p id="clearMsg" style="margin-top:8px;"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>QRが読み取れないときは</h2>
+      <p style="font-size:0.92rem;">その場所のQRコードの下にある<strong>番号（1〜5）</strong>を入力してください。</p>
+      <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
+      <button class="btn ghost small" id="manualBtn">この番号の謎をひらく</button>
+    </div>
+
+    <div class="card">
+      <h2>あそびかた</h2>
+      <ol class="howto">
+        <li>プリントに書かれた<strong>スタート地点</strong>へ向かう</li>
+        <li>その場所の<strong>QRコード</strong>を読み取る</li>
+        <li>謎を解いて<strong>鍵</strong>を手に入れる（★が増える）</li>
+        <li>あらわれる<strong>「在り処謎」</strong>が次の場所を教えてくれる</li>
+        <li>5つの鍵を集めたら封印解除！</li>
+      </ol>
+      <p class="note">困ったときはヒントボタンを押すか、近くのスタッフに声をかけてね。</p>
+    </div>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next"); // 登録後に向かうポイント番号（QR経由で未登録だった場合）
+  let team = Store.load();
+
+  function show(el) { el.hidden = false; }
+
+  function renderHome() {
+    document.getElementById("register").hidden = true;
+    show(document.getElementById("home"));
+    document.getElementById("welcome").textContent = team.teamName + " の進捗";
+
+    // ★☆表示（場所ごとに点灯）
+    const starsEl = document.getElementById("stars");
+    starsEl.innerHTML = POINT_ORDER.map(function (p) {
+      const solved = team.points[p] && team.points[p].solvedAt;
+      return solved ? "★" : '<span class="off">☆</span>';
+    }).join("");
+
+    const solvedCount = Store.solvedCount(team);
+    document.getElementById("progressText").textContent =
+      "あつめた鍵：" + solvedCount + " / 5";
+
+    // 場所リスト
+    const list = document.getElementById("pointList");
+    list.innerHTML = "";
+    POINT_ORDER.forEach(function (p) {
+      const solved = team.points[p] && team.points[p].solvedAt;
+      const li = document.createElement("li");
+      if (solved) li.className = "done";
+      li.innerHTML =
+        '<span class="num">' + p + "</span>" +
+        "<span>" + PUZZLES[p].place + "</span>" +
+        '<span class="st">' + (solved ? "★" : "☆") + "</span>";
+      list.appendChild(li);
+    });
+
+    // 全クリア
+    if (solvedCount === POINT_ORDER.length) {
+      show(document.getElementById("clearCard"));
+      const row = document.getElementById("keysRow");
+      row.innerHTML = POINT_ORDER.map(function (p) {
+        return (
+          '<div class="k"><span class="n">' + PUZZLES[p].keyNumber +
+          '</span><span class="p">' + p + "</span></div>"
+        );
+      }).join("");
+      document.getElementById("clearMsg").textContent = CLEAR_MESSAGE;
+    }
+  }
+
+  document.getElementById("registerBtn").addEventListener("click", function () {
+    const name = document.getElementById("teamName").value.trim();
+    if (!name) {
+      alert("チーム名を入力してください");
+      return;
+    }
+    const rep = document.getElementById("repName").value.trim();
+    team = Store.register(name, rep);
+    if (next && PUZZLES[next]) {
+      location.href = "point.html?p=" + next;
+    } else {
+      renderHome();
+    }
+  });
+
+  document.getElementById("manualBtn").addEventListener("click", function () {
+    const n = document.getElementById("manualNum").value;
+    if (!PUZZLES[n]) {
+      alert("1〜5の番号を入力してください");
+      return;
+    }
+    location.href = "point.html?p=" + n + "&via=manual";
+  });
+
+  if (team) {
+    renderHome();
+  } else {
+    show(document.getElementById("register"));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>運営ダッシュボード | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard">
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">運営スタッフ用</div>
+    <h1>進行ダッシュボード</h1>
+    <div class="ornament">◆</div>
+  </header>
+
+  <!-- 合言葉入力（初回のみ） -->
+  <section class="card" id="loginCard" hidden>
+    <h2>合言葉を入力</h2>
+    <p class="note">GASの Code.gs に設定した ADMIN_KEY を入力してください。</p>
+    <input type="password" id="keyInput" placeholder="合言葉">
+    <button class="btn gold" id="loginBtn" style="margin-top:14px;">表示する</button>
+  </section>
+
+  <section id="dash" hidden>
+    <div class="dash-meta">
+      <span id="status">読み込み中…</span>
+      <span id="lastUpdated"></span>
+      <button class="btn ghost small" id="reloadBtn" style="width:auto; padding:8px 18px; margin:0;">今すぐ更新</button>
+      <span class="note" style="margin:0;">（<span id="pollSec"></span>秒ごとに自動更新）</span>
+    </div>
+
+    <div class="table-scroll">
+      <table class="teams">
+        <thead>
+          <tr>
+            <th>チーム</th>
+            <th>進捗</th>
+            <th>現在地</th>
+            <th>ヒント</th>
+            <th>誤答</th>
+            <th>最終更新</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      🔴 赤い行＝未クリアの謎でヒントを見ているチーム（経過が長いほど困っている可能性大）。
+      優先的に様子を見に行ってください。緑＝全クリア。
+    </p>
+  </section>
+
+  <section class="card" id="noUrl" hidden>
+    <h2>設定が必要です</h2>
+    <p style="font-size:0.92rem;">
+      js/config.js の <code>GAS_URL</code> が未設定です。
+      README.md の「GASのセットアップ」に従ってバックエンドをデプロイし、
+      URLを貼り付けてから再読み込みしてください。
+    </p>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script>
+(function () {
+  if (!CONFIG.GAS_URL) {
+    document.getElementById("noUrl").hidden = false;
+    return;
+  }
+
+  const KEY_STORE = "fuin_admin_key";
+  let adminKey = localStorage.getItem(KEY_STORE) || "";
+  let timer = null;
+
+  const loginCard = document.getElementById("loginCard");
+  const dash = document.getElementById("dash");
+  document.getElementById("pollSec").textContent = CONFIG.DASHBOARD_POLL_SECONDS;
+
+  function fmtTime(iso) {
+    if (!iso) return "─";
+    const d = new Date(iso);
+    return (
+      String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0")
+    );
+  }
+
+  function minutesAgo(iso) {
+    return Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  }
+
+  function starsHtml(team) {
+    return POINT_ORDER.map(function (p) {
+      return team.solved[p] ? "★" : '<span class="off">☆</span>';
+    }).join("");
+  }
+
+  // 「未クリアの謎に対する最新のヒント」を返す（＝助けが要るかもしれない状態）
+  function activeHint(team) {
+    let latest = null;
+    team.hints.forEach(function (h) {
+      if (team.solved[h.point]) return; // その謎はもう解けている
+      if (!latest || new Date(h.at) > new Date(latest.at)) latest = h;
+    });
+    return latest;
+  }
+
+  function render(teams) {
+    const tbody = document.getElementById("tbody");
+    // 並び順：ヒント中（困っていそう）→進行中→クリア済み。同グループ内は最終更新が新しい順
+    const rows = teams.map(function (t) {
+      const solvedCount = POINT_ORDER.filter(function (p) { return t.solved[p]; }).length;
+      return {
+        t: t,
+        solvedCount: solvedCount,
+        cleared: solvedCount === POINT_ORDER.length,
+        hint: activeHint(t),
+      };
+    });
+    rows.sort(function (a, b) {
+      const ga = a.hint ? 0 : a.cleared ? 2 : 1;
+      const gb = b.hint ? 0 : b.cleared ? 2 : 1;
+      if (ga !== gb) return ga - gb;
+      return new Date(b.t.lastEventAt || 0) - new Date(a.t.lastEventAt || 0);
+    });
+
+    tbody.innerHTML = "";
+    rows.forEach(function (r) {
+      const t = r.t;
+      const tr = document.createElement("tr");
+      if (r.hint) tr.className = "needs-help";
+      else if (r.cleared) tr.className = "cleared";
+
+      const wrongTotal = Object.keys(t.wrong).reduce(function (s, k) { return s + t.wrong[k]; }, 0);
+      const hintCell = r.hint
+        ? '<span class="badge hint">' +
+          (r.hint.kind === "hint_auto" ? "自動表示" : "ヒント押下") +
+          "</span> " + PUZZLES[r.hint.point].place + "で " +
+          minutesAgo(r.hint.at) + "分経過"
+        : r.cleared
+          ? '<span class="badge clear">クリア</span>'
+          : "─";
+
+      tr.innerHTML =
+        "<td>" + escapeHtml(t.teamName || t.teamId) + "</td>" +
+        '<td class="stars-cell">' + starsHtml(t) + " " + r.solvedCount + "/5</td>" +
+        "<td>" + (t.lastPoint ? pointLabel(t.lastPoint) : "未スタート") + "</td>" +
+        "<td>" + hintCell + "</td>" +
+        "<td>" + (wrongTotal || "0") + "回</td>" +
+        "<td>" + fmtTime(t.lastEventAt) + "</td>";
+      tbody.appendChild(tr);
+    });
+
+    if (!rows.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
+    }
+  }
+
+  function pointLabel(p) {
+    return "①②③④⑤".charAt(p - 1) + " " + (PUZZLES[p] ? PUZZLES[p].place : "");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  async function fetchData() {
+    const status = document.getElementById("status");
+    try {
+      const res = await fetch(
+        CONFIG.GAS_URL + "?mode=dashboard&key=" + encodeURIComponent(adminKey),
+        { redirect: "follow" }
+      );
+      const data = await res.json();
+      if (!data.ok) {
+        // 合言葉違い → 再入力へ
+        localStorage.removeItem(KEY_STORE);
+        adminKey = "";
+        stopPolling();
+        dash.hidden = true;
+        loginCard.hidden = false;
+        alert(data.error || "認証エラー");
+        return;
+      }
+      status.textContent = "接続中（" + data.teams.length + "チーム）";
+      document.getElementById("lastUpdated").textContent =
+        "最終取得 " + fmtTime(new Date().toISOString());
+      render(data.teams);
+    } catch (e) {
+      status.textContent = "⚠ 取得に失敗しました（自動で再試行します）";
+    }
+  }
+
+  function startPolling() {
+    loginCard.hidden = true;
+    dash.hidden = false;
+    fetchData();
+    timer = setInterval(fetchData, CONFIG.DASHBOARD_POLL_SECONDS * 1000);
+  }
+
+  function stopPolling() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", function () {
+    const k = document.getElementById("keyInput").value.trim();
+    if (!k) return;
+    adminKey = k;
+    localStorage.setItem(KEY_STORE, k);
+    startPolling();
+  });
+
+  document.getElementById("reloadBtn").addEventListener("click", fetchData);
+
+  if (adminKey) startPolling();
+  else loginCard.hidden = false;
+})();
+</script>
+</body>
+</html>

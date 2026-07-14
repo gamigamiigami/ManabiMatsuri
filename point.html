@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>謎に挑戦 | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1 id="pageTitle">謎に挑戦</h1>
+    <div class="ornament">◆</div>
+  </header>
+
+  <div class="stars" id="stars" style="font-size:1.3rem;"></div>
+
+  <!-- 鍵謎 -->
+  <section class="card" id="puzzleCard" hidden>
+    <h2 id="puzzleTitle"></h2>
+    <p class="note" id="placeName"></p>
+    <div class="question" id="question"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="hint-box" id="hintBox" hidden>
+      <span class="tag">💡 ヒント</span>
+      <div id="hintText"></div>
+    </div>
+    <button class="btn ghost small" id="hintBtn" style="margin-top:14px;">💡 ヒントを見る</button>
+    <p class="note">どうしても解けないときは、近くのスタッフに声をかけてください。</p>
+  </section>
+
+  <!-- 正解後：鍵の獲得＋在り処謎（ゲート式：正解前は絶対に表示されない） -->
+  <section class="card" id="solvedCard" hidden>
+    <div class="key-get">
+      <div class="lead">─ 鍵を手に入れた ─</div>
+      <div class="keynum" id="keyNumber"></div>
+      <p class="note">この数字は最後の謎（大謎）で使います。プリントにメモしておこう。</p>
+    </div>
+  </section>
+
+  <section class="card" id="arikaCard" hidden>
+    <h2>📜 在り処謎 ─ 次の場所へ ─</h2>
+    <div class="arika" id="arikaText"></div>
+  </section>
+
+  <div id="backHome" hidden>
+    <a class="btn" href="index.html">進捗を確認する（ホームへ）</a>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const p = params.get("p");
+  const via = params.get("via") === "manual" ? "manual" : "qr";
+
+  // ポイント番号が不正 → ホームへ（手動入力フォームがある）
+  if (!PUZZLES[p]) {
+    location.replace("index.html");
+    return;
+  }
+
+  // 未登録 → 登録してからこのポイントに戻ってくる
+  const team = Store.load();
+  if (!team) {
+    location.replace("index.html?next=" + encodeURIComponent(p));
+    return;
+  }
+
+  const puzzle = PUZZLES[p];
+  const state = Store.point(team, p);
+
+  // 「最後に読み取ったQRの場所」＝現在地としてサーバーに記録（仕様 4-1）
+  Store.send(team, "scan", p, { via: via });
+
+  document.getElementById("stars").innerHTML = POINT_ORDER.map(function (q) {
+    const solved = team.points[q] && team.points[q].solvedAt;
+    return solved ? "★" : '<span class="off">☆</span>';
+  }).join("");
+
+  document.getElementById("pageTitle").textContent = puzzle.title;
+
+  function showSolved() {
+    document.getElementById("puzzleCard").hidden = true;
+    document.getElementById("keyNumber").textContent = puzzle.keyNumber;
+    document.getElementById("solvedCard").hidden = false;
+    document.getElementById("arikaText").textContent = puzzle.arika;
+    document.getElementById("arikaCard").hidden = false;
+    document.getElementById("backHome").hidden = false;
+  }
+
+  // すでに正解済みなら、鍵と在り処謎をそのまま表示
+  if (state.solvedAt) {
+    showSolved();
+    return;
+  }
+
+  // ---------- 鍵謎の表示 ----------
+  document.getElementById("puzzleCard").hidden = false;
+  document.getElementById("puzzleTitle").textContent = puzzle.title;
+  document.getElementById("placeName").textContent = "場所：" + puzzle.place;
+
+  const qEl = document.getElementById("question");
+  qEl.textContent = puzzle.question;
+  if (puzzle.image) {
+    const img = document.createElement("img");
+    img.src = puzzle.image;
+    img.alt = "謎の画像";
+    qEl.appendChild(img);
+  }
+
+  // 自動ヒントの起点＝鍵謎の画面を最初に表示した時刻（仕様 3-5）
+  if (!state.firstViewedAt) {
+    state.firstViewedAt = new Date().toISOString();
+    Store.save(team);
+  }
+
+  const hintBox = document.getElementById("hintBox");
+  const hintBtn = document.getElementById("hintBtn");
+
+  function showHint() {
+    document.getElementById("hintText").textContent = puzzle.smallHint;
+    hintBox.hidden = false;
+    hintBtn.hidden = true;
+  }
+
+  hintBtn.addEventListener("click", function () {
+    showHint();
+    if (!state.hintClicked) {
+      state.hintClicked = true;
+      Store.save(team);
+    }
+    Store.send(team, "hint_click", p, {});
+  });
+
+  // 表示開始からの経過時間で自動ヒント（途中でページを離れても起点は保持）
+  const elapsedMs = Date.now() - new Date(state.firstViewedAt).getTime();
+  const remainMs = CONFIG.AUTO_HINT_SECONDS * 1000 - elapsedMs;
+
+  function autoHint() {
+    if (!hintBox.hidden) return; // すでに手動で表示済み
+    showHint();
+    if (!state.hintAutoShown) {
+      state.hintAutoShown = true;
+      Store.save(team);
+      Store.send(team, "hint_auto", p, {});
+    }
+  }
+
+  if (state.hintAutoShown || remainMs <= 0) {
+    autoHint();
+  } else {
+    setTimeout(autoHint, remainMs);
+  }
+
+  // ---------- 4択 ----------
+  const choicesEl = document.getElementById("choices");
+  const feedback = document.getElementById("feedback");
+
+  puzzle.choices.forEach(function (text, i) {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    const abc = document.createElement("span");
+    abc.className = "abc";
+    abc.textContent = "ABCD"[i];
+    const label = document.createElement("span");
+    label.textContent = text;
+    btn.appendChild(abc);
+    btn.appendChild(label);
+    btn.addEventListener("click", function () {
+      if (state.solvedAt) return;
+      if (i === puzzle.answerIndex) {
+        btn.classList.add("right");
+        feedback.className = "feedback ok";
+        feedback.textContent = "正解！！";
+        state.solvedAt = new Date().toISOString();
+        Store.save(team);
+        Store.send(team, "correct", p, { wrongCount: state.wrong });
+        setTimeout(showSolved, 800);
+      } else {
+        // 不正解：ペナルティなしで即再挑戦可（仕様 3-6）
+        btn.classList.add("wrong");
+        setTimeout(function () { btn.classList.remove("wrong"); }, 400);
+        feedback.className = "feedback ng";
+        feedback.textContent = "ちがうみたい……もう一度考えてみよう！";
+        state.wrong += 1;
+        Store.save(team);
+        Store.send(team, "wrong", p, { choice: i });
+      }
+    });
+    choicesEl.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>
