@@ -1,0 +1,96 @@
+// ========================================
+// チームデータの保存（localStorage）と GAS への送信
+// ========================================
+
+const Store = {
+  KEY: "fuin_team_v1",
+
+  // 保存データの形:
+  // {
+  //   teamId: "T…",
+  //   teamName: "○○チーム",
+  //   repName: "代表者名（任意）",
+  //   registeredAt: "ISO日時",
+  //   points: {
+  //     1: { firstViewedAt, solvedAt, wrong, hintClicked, hintAutoShown },
+  //     ...
+  //   }
+  // }
+
+  load() {
+    try {
+      return JSON.parse(localStorage.getItem(this.KEY)) || null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  save(team) {
+    localStorage.setItem(this.KEY, JSON.stringify(team));
+  },
+
+  register(teamName, repName) {
+    const team = {
+      teamId:
+        "T" +
+        Date.now().toString(36) +
+        Math.random().toString(36).slice(2, 6),
+      teamName: teamName,
+      repName: repName || "",
+      registeredAt: new Date().toISOString(),
+      points: {},
+    };
+    this.save(team);
+    this.send(team, "register", null, { repName: team.repName });
+    return team;
+  },
+
+  point(team, p) {
+    if (!team.points[p]) {
+      team.points[p] = {
+        firstViewedAt: null,
+        solvedAt: null,
+        wrong: 0,
+        hintClicked: false,
+        hintAutoShown: false,
+      };
+    }
+    return team.points[p];
+  },
+
+  solvedCount(team) {
+    return POINT_ORDER.filter((p) => team.points[p] && team.points[p].solvedAt)
+      .length;
+  },
+
+  // 進捗の★☆文字列（場所ごとに点灯。仕様 3-4）
+  stars(team) {
+    return POINT_ORDER.map((p) =>
+      team.points[p] && team.points[p].solvedAt ? "★" : "☆"
+    ).join("");
+  },
+
+  // GAS へ非同期送信（fire-and-forget。失敗しても画面操作は止めない。仕様 4-2）
+  send(team, type, point, detail) {
+    if (!CONFIG.GAS_URL) return;
+    const body = JSON.stringify({
+      teamId: team.teamId,
+      teamName: team.teamName,
+      type: type,
+      point: point,
+      detail: detail || {},
+      clientAt: new Date().toISOString(),
+    });
+    try {
+      fetch(CONFIG.GAS_URL, {
+        method: "POST",
+        // text/plain にするとプリフライトが発生せず GAS で確実に受け取れる
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: body,
+        keepalive: true,
+      }).catch(() => {});
+    } catch (e) {
+      /* オフライン等でも無視して続行 */
+    }
+  },
+};
