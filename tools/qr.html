@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QRコード印刷 | O中の封印を解け！（運営用）</title>
+<title>QRコード印刷 | 学校の封印をとけ！（運営用）</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -60,6 +60,10 @@
       5か所分のQRコードが表示されます。ブラウザの印刷（Ctrl/Cmd+P）でそのまま印刷できます。
       QRの下の番号は、読み取れない参加者向けの手動入力フォールバック用です。
     </p>
+    <p style="background:#fff8e1; border:1.5px dashed #e8a53a; border-radius:8px; padding:10px 14px; font-size:0.85rem;">
+      🔧 謎の内容だけ確認したいとき（デバッグ用）は、チーム登録なしで
+      <code>point.html?p=番号&debug=1</code> を直接開くと表示できます（記録は送信されません）。
+    </p>
     <input type="url" id="baseUrl" placeholder="例）https://ユーザー名.github.io/ManabiMatsuri/">
     <button id="gen">生成</button>
     <button class="print" onclick="window.print()">印刷する</button>
@@ -81,7 +85,7 @@
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">O中の封印を解け！</div>' +
+        '<div class="head">学校の封印をとけ！</div>' +
         "<h2>" + "①②③④⑤".charAt(p - 1) + " " + PUZZLES[p].place + "</h2>" +
         '<div class="qr" id="qr' + p + '"></div>' +
         '<div class="fallback">QRが読み取れないときは、サイトの「番号入力」に<br>' +
