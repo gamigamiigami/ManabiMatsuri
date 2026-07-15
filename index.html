@@ -17,6 +17,12 @@
     <div class="ornament">✦ ───── ♡ ───── ✦</div>
   </header>
 
+  <!-- プロローグ（Xからの手紙）。未登録時は登録フォームの上に常時表示 -->
+  <section class="card" id="prologueCard" hidden>
+    <h2>✉ Xからの手紙</h2>
+    <div class="letter" id="prologueText"></div>
+  </section>
+
   <!-- チーム登録（未登録のときだけ表示） -->
   <section id="register" class="card" hidden>
     <h2>魔法見習いの登録</h2>
@@ -45,6 +51,13 @@
         <div class="keys-row" id="keysRow"></div>
         <p id="clearMsg" style="margin-top:8px;"></p>
       </div>
+    </div>
+
+    <!-- プロローグの読みかえし（登録済みユーザー向け） -->
+    <div class="card">
+      <h2>✉ Xからの手紙</h2>
+      <div class="letter" id="prologueText2" hidden></div>
+      <button class="btn ghost small" id="togglePrologue">手紙をひらく</button>
     </div>
 
     <div class="card">
@@ -144,9 +157,19 @@
     location.href = "point.html?p=" + n + "&via=manual";
   });
 
+  // プロローグ（Xからの手紙）
+  document.getElementById("prologueText").textContent = PROLOGUE;
+  document.getElementById("prologueText2").textContent = PROLOGUE;
+  document.getElementById("togglePrologue").addEventListener("click", function () {
+    const letter = document.getElementById("prologueText2");
+    letter.hidden = !letter.hidden;
+    this.textContent = letter.hidden ? "手紙をひらく" : "手紙をとじる";
+  });
+
   if (team) {
     renderHome();
   } else {
+    show(document.getElementById("prologueCard")); // 初回はまず手紙を読んでもらう
     show(document.getElementById("register"));
   }
 })();

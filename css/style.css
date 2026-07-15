@@ -436,6 +436,21 @@ input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 4px rg
 .keys-row .k .n { font-family: var(--serif); font-size: 1.5rem; color: var(--pink-bright); }
 .keys-row .k .p { font-size: 0.58rem; color: var(--violet); font-weight: 700; }
 
+/* ---------- プロローグ（Xからの手紙） ---------- */
+.letter {
+  font-family: var(--serif);
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  line-height: 2.2;
+  background: linear-gradient(176deg, #fdf8ec, #f8efdb);
+  border: 2px dashed #d9c290;
+  border-radius: 16px;
+  padding: 20px 18px;
+  color: #5a4425;
+  margin-top: 8px;
+  animation: fadein 0.5s ease;
+}
+
 .note { color: var(--text-dim); font-size: 0.78rem; line-height: 1.75; margin-top: 10px; }
 .center { text-align: center; }
 
