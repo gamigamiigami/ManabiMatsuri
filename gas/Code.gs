@@ -24,10 +24,30 @@ function getSheet_() {
   return sh;
 }
 
-// 参加者サイトからのイベント記録
+// 参加者サイトからのイベント記録／運営ダッシュボードからの削除操作
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
+
+    // 運営ダッシュボードからの削除操作（合言葉必須）
+    if (data.type === "admin_delete_team" || data.type === "admin_delete_all") {
+      if (data.adminKey !== ADMIN_KEY) {
+        return json_({ ok: false, error: "認証エラー：合言葉（key）が違います" });
+      }
+      const lock = LockService.getScriptLock();
+      lock.waitLock(5000);
+      try {
+        if (data.type === "admin_delete_all") {
+          deleteAllRows_();
+        } else {
+          deleteTeamRows_(String(data.teamId || ""));
+        }
+      } finally {
+        lock.releaseLock();
+      }
+      return json_({ ok: true });
+    }
+
     // 同時書き込みで行が壊れないようにロックを取る
     const lock = LockService.getScriptLock();
     lock.waitLock(5000);
@@ -47,6 +67,28 @@ function doPost(e) {
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
+  }
+}
+
+// 指定チームの記録行だけを削除（ヘッダー行は残す）
+function deleteTeamRows_(teamId) {
+  if (!teamId) return;
+  const sh = getSheet_();
+  const values = sh.getDataRange().getValues();
+  // 下から消さないと行番号がズレるので逆順に走査
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][1]) === teamId) {
+      sh.deleteRow(i + 1); // シートは1始まり
+    }
+  }
+}
+
+// 記録を全削除（ヘッダー行は残す）
+function deleteAllRows_() {
+  const sh = getSheet_();
+  const lastRow = sh.getLastRow();
+  if (lastRow > 1) {
+    sh.deleteRows(2, lastRow - 1);
   }
 }
 

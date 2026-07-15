@@ -31,6 +31,7 @@
       <span id="lastUpdated"></span>
       <button class="btn ghost small" id="reloadBtn" style="width:auto; padding:8px 18px; margin:0;">今すぐ更新</button>
       <span class="note" style="margin:0;">（<span id="pollSec"></span>秒ごとに自動更新）</span>
+      <button class="btn ghost small" id="deleteAllBtn" style="width:auto; padding:8px 18px; margin:0; border-color:var(--ng); color:var(--ng);">記録を全削除</button>
     </div>
 
     <div class="table-scroll">
@@ -43,6 +44,7 @@
             <th>ヒント</th>
             <th>誤答</th>
             <th>最終更新</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -153,14 +155,26 @@
         "<td>" + (t.lastPoint ? pointLabel(t.lastPoint) : "未スタート") + "</td>" +
         "<td>" + hintCell + "</td>" +
         "<td>" + (wrongTotal || "0") + "回</td>" +
-        "<td>" + fmtTime(t.lastEventAt) + "</td>";
+        "<td>" + fmtTime(t.lastEventAt) + "</td>" +
+        '<td><button class="btn ghost small delete-team" data-team-id="' +
+          escapeHtml(t.teamId) + '" data-team-name="' + escapeHtml(t.teamName || t.teamId) +
+          '" style="width:auto; padding:6px 12px; margin:0; font-size:0.8rem; border-color:var(--ng); color:var(--ng);">削除</button></td>';
       tbody.appendChild(tr);
     });
 
     if (!rows.length) {
       tbody.innerHTML =
-        '<tr><td colspan="6" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
+        '<tr><td colspan="7" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
     }
+
+    tbody.querySelectorAll(".delete-team").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const id = btn.getAttribute("data-team-id");
+        const name = btn.getAttribute("data-team-name");
+        if (!confirm(name + " の記録を削除します。よろしいですか？（元に戻せません）")) return;
+        deleteTeam(id);
+      });
+    });
   }
 
   function pointLabel(p) {
@@ -199,6 +213,38 @@
       status.textContent = "⚠ 取得に失敗しました（自動で再試行します）";
     }
   }
+
+  async function postAdmin(body) {
+    try {
+      const res = await fetch(CONFIG.GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        alert(data.error || "削除に失敗しました");
+        return;
+      }
+      fetchData();
+    } catch (e) {
+      alert("削除に失敗しました（通信エラー）。もう一度お試しください。");
+    }
+  }
+
+  function deleteTeam(teamId) {
+    postAdmin({ type: "admin_delete_team", teamId: teamId, adminKey: adminKey });
+  }
+
+  function deleteAll() {
+    postAdmin({ type: "admin_delete_all", adminKey: adminKey });
+  }
+
+  document.getElementById("deleteAllBtn").addEventListener("click", function () {
+    if (!confirm("全チームの記録を削除します。よろしいですか？（元に戻せません）")) return;
+    if (!confirm("本当に全削除してよいですか？もう一度確認します。")) return;
+    deleteAll();
+  });
 
   function startPolling() {
     loginCard.hidden = true;
