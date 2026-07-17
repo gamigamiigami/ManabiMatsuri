@@ -158,6 +158,7 @@
 
   function renderHome() {
     document.getElementById("register").hidden = true;
+    document.getElementById("prologueCard").hidden = true; // 手紙はホーム内の読みかえしに一本化
     show(document.getElementById("home"));
     document.getElementById("welcome").textContent = team.teamName + " の調査記録";
 

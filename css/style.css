@@ -530,13 +530,13 @@ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px 
 .note { color: var(--text-dim); font-size: 0.78rem; line-height: 1.75; margin-top: 10px; }
 .center { text-align: center; }
 
-ol.howto { padding-left: 1.6em; font-size: 0.9rem; list-style: none; counter-reset: step; }
+ol.howto { padding-left: 2.4em; font-size: 0.9rem; list-style: none; counter-reset: step; }
 ol.howto li { padding: 5px 0; position: relative; }
 ol.howto li::before {
   counter-increment: step;
   content: counter(step);
   position: absolute;
-  left: -1.6em;
+  left: -2.4em;
   top: 4px;
   width: 22px;
   height: 22px;
