@@ -17,10 +17,15 @@
     <div class="ornament">✦ ───── ♡ ───── ✦</div>
   </header>
 
-  <!-- プロローグ（Xからの手紙）。未登録時は登録フォームの上に常時表示 -->
+  <!-- プロローグ（Xからの手紙）。未登録時は封筒→開封の演出つきで表示 -->
   <section class="card" id="prologueCard" hidden>
     <h2>✉ Xからの手紙</h2>
-    <div class="letter" id="prologueText"></div>
+    <div class="envelope" id="envelope">
+      <div class="seal">X</div>
+      <p class="envelope-lead">校門に、見知らぬ手紙が<br>留められていた……</p>
+      <button class="btn gold" id="openLetterBtn">封をとく</button>
+    </div>
+    <div class="letter" id="prologueText" hidden></div>
   </section>
 
   <!-- チーム登録（未登録のときだけ表示） -->
@@ -50,6 +55,7 @@
       <div class="clear-banner">
         <div class="keys-row" id="keysRow"></div>
         <p id="clearMsg" style="margin-top:8px;"></p>
+        <p class="note center" style="margin-top:14px;">✉ Xからの最後の手紙は、大謎をといたものだけが読める……</p>
       </div>
     </div>
 
@@ -157,9 +163,13 @@
     location.href = "point.html?p=" + n + "&via=manual";
   });
 
-  // プロローグ（Xからの手紙）
+  // プロローグ（Xからの手紙）：封筒をタップすると開封
   document.getElementById("prologueText").textContent = PROLOGUE;
   document.getElementById("prologueText2").textContent = PROLOGUE;
+  document.getElementById("openLetterBtn").addEventListener("click", function () {
+    document.getElementById("envelope").hidden = true;
+    document.getElementById("prologueText").hidden = false;
+  });
   document.getElementById("togglePrologue").addEventListener("click", function () {
     const letter = document.getElementById("prologueText2");
     letter.hidden = !letter.hidden;
