@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QRコード印刷 | 学校の封印をとけ！（運営用）</title>
+<title>QRコード印刷 | O中の封印を解け！（運営用）</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -85,7 +85,7 @@
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">学校の封印をとけ！</div>' +
+        '<div class="head">O中の封印を解け！</div>' +
         "<h2>" + "①②③④⑤".charAt(p - 1) + " " + PUZZLES[p].place + "</h2>" +
         '<div class="qr" id="qr' + p + '"></div>' +
         '<div class="fallback">QRが読み取れないときは、サイトの「番号入力」に<br>' +

@@ -1,5 +1,5 @@
 // ========================================
-// 「学校の封印をとけ！」バックエンド（Google Apps Script）
+// 「O中の封印を解け！」バックエンド（Google Apps Script）
 // ========================================
 // 使い方は README.md の「GASのセットアップ」参照。
 // このスクリプトは「スプレッドシートに紐付いたApps Script」として動かします。
@@ -96,7 +96,7 @@ function deleteAllRows_() {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.mode !== "dashboard") {
-    return json_({ ok: true, message: "学校の封印をとけ！ backend is running." });
+    return json_({ ok: true, message: "O中の封印を解け！ backend is running." });
   }
   if (p.key !== ADMIN_KEY) {
     return json_({ ok: false, error: "認証エラー：合言葉（key）が違います" });
