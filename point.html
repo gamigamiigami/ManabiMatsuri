@@ -51,6 +51,13 @@
   <!-- 正解後：鍵の獲得＋在り処謎（ゲート式：正解前は絶対に表示されない） -->
   <section class="card" id="solvedCard" hidden>
     <div class="key-get">
+      <svg class="keyring" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="92" stroke="#d4af6a" stroke-width="1.2" opacity="0.8"/>
+        <circle cx="100" cy="100" r="84" stroke="#d4af6a" stroke-width="0.6" opacity="0.5"/>
+        <circle cx="100" cy="100" r="66" stroke="#9b7fe8" stroke-width="0.9" opacity="0.6" stroke-dasharray="5 7"/>
+        <polygon points="100,14 26,143 174,143" fill="none" stroke="#d4af6a" stroke-width="0.8" opacity="0.5"/>
+        <polygon points="100,186 26,57 174,57" fill="none" stroke="#d4af6a" stroke-width="0.8" opacity="0.5"/>
+      </svg>
       <div class="lead" id="keyLead">─ 封印の鍵を手に入れた ─</div>
       <div class="keynum" id="keyNumber"></div>
       <p class="note" id="keyNote">この数字は最後の大謎で使うよ。プリントにメモしてね！</p>
@@ -70,6 +77,7 @@
 <script src="js/config.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/store.js"></script>
+<script src="js/fx.js"></script>
 <script>
 (function () {
   const params = new URLSearchParams(location.search);
@@ -103,7 +111,7 @@
 
   document.getElementById("stars").innerHTML = POINT_ORDER.map(function (q) {
     const solved = team.points[q] && team.points[q].solvedAt;
-    return solved ? "★" : '<span class="off">☆</span>';
+    return solved ? '<span class="on">★</span>' : '<span class="off">☆</span>';
   }).join("");
 
   document.getElementById("pageTitle").textContent = puzzle.title;
@@ -210,12 +218,16 @@
         btn.classList.add("right");
         feedback.className = "feedback ok";
         feedback.textContent = "正解──封印がひとつ、ほどけた。";
+        // 魔法陣が展開して封印が解ける演出
+        const c = FX.centerOf(btn);
+        FX.burst({ x: c.x, y: c.y, count: 12 });
+        FX.circle();
         state.solvedAt = new Date().toISOString();
         if (!isDebug) {
           Store.save(team);
           Store.send(team, "correct", p, { wrongCount: state.wrong });
         }
-        setTimeout(function () { showSolved(true); }, 1000);
+        setTimeout(function () { showSolved(true); }, 1400);
       } else {
         btn.classList.add("wrong");
         setTimeout(function () { btn.classList.remove("wrong"); }, 450);

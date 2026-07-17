@@ -147,6 +147,7 @@
 <script src="js/config.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/store.js"></script>
+<script src="js/fx.js"></script>
 <script>
 (function () {
   const params = new URLSearchParams(location.search);
@@ -163,7 +164,7 @@
     const starsEl = document.getElementById("stars");
     starsEl.innerHTML = POINT_ORDER.map(function (p) {
       const solved = team.points[p] && team.points[p].solvedAt;
-      return solved ? "★" : '<span class="off">☆</span>';
+      return solved ? '<span class="on">★</span>' : '<span class="off">☆</span>';
     }).join("");
 
     const solvedCount = Store.solvedCount(team);
@@ -204,11 +205,16 @@
     }
     const player = document.getElementById("playerName").value.trim();
     team = Store.register(name, player);
-    if (next && PUZZLES[next]) {
-      location.href = "point.html?p=" + next;
-    } else {
-      renderHome();
-    }
+    // 魔法陣が発動してから冒険がはじまる
+    FX.circle();
+    setTimeout(function () {
+      if (next && PUZZLES[next]) {
+        location.href = "point.html?p=" + next;
+      } else {
+        renderHome();
+        window.scrollTo(0, 0);
+      }
+    }, 1100);
   });
 
   document.getElementById("manualBtn").addEventListener("click", function () {
@@ -224,8 +230,14 @@
   document.getElementById("prologueText").textContent = PROLOGUE;
   document.getElementById("prologueText2").textContent = PROLOGUE;
   document.getElementById("openLetterBtn").addEventListener("click", function () {
-    document.getElementById("envelope").hidden = true;
-    document.getElementById("prologueText").hidden = false;
+    // 封蝋が解けて光が弾ける
+    const seal = document.querySelector("#envelope .seal");
+    const c = FX.centerOf(seal);
+    FX.burst({ x: c.x, y: c.y, count: 16 });
+    setTimeout(function () {
+      document.getElementById("envelope").hidden = true;
+      document.getElementById("prologueText").hidden = false;
+    }, 350);
   });
   document.getElementById("togglePrologue").addEventListener("click", function () {
     const letter = document.getElementById("prologueText2");
