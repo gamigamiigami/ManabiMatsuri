@@ -6,15 +6,72 @@
 <title>O中の封印を解け！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="runes">
+    <span>✦</span><span>封</span><span>✧</span><span>◈</span><span>鍵</span><span>✦</span><span>解</span><span>✧</span>
+  </div>
+  <div class="vignette"></div>
+</div>
 <div class="wrap">
   <header class="site">
+    <div class="waxseal">封</div>
+    <svg class="magic-circle" viewBox="0 0 400 400" aria-hidden="true">
+      <defs>
+        <path id="glyphPath" d="M200,200 m-160,0 a160,160 0 1,1 320,0 a160,160 0 1,1 -320,0"></path>
+        <path id="wordPath" d="M200,200 m-108,0 a108,108 0 1,1 216,0 a108,108 0 1,1 -216,0"></path>
+      </defs>
+      <g fill="none" stroke="#d4af6a">
+        <circle cx="200" cy="200" r="194" stroke-width="1.6" opacity="0.9"></circle>
+        <circle cx="200" cy="200" r="187" stroke-width="0.7" opacity="0.55"></circle>
+        <circle cx="200" cy="200" r="140" stroke-width="1.1" opacity="0.8"></circle>
+        <circle cx="200" cy="200" r="134" stroke-width="0.6" opacity="0.5"></circle>
+        <polygon points="200,62 80.5,269 319.5,269" stroke-width="1.3" opacity="0.7"></polygon>
+        <polygon points="200,338 80.5,131 319.5,131" stroke-width="1.3" opacity="0.7"></polygon>
+        <circle cx="200" cy="200" r="56" stroke-width="1" opacity="0.75"></circle>
+        <circle cx="200" cy="200" r="50" stroke-width="0.6" opacity="0.5"></circle>
+      </g>
+      <g fill="none" stroke="#9b7fe8" opacity="0.85">
+        <circle cx="200" cy="62" r="13" stroke-width="1.1"></circle>
+        <circle cx="80.5" cy="269" r="13" stroke-width="1.1"></circle>
+        <circle cx="319.5" cy="269" r="13" stroke-width="1.1"></circle>
+        <circle cx="200" cy="338" r="13" stroke-width="1.1"></circle>
+        <circle cx="80.5" cy="131" r="13" stroke-width="1.1"></circle>
+        <circle cx="319.5" cy="131" r="13" stroke-width="1.1"></circle>
+      </g>
+      <g fill="#9b7fe8" opacity="0.9" font-size="13" text-anchor="middle" font-family="'Shippori Mincho B1',serif">
+        <text x="200" y="67">月</text>
+        <text x="80.5" y="274">星</text>
+        <text x="319.5" y="274">夜</text>
+        <text x="200" y="343">影</text>
+        <text x="80.5" y="136">風</text>
+        <text x="319.5" y="136">灯</text>
+      </g>
+      <g class="mc-glyphs">
+        <text font-size="14" fill="#d4af6a" opacity="0.8" letter-spacing="7">
+          <textPath href="#glyphPath">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛋ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ</textPath>
+        </text>
+      </g>
+      <g class="mc-words">
+        <text font-size="11" fill="#9b7fe8" opacity="0.75" letter-spacing="12" font-family="'Shippori Mincho B1',serif">
+          <textPath href="#wordPath">封じられし学び舎に　五つの鍵は眠る　月満ちる夜　扉は開かれん</textPath>
+        </text>
+      </g>
+      <g fill="rgba(212,175,106,0.85)">
+        <circle cx="200" cy="193" r="12"></circle>
+        <path d="M194,201 L206,201 L211,222 L189,222 Z"></path>
+      </g>
+      <circle cx="200" cy="200" r="34" fill="none" stroke="rgba(212,175,106,0.5)" stroke-width="0.8" stroke-dasharray="3 5"></circle>
+    </svg>
     <div class="subtitle">転校生Xからの挑戦状</div>
-    <h1>O中の封印を解け！</h1>
-    <div class="ornament">✦ ───── ♡ ───── ✦</div>
+    <h1>O中の封印を解け</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
   <!-- プロローグ（Xからの手紙）。未登録時は封筒→開封の演出つきで表示 -->
@@ -30,13 +87,13 @@
 
   <!-- チーム登録（未登録のときだけ表示） -->
   <section id="register" class="card" hidden>
-    <h2>魔法見習いの登録</h2>
-    <p style="font-size:0.92rem;">親子ペアで1チームだよ。チーム名を決めて、冒険の書にしるそう！</p>
+    <h2>調査チーム登録</h2>
+    <p style="font-size:0.92rem;">親子ペアで1チーム。チーム名を決めて、調査を開始しよう。</p>
     <label class="field">チーム名（必須）</label>
-    <input type="text" id="teamName" maxlength="20" placeholder="例）まほうつかい やまだ" autocomplete="off">
+    <input type="text" id="teamName" maxlength="20" placeholder="例）チーム やまだ" autocomplete="off">
     <label class="field">あなたの名前</label>
     <input type="text" id="playerName" maxlength="20" placeholder="例）山田 太郎" autocomplete="off">
-    <button class="btn gold" id="registerBtn" style="margin-top:16px;">✦ 冒険をはじめる ✦</button>
+    <button class="btn gold" id="registerBtn" style="margin-top:16px;">▶ 調査を開始する</button>
     <p class="note">※ 入力した名前は運営の進捗確認のためだけに使い、イベント終了後に削除します。</p>
   </section>
 
@@ -51,15 +108,15 @@
 
     <!-- 全クリア表示 -->
     <div class="card" id="clearCard" hidden>
-      <h2>✦ 封印かいじょ！ ✦</h2>
+      <h2>封印 ― 完全解除</h2>
       <div class="clear-banner">
         <div class="keys-row" id="keysRow"></div>
         <p id="clearMsg" style="margin-top:8px;"></p>
-        <p class="note center" style="margin-top:14px;">✉ Xからの最後の手紙は、大謎をといたものだけが読める……</p>
+        <p class="note center" style="margin-top:14px;">✉ Xからの最後の手紙は、大謎を解いたものだけが読める……</p>
       </div>
     </div>
 
-    <!-- プロローグの読みかえし（登録済みユーザー向け） -->
+    <!-- プロローグの読みかえし -->
     <div class="card">
       <h2>✉ Xからの手紙</h2>
       <div class="letter" id="prologueText2" hidden></div>
@@ -67,20 +124,20 @@
     </div>
 
     <div class="card">
-      <h2>🔮 QRが読み取れないときは</h2>
-      <p style="font-size:0.92rem;">謎はその場所のQRコードを読み取ると現れるよ。読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入れてね。</p>
+      <h2>⚠ QRが読み取れないときは</h2>
+      <p style="font-size:0.92rem;">謎はその場所のQRコードを読み取ると現れる。読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入力。</p>
       <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
       <button class="btn ghost small" id="manualBtn">この番号の謎をひらく</button>
     </div>
 
     <div class="card">
-      <h2>🧹 冒険のすすめかた</h2>
+      <h2>捜査の手順</h2>
       <ol class="howto">
         <li>プリントに書いてある<strong>スタート地点</strong>へ向かう</li>
         <li>その場所の<strong>QRコード</strong>を読み取る</li>
-        <li>鍵謎を解いて<strong>魔法の鍵</strong>をゲット！（★が増える）</li>
-        <li>あらわれる<strong>「在り処謎」</strong>が次の場所を教えてくれる</li>
-        <li>5つの鍵を集めたら封印かいじょ！</li>
+        <li>鍵謎を解いて<strong>封印の鍵</strong>を取得（★が増える）</li>
+        <li>あらわれる<strong>「在り処謎」</strong>が次の場所を示す</li>
+        <li>5つの鍵を集めれば封印は解ける</li>
       </ol>
       <p class="note">困ったらヒントボタンを押すか、近くのスタッフに声をかけてね。</p>
     </div>
@@ -101,7 +158,7 @@
   function renderHome() {
     document.getElementById("register").hidden = true;
     show(document.getElementById("home"));
-    document.getElementById("welcome").textContent = team.teamName + " の冒険";
+    document.getElementById("welcome").textContent = team.teamName + " の調査記録";
 
     const starsEl = document.getElementById("stars");
     starsEl.innerHTML = POINT_ORDER.map(function (p) {
@@ -111,7 +168,7 @@
 
     const solvedCount = Store.solvedCount(team);
     document.getElementById("progressText").textContent =
-      "あつめた魔法の鍵：" + solvedCount + " / 5";
+      "あつめた封印の鍵：" + solvedCount + " / 5";
 
     const list = document.getElementById("pointList");
     list.innerHTML = "";
@@ -179,7 +236,7 @@
   if (team) {
     renderHome();
   } else {
-    show(document.getElementById("prologueCard")); // 初回はまず手紙を読んでもらう
+    show(document.getElementById("prologueCard")); // 初回はまず手紙から
     show(document.getElementById("register"));
   }
 })();

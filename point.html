@@ -6,22 +6,29 @@
 <title>鍵謎に挑戦 | O中の封印を解け！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="runes">
+    <span>✦</span><span>封</span><span>✧</span><span>◈</span><span>鍵</span><span>✦</span><span>解</span><span>✧</span>
+  </div>
+  <div class="vignette"></div>
+</div>
 <div class="wrap">
   <header class="site">
     <div class="subtitle">転校生Xからの挑戦状</div>
     <h1 id="pageTitle">鍵謎に挑戦</h1>
-    <div class="ornament">✦ ───── ♡ ───── ✦</div>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
   <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
-  <div class="card" id="debugBanner" hidden style="border-color:#8f6ae0; background:#f2edff;">
-    <p class="center" style="font-weight:900; color:#8f6ae0; font-size:0.85rem;">
-      🔧 デバッグ表示中（チーム未登録・記録されません）
-    </p>
+  <div class="card debug-banner" id="debugBanner" hidden>
+    <p>🔧 デバッグ表示中（チーム未登録・記録されません）</p>
   </div>
 
   <div class="stars" id="stars"></div>
@@ -44,7 +51,7 @@
   <!-- 正解後：鍵の獲得＋在り処謎（ゲート式：正解前は絶対に表示されない） -->
   <section class="card" id="solvedCard" hidden>
     <div class="key-get">
-      <div class="lead" id="keyLead">─ 魔法の鍵をゲット！ ─</div>
+      <div class="lead" id="keyLead">─ 封印の鍵を手に入れた ─</div>
       <div class="keynum" id="keyNumber"></div>
       <p class="note" id="keyNote">この数字は最後の大謎で使うよ。プリントにメモしてね！</p>
     </div>
@@ -106,7 +113,7 @@
     document.getElementById("puzzleCard").hidden = true;
     document.getElementById("keyNumber").textContent = puzzle.keyNumber;
     document.getElementById("keyLead").textContent = justSolved
-      ? "─ 魔法の鍵 " + p + " をゲット！ ─"
+      ? "─ 封印の鍵 " + p + " を手に入れた ─"
       : "─ この封印は解除ずみ ─";
     document.getElementById("keyNote").textContent = justSolved
       ? "この数字は最後の大謎で使うよ。プリントにメモしてね！"
@@ -202,7 +209,7 @@
       if (i === puzzle.answerIndex) {
         btn.classList.add("right");
         feedback.className = "feedback ok";
-        feedback.textContent = "せいかい！！";
+        feedback.textContent = "正解──封印がひとつ、ほどけた。";
         state.solvedAt = new Date().toISOString();
         if (!isDebug) {
           Store.save(team);
