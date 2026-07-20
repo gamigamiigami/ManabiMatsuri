@@ -63,6 +63,22 @@ const Store = {
       .length;
   },
 
+  // ダミー謎の状態（クリアには影響しないおまけ）
+  dummy(team, n) {
+    if (!team.dummies) team.dummies = {};
+    if (!team.dummies[n]) {
+      team.dummies[n] = { solvedAt: null, wrong: 0 };
+    }
+    return team.dummies[n];
+  },
+
+  dummySolvedCount(team) {
+    const d = team.dummies || {};
+    return Object.keys(DUMMY_PUZZLES).filter(
+      (n) => d[n] && d[n].solvedAt
+    ).length;
+  },
+
   stars(team) {
     return POINT_ORDER.map((p) =>
       team.points[p] && team.points[p].solvedAt ? "★" : "☆"

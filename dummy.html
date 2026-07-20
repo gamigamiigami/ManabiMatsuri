@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>？？？ | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="runes">
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
+  </div>
+  <div class="vignette"></div>
+</div>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1 id="pageTitle">？？？</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
+  <div class="card debug-banner" id="debugBanner" hidden>
+    <p>🔧 デバッグ表示中（チーム未登録・記録されません）</p>
+  </div>
+
+  <!-- ゲート：これはダミーだ -->
+  <section class="card" id="gateCard" hidden>
+    <h2>🃏 これはダミーだ</h2>
+    <div class="question">封印の鍵は、ここにはない。\nこの謎を解いても、封印は解けない。\n\n……それでも解く？</div>
+    <button class="btn gold" id="challengeBtn">それでも解く</button>
+    <a class="btn ghost small" href="index.html">やめておく（ホームへ）</a>
+    <p class="note center" id="gateCount"></p>
+  </section>
+
+  <!-- ダミー謎本体 -->
+  <section class="card" id="puzzleCard" hidden>
+    <h2 id="puzzleTitle"></h2>
+    <div class="question" id="question"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="hint-box" id="hintBox" hidden>
+      <span class="tag">🌟 妖精のささやき</span>
+      <div id="hintText"></div>
+    </div>
+    <button class="btn ghost small" id="hintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
+  </section>
+
+  <!-- クリア後 -->
+  <section class="card" id="solvedCard" hidden>
+    <div class="key-get">
+      <div class="lead">─ まやかしの封印を見破った ─</div>
+      <div class="keynum">🃏</div>
+      <p class="note center" id="dummyCount"></p>
+      <p class="note center">封印の鍵は増えないけれど……君の探究心は本物だ。</p>
+    </div>
+  </section>
+
+  <div id="backHome" hidden>
+    <a class="btn" href="index.html">進捗を見る（ホームへ）</a>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fx.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const d = params.get("d");
+  const isDebug = params.get("debug") === "1";
+
+  if (!DUMMY_PUZZLES[d]) {
+    location.replace("index.html");
+    return;
+  }
+
+  let team = Store.load();
+  if (!team) {
+    if (isDebug) {
+      team = { teamId: null, teamName: "（デバッグ）", points: {}, dummies: {} };
+      document.getElementById("debugBanner").hidden = false;
+    } else {
+      location.replace("index.html?dummy=" + encodeURIComponent(d));
+      return;
+    }
+  }
+
+  const puzzle = DUMMY_PUZZLES[d];
+  const state = Store.dummy(team, d);
+
+  if (!isDebug) {
+    // ダミーはポイント扱いしない（現在地は動かさない）。detailに番号を入れて記録
+    Store.send(team, "dummy_scan", null, { dummy: Number(d) });
+  }
+
+  function countText() {
+    return "見つけて解いたダミー謎：" + Store.dummySolvedCount(team) + " / " + DUMMY_TOTAL;
+  }
+
+  function showSolved() {
+    document.getElementById("gateCard").hidden = true;
+    document.getElementById("puzzleCard").hidden = true;
+    document.getElementById("dummyCount").textContent = countText();
+    document.getElementById("solvedCard").hidden = false;
+    document.getElementById("backHome").hidden = isDebug;
+  }
+
+  // 解いたことがあるならそのままクリア表示
+  if (state.solvedAt) {
+    showSolved();
+    return;
+  }
+
+  // ---------- ゲート表示 ----------
+  document.getElementById("gateCard").hidden = false;
+  document.getElementById("gateCount").textContent = countText();
+  // \n を実改行に（HTML直書きのため）
+  const gateQ = document.querySelector("#gateCard .question");
+  gateQ.textContent = gateQ.textContent.replace(/\\n/g, "\n");
+
+  document.getElementById("challengeBtn").addEventListener("click", function () {
+    document.getElementById("gateCard").hidden = true;
+    document.getElementById("puzzleCard").hidden = false;
+    if (!isDebug) Store.send(team, "dummy_challenge", null, { dummy: Number(d) });
+  });
+
+  // ---------- 謎本体 ----------
+  document.getElementById("pageTitle").textContent = puzzle.title;
+  document.getElementById("puzzleTitle").textContent = puzzle.title;
+
+  const qEl = document.getElementById("question");
+  qEl.textContent = puzzle.question;
+  if (puzzle.image) {
+    const img = document.createElement("img");
+    img.src = puzzle.image;
+    img.alt = "謎の画像";
+    img.onerror = function () { this.remove(); };
+    qEl.appendChild(img);
+  }
+
+  const hintBox = document.getElementById("hintBox");
+  const hintBtn = document.getElementById("hintBtn");
+  hintBtn.addEventListener("click", function () {
+    document.getElementById("hintText").textContent = puzzle.smallHint;
+    hintBox.hidden = false;
+    hintBtn.hidden = true;
+  });
+
+  const choicesEl = document.getElementById("choices");
+  const feedback = document.getElementById("feedback");
+
+  puzzle.choices.forEach(function (text, i) {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    const abc = document.createElement("span");
+    abc.className = "abc";
+    abc.textContent = "ABCD"[i];
+    const label = document.createElement("span");
+    label.textContent = text;
+    btn.appendChild(abc);
+    btn.appendChild(label);
+    btn.addEventListener("click", function () {
+      if (state.solvedAt) return;
+      if (i === puzzle.answerIndex) {
+        btn.classList.add("right");
+        feedback.className = "feedback ok";
+        feedback.textContent = "見破った──これは、まやかし。";
+        const c = FX.centerOf(btn);
+        FX.burst({ x: c.x, y: c.y, count: 12 });
+        state.solvedAt = new Date().toISOString();
+        if (!isDebug) {
+          Store.save(team);
+          Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
+        }
+        setTimeout(showSolved, 1200);
+      } else {
+        btn.classList.add("wrong");
+        setTimeout(function () { btn.classList.remove("wrong"); }, 450);
+        feedback.className = "feedback ng";
+        feedback.textContent = "あれれ？ちがうみたい……もう一度考えてみて！";
+        state.wrong += 1;
+        if (!isDebug) {
+          Store.save(team);
+          Store.send(team, "dummy_wrong", null, { dummy: Number(d), choice: i });
+        }
+      }
+    });
+    choicesEl.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

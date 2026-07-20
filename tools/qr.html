@@ -101,6 +101,25 @@
       });
     });
 
+    // --- ダミー謎QR（クリアに関係ないおまけ。校内の好きな場所に設置） ---
+    Object.keys(DUMMY_PUZZLES).forEach(function (n) {
+      const url = base + "dummy.html?d=" + n;
+      const card = document.createElement("div");
+      card.className = "qr-card";
+      card.innerHTML =
+        '<div class="head">O中の封印を解け！【ダミー謎・設置用】</div>' +
+        "<h2>ダミー " + n + "</h2>" +
+        '<div class="qr" id="dqr' + n + '"></div>' +
+        '<div class="fallback">クリアには関係ない追加コンテンツです。<br>本物のQRと同じ見た目で、校内の好きな場所へ</div>';
+      cards.appendChild(card);
+      new QRCode(document.getElementById("dqr" + n), {
+        text: url,
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    });
+
     // --- スタートQR（小謎プリントを解いた参加者に運営がランダムで配布） ---
     POINT_ORDER.forEach(function (s) {
       const url = base + "start.html?s=" + s;

@@ -44,6 +44,7 @@
             <th>現在地</th>
             <th>ヒント</th>
             <th>誤答</th>
+            <th>ダミー</th>
             <th>最終更新</th>
             <th></th>
           </tr>
@@ -156,6 +157,7 @@
         "<td>" + (t.lastPoint ? pointLabel(t.lastPoint) : "未スタート") + "</td>" +
         "<td>" + hintCell + "</td>" +
         "<td>" + (wrongTotal || "0") + "回</td>" +
+        "<td>🃏 " + (t.dummySolved || 0) + "</td>" +
         "<td>" + fmtTime(t.lastEventAt) + "</td>" +
         '<td><button class="btn ghost small delete-team" data-team-id="' +
           escapeHtml(t.teamId) + '" data-team-name="' + escapeHtml(t.teamName || t.teamId) +
@@ -165,7 +167,7 @@
 
     if (!rows.length) {
       tbody.innerHTML =
-        '<tr><td colspan="7" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
+        '<tr><td colspan="8" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
     }
 
     tbody.querySelectorAll(".delete-team").forEach(function (btn) {

@@ -101,6 +101,45 @@ const PUZZLES = {
 // 巡回順
 const POINT_ORDER = [1, 2, 3, 4, 5];
 
+// ---------------------------------------------------------------
+// 🃏 ダミー謎（クリアには不要な、探索好きのための追加コンテンツ）
+//
+// ・QRコードは dummy.html?d=1 のような飛び先で作る（QR印刷ツールで自動生成）
+// ・読み込むと「これはダミーだ。それでも解く？」と確認してから挑戦できる
+// ・解いた数はホーム画面に「x / 総数」で表示される
+// ・総数はこの表に書いた数がそのまま反映される（増減はここに足す/消すだけ）
+// ・画像は images/DummyA.png, DummyB.png, DummyC.png …（A=1, B=2, …。無ければ自動非表示）
+// ---------------------------------------------------------------
+const DUMMY_PUZZLES = {
+  1: {
+    title: "まやかしの封印・壱",
+    question: "【仮】ダミー謎1の問題文",
+    image: "images/DummyA.png",
+    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
+    answerIndex: 0,
+    smallHint: "【仮】小ヒント（未設定）",
+  },
+  2: {
+    title: "まやかしの封印・弐",
+    question: "【仮】ダミー謎2の問題文",
+    image: "images/DummyB.png",
+    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
+    answerIndex: 0,
+    smallHint: "【仮】小ヒント（未設定）",
+  },
+  3: {
+    title: "まやかしの封印・参",
+    question: "【仮】ダミー謎3の問題文",
+    image: "images/DummyC.png",
+    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
+    answerIndex: 0,
+    smallHint: "【仮】小ヒント（未設定）",
+  },
+};
+
+// ダミー謎の総数（自動計算。触らなくてよい）
+const DUMMY_TOTAL = Object.keys(DUMMY_PUZZLES).length;
+
 // プロローグ（Xからの手紙）。登録画面とホームの「手紙を読みかえす」でいつでも表示される。
 const PROLOGUE =
   "やあ。\n" +

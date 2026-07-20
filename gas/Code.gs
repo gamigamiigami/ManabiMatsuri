@@ -141,8 +141,23 @@ function aggregate_() {
     if ((type === "hint_click" || type === "hint_auto") && point) {
       t.hints.push({ point: point, at: ts, kind: type });
     }
+    // ダミー謎のクリア（ダミー番号は detail 列のJSONに入っている）
+    if (type === "dummy_correct") {
+      try {
+        const det = JSON.parse(String(rows[i][5] || "{}"));
+        if (det.dummy != null) {
+          if (!t._dummySet) t._dummySet = {};
+          t._dummySet[det.dummy] = true;
+        }
+      } catch (e) { /* detailが読めない行は無視 */ }
+    }
   }
-  return Object.keys(teams).map(function (k) { return teams[k]; });
+  return Object.keys(teams).map(function (k) {
+    const t = teams[k];
+    t.dummySolved = t._dummySet ? Object.keys(t._dummySet).length : 0;
+    delete t._dummySet;
+    return t;
+  });
 }
 
 function json_(obj) {

@@ -102,6 +102,7 @@
       <div class="stars" id="stars"></div>
       <p class="center note" id="progressText"></p>
       <ul class="point-list" id="pointList"></ul>
+      <p class="center note" id="dummyText" style="margin-top:14px;"></p>
     </div>
 
     <!-- 全クリア表示 -->
@@ -151,6 +152,7 @@
   const params = new URLSearchParams(location.search);
   const next = params.get("next");   // 登録後に向かうポイント番号（QR経由で未登録だった場合）
   const start = params.get("start"); // 登録後に向かうスタートQR画面（小謎クリア後のQR経由）
+  const dummy = params.get("dummy"); // 登録後に向かうダミー謎
   let team = Store.load();
 
   function show(el) { el.hidden = false; }
@@ -170,6 +172,9 @@
     const solvedCount = Store.solvedCount(team);
     document.getElementById("progressText").textContent =
       "あつめた封印の鍵：" + solvedCount + " / 5";
+    document.getElementById("dummyText").textContent =
+      "🃏 見つけて解いたダミー謎：" + Store.dummySolvedCount(team) + " / " + DUMMY_TOTAL +
+      "（封印には関係ない、腕試しのおまけ）";
 
     const list = document.getElementById("pointList");
     list.innerHTML = "";
@@ -210,6 +215,8 @@
     setTimeout(function () {
       if (start && PUZZLES[start]) {
         location.href = "start.html?s=" + start;
+      } else if (dummy && DUMMY_PUZZLES[dummy]) {
+        location.href = "dummy.html?d=" + dummy;
       } else if (next && PUZZLES[next]) {
         location.href = "point.html?p=" + next;
       } else {
