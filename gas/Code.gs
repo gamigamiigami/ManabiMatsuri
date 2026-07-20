@@ -9,7 +9,7 @@
 // ・doGet  : 運営ダッシュボード用に、チームごとの集計JSONを返す
 
 // ダッシュボード閲覧用の合言葉。デプロイ前に必ず好きな文字列に変えること！
-const ADMIN_KEY = "kaeru-admin-2026";
+const ADMIN_KEY = "oyakomanabi";
 
 const SHEET_NAME = "events";
 const HEADER = ["server_ts", "team_id", "team_name", "type", "point", "detail", "client_ts"];
