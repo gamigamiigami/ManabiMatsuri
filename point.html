@@ -67,6 +67,7 @@
   <section class="card" id="arikaCard" hidden>
     <h2>📜 在り処謎</h2>
     <div class="arika" id="arikaText"></div>
+    <div class="question" id="arikaImageBox"></div>
   </section>
 
   <div id="backHome" hidden>
@@ -128,6 +129,14 @@
       : "鍵の数字と在り処謎を、いつでもここで見返せるよ。";
     document.getElementById("solvedCard").hidden = false;
     document.getElementById("arikaText").textContent = puzzle.arika;
+    // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
+    if (puzzle.arikaImage) {
+      const aimg = document.createElement("img");
+      aimg.src = puzzle.arikaImage;
+      aimg.alt = "在り処謎の画像";
+      aimg.onerror = function () { this.remove(); };
+      document.getElementById("arikaImageBox").appendChild(aimg);
+    }
     document.getElementById("arikaCard").hidden = false;
     document.getElementById("backHome").hidden = isDebug; // デバッグ時はチームが無いのでホームに戻れない
   }

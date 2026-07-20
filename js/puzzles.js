@@ -3,25 +3,31 @@
 // ========================================
 
 // ---------------------------------------------------------------
-// 🖼 謎画像の割り当て表
-// どの画像をどの場所（①〜⑤）に出すかは、ここを書き換えるだけで変更できる。
+// 🖼 謎画像の命名ルール（A〜E ＝ ①〜⑤）
 //
-// 使える画像（images/ フォルダ内）:
-//   images/nazo4.png … 漢字の変換謎（傘→息、北→牛…「月・蚊」→？？？）
-//   images/nazo5.png … 黒板のイラスト（？のカード）
-//   images/nazo7.png … 答えに合うイラストは？（○C○B○…＋イラスト1〜4）
-//   images/nazo8.png … 答えに合うイラストは？（市場・色紙・昨日＋イラスト1〜4）
-//   images/nazo9.png … 円形に散らばった文字の謎
+//   images/KeyA.png 〜 KeyE.png   … 鍵謎の画像（①〜⑤のページに表示）
+//   images/PlaceA.png 〜 PlaceE.png … 在り処謎の画像
+//       （①〜⑤の鍵謎を解いたあとに表示。次の場所への誘導。
+//         例：PlaceA＝①をクリアした人に見せる「②への在り処謎」）
 //
-// ※ 下の割り当ては内容からの仮置き（黒板の画像→④うしろの黒板、など）。
-//   自由に入れ替えてOK。画像を使わないポイントは null にする。
+// 画像の中身を差し替えたいときは、同じファイル名で images/ に
+// 上書きアップロードするだけでOK（このファイルの編集は不要）。
+// 画像がまだ無い場合は自動で非表示になる（エラーにはならない）。
 // ---------------------------------------------------------------
-const NAZO_IMAGES = {
-  1: "images/nazo4.png", // ① 3-5 時間割表（仮）
-  2: "images/nazo9.png", // ② 3-6 時計（文字が円形＝時計の文字盤っぽいので仮置き）
-  3: "images/nazo7.png", // ③ わたり廊下（仮）
-  4: "images/nazo5.png", // ④ 3-5 うしろの黒板（黒板の画像なので仮置き）
-  5: "images/nazo8.png", // ⑤ 音楽室（仮）
+const KEY_IMAGES = {
+  1: "images/KeyA.png",
+  2: "images/KeyB.png",
+  3: "images/KeyC.png",
+  4: "images/KeyD.png",
+  5: "images/KeyE.png",
+};
+
+const PLACE_IMAGES = {
+  1: "images/PlaceA.png",
+  2: "images/PlaceB.png",
+  3: "images/PlaceC.png",
+  4: "images/PlaceD.png",
+  5: "images/PlaceE.png",
 };
 
 const PUZZLES = {
@@ -29,7 +35,8 @@ const PUZZLES = {
     place: "3-5 時間割表",
     title: "第一の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
-    image: NAZO_IMAGES[1],
+    image: KEY_IMAGES[1],
+    arikaImage: PLACE_IMAGES[1],
     choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
     answerIndex: 0,
     keyNumber: 1,
@@ -41,7 +48,8 @@ const PUZZLES = {
     place: "3-6 時計",
     title: "第二の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
-    image: NAZO_IMAGES[2],
+    image: KEY_IMAGES[2],
+    arikaImage: PLACE_IMAGES[2],
     choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
     answerIndex: 0,
     keyNumber: 2,
@@ -53,7 +61,8 @@ const PUZZLES = {
     place: "わたり廊下",
     title: "第三の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
-    image: NAZO_IMAGES[3],
+    image: KEY_IMAGES[3],
+    arikaImage: PLACE_IMAGES[3],
     choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
     answerIndex: 0,
     keyNumber: 3,
@@ -65,7 +74,8 @@ const PUZZLES = {
     place: "3-5 うしろの黒板",
     title: "第四の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
-    image: NAZO_IMAGES[4],
+    image: KEY_IMAGES[4],
+    arikaImage: PLACE_IMAGES[4],
     choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
     answerIndex: 0,
     keyNumber: 4,
@@ -77,7 +87,8 @@ const PUZZLES = {
     place: "音楽室（しょうぞう画）",
     title: "第五の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
-    image: NAZO_IMAGES[5],
+    image: KEY_IMAGES[5],
+    arikaImage: PLACE_IMAGES[5],
     choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
     answerIndex: 0,
     keyNumber: 5,
