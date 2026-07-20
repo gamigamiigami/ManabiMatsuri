@@ -80,18 +80,40 @@
 
     const cards = document.getElementById("cards");
     cards.innerHTML = "";
+
+    // --- 設置用QR（各ポイントに掲示） ---
     POINT_ORDER.forEach(function (p) {
       const url = base + "point.html?p=" + p;
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">O中の封印を解け！</div>' +
+        '<div class="head">O中の封印を解け！【設置用】</div>' +
         "<h2>" + "①②③④⑤".charAt(p - 1) + " " + PUZZLES[p].place + "</h2>" +
         '<div class="qr" id="qr' + p + '"></div>' +
         '<div class="fallback">QRが読み取れないときは、サイトの「番号入力」に<br>' +
         '<span class="num">' + p + "</span><br>と入力してください</div>";
       cards.appendChild(card);
       new QRCode(document.getElementById("qr" + p), {
+        text: url,
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    });
+
+    // --- スタートQR（小謎プリントを解いた参加者に運営がランダムで配布） ---
+    POINT_ORDER.forEach(function (s) {
+      const url = base + "start.html?s=" + s;
+      const card = document.createElement("div");
+      card.className = "qr-card";
+      card.innerHTML =
+        '<div class="head">O中の封印を解け！【スタートQR・配布用】</div>' +
+        "<h2>スタート " + "①②③④⑤".charAt(s - 1) + "</h2>" +
+        '<div class="qr" id="sqr' + s + '"></div>' +
+        '<div class="fallback">小謎を解いた参加者に、①〜⑤を<br>かたよらないように配ってください<br>' +
+        "（読み込むと「手紙の続き」と最初の在り処謎が表示されます）</div>";
+      cards.appendChild(card);
+      new QRCode(document.getElementById("sqr" + s), {
         text: url,
         width: 200,
         height: 200,

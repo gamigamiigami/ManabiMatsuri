@@ -656,17 +656,22 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
   opacity: 0;
 }
 
-/* 応・時・親・子・学・鍵・在・謎・封・解 の10文字。サイズ・色・速さをバラバラに */
-.scene .runes span:nth-child(1)  { left: 6%;  font-size: 1.15rem; animation-duration: 22s; animation-delay: 0s; }
-.scene .runes span:nth-child(2)  { left: 16%; font-size: 1.6rem;  animation-duration: 30s; animation-delay: 6s;  color: rgba(155, 127, 232, 0.5);  text-shadow: 0 0 14px rgba(155, 127, 232, 0.6); }
-.scene .runes span:nth-child(3)  { left: 27%; font-size: 0.85rem; animation-duration: 25s; animation-delay: 12s; color: rgba(207, 79, 104, 0.45);  text-shadow: 0 0 12px rgba(207, 79, 104, 0.55); }
-.scene .runes span:nth-child(4)  { left: 37%; font-size: 1.35rem; animation-duration: 34s; animation-delay: 3s;  color: rgba(75, 191, 156, 0.45);  text-shadow: 0 0 12px rgba(75, 191, 156, 0.55); }
-.scene .runes span:nth-child(5)  { left: 47%; font-size: 1rem;    animation-duration: 28s; animation-delay: 15s; color: rgba(236, 224, 200, 0.5);  text-shadow: 0 0 12px rgba(236, 224, 200, 0.5); }
-.scene .runes span:nth-child(6)  { left: 57%; font-size: 1.8rem;  animation-duration: 26s; animation-delay: 9s;  color: rgba(212, 175, 106, 0.55); }
-.scene .runes span:nth-child(7)  { left: 67%; font-size: 0.95rem; animation-duration: 32s; animation-delay: 18s; color: rgba(155, 127, 232, 0.4);  text-shadow: 0 0 14px rgba(155, 127, 232, 0.55); }
-.scene .runes span:nth-child(8)  { left: 76%; font-size: 1.45rem; animation-duration: 27s; animation-delay: 21s; color: rgba(75, 191, 156, 0.38); text-shadow: 0 0 12px rgba(75, 191, 156, 0.5); }
-.scene .runes span:nth-child(9)  { left: 86%; font-size: 1.2rem;  animation-duration: 23s; animation-delay: 4s;  color: rgba(207, 79, 104, 0.4);  text-shadow: 0 0 12px rgba(207, 79, 104, 0.5); }
-.scene .runes span:nth-child(10) { left: 93%; font-size: 1.55rem; animation-duration: 31s; animation-delay: 13s; color: rgba(212, 175, 106, 0.45); }
+/* 応・時・親・子・学・鍵・在・謎・封・解（＋くり返し4文字）の14文字。
+   サイズ・色・速さをバラバラに。delayを散らして同時に画面に出るのは数文字だけ */
+.scene .runes span:nth-child(1)  { left: 4%;  font-size: 1.5rem;  animation-duration: 22s; animation-delay: 0s; }
+.scene .runes span:nth-child(2)  { left: 12%; font-size: 2.1rem;  animation-duration: 30s; animation-delay: 6s;  color: rgba(155, 127, 232, 0.5);  text-shadow: 0 0 16px rgba(155, 127, 232, 0.6); }
+.scene .runes span:nth-child(3)  { left: 21%; font-size: 1.1rem;  animation-duration: 25s; animation-delay: 12s; color: rgba(207, 79, 104, 0.45);  text-shadow: 0 0 12px rgba(207, 79, 104, 0.55); }
+.scene .runes span:nth-child(4)  { left: 29%; font-size: 1.7rem;  animation-duration: 34s; animation-delay: 3s;  color: rgba(75, 191, 156, 0.45);  text-shadow: 0 0 14px rgba(75, 191, 156, 0.55); }
+.scene .runes span:nth-child(5)  { left: 38%; font-size: 1.25rem; animation-duration: 28s; animation-delay: 15s; color: rgba(236, 224, 200, 0.5);  text-shadow: 0 0 12px rgba(236, 224, 200, 0.5); }
+.scene .runes span:nth-child(6)  { left: 46%; font-size: 2.4rem;  animation-duration: 26s; animation-delay: 9s;  color: rgba(212, 175, 106, 0.55); }
+.scene .runes span:nth-child(7)  { left: 55%; font-size: 1.15rem; animation-duration: 32s; animation-delay: 18s; color: rgba(155, 127, 232, 0.42); text-shadow: 0 0 14px rgba(155, 127, 232, 0.55); }
+.scene .runes span:nth-child(8)  { left: 63%; font-size: 1.85rem; animation-duration: 27s; animation-delay: 21s; color: rgba(75, 191, 156, 0.4);  text-shadow: 0 0 12px rgba(75, 191, 156, 0.5); }
+.scene .runes span:nth-child(9)  { left: 72%; font-size: 1.4rem;  animation-duration: 23s; animation-delay: 4s;  color: rgba(207, 79, 104, 0.42); text-shadow: 0 0 12px rgba(207, 79, 104, 0.5); }
+.scene .runes span:nth-child(10) { left: 80%; font-size: 2rem;    animation-duration: 31s; animation-delay: 13s; color: rgba(212, 175, 106, 0.48); }
+.scene .runes span:nth-child(11) { left: 88%; font-size: 1.3rem;  animation-duration: 29s; animation-delay: 24s; color: rgba(155, 127, 232, 0.45); text-shadow: 0 0 14px rgba(155, 127, 232, 0.55); }
+.scene .runes span:nth-child(12) { left: 94%; font-size: 1.7rem;  animation-duration: 24s; animation-delay: 8s;  color: rgba(236, 224, 200, 0.45); text-shadow: 0 0 12px rgba(236, 224, 200, 0.5); }
+.scene .runes span:nth-child(13) { left: 17%; font-size: 2.2rem;  animation-duration: 33s; animation-delay: 19s; color: rgba(212, 175, 106, 0.4); }
+.scene .runes span:nth-child(14) { left: 58%; font-size: 1.05rem; animation-duration: 26s; animation-delay: 27s; color: rgba(75, 191, 156, 0.42); text-shadow: 0 0 12px rgba(75, 191, 156, 0.5); }
 
 @keyframes runeRise {
   0% { transform: translateY(0) rotate(0deg); opacity: 0; }

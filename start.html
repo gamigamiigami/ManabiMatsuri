@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手紙の続き | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="runes">
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
+  </div>
+  <div class="vignette"></div>
+</div>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1>手紙の続きが届いた</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
+  <div class="card debug-banner" id="debugBanner" hidden>
+    <p>🔧 デバッグ表示中（チーム未登録・記録されません）</p>
+  </div>
+
+  <section class="card">
+    <h2>✉ Xからの手紙・続</h2>
+    <div class="letter" id="startMessage"></div>
+  </section>
+
+  <section class="card" id="arikaCard">
+    <h2>📜 在り処謎 ─ 最初の鍵 ─</h2>
+    <div class="arika" id="arikaText"></div>
+    <p class="note center">たどり着いた場所のQRコードを読み取ると、鍵謎が現れる。</p>
+  </section>
+
+  <div id="backHome">
+    <a class="btn" href="index.html">進捗を見る（ホームへ）</a>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fx.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const s = params.get("s"); // スタート地点（1〜5）
+  const isDebug = params.get("debug") === "1";
+
+  if (!PUZZLES[s]) {
+    location.replace("index.html");
+    return;
+  }
+
+  // 未登録 → チーム登録してからこの画面に戻ってくる
+  let team = Store.load();
+  if (!team) {
+    if (isDebug) {
+      team = { teamId: null, teamName: "（デバッグ）", points: {} };
+      document.getElementById("debugBanner").hidden = false;
+      document.getElementById("backHome").hidden = true;
+    } else {
+      location.replace("index.html?start=" + encodeURIComponent(s));
+      return;
+    }
+  }
+
+  // スタート地点を記録（現在地はまだ動かさない。最初のQRを読んだ時点で更新される）
+  if (!isDebug) {
+    if (!team.startPoint) {
+      team.startPoint = Number(s);
+      Store.save(team);
+    }
+    Store.send(team, "start", s, {});
+  }
+
+  document.getElementById("startMessage").textContent = START_MESSAGE;
+
+  // このスタート地点(s)へ導く在り処謎＝巡回順で1つ前のポイントの在り処謎
+  const idx = POINT_ORDER.indexOf(Number(s));
+  const prev = POINT_ORDER[(idx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
+  document.getElementById("arikaText").textContent = PUZZLES[prev].arika;
+
+  // 手紙が届いた瞬間の魔法演出
+  FX.burst({ count: 14 });
+})();
+</script>
+</body>
+</html>

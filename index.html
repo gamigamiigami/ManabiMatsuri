@@ -15,7 +15,7 @@
   <div class="fog fog1"></div>
   <div class="fog fog2"></div>
   <div class="runes">
-    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span>
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
   </div>
   <div class="vignette"></div>
 </div>
@@ -149,7 +149,8 @@
 <script>
 (function () {
   const params = new URLSearchParams(location.search);
-  const next = params.get("next"); // 登録後に向かうポイント番号（QR経由で未登録だった場合）
+  const next = params.get("next");   // 登録後に向かうポイント番号（QR経由で未登録だった場合）
+  const start = params.get("start"); // 登録後に向かうスタートQR画面（小謎クリア後のQR経由）
   let team = Store.load();
 
   function show(el) { el.hidden = false; }
@@ -207,7 +208,9 @@
     // 魔法陣が発動してから冒険がはじまる
     FX.circle();
     setTimeout(function () {
-      if (next && PUZZLES[next]) {
+      if (start && PUZZLES[start]) {
+        location.href = "start.html?s=" + start;
+      } else if (next && PUZZLES[next]) {
         location.href = "point.html?p=" + next;
       } else {
         renderHome();
