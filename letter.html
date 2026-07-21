@@ -13,26 +13,23 @@
   body.letter-page { display: flex; align-items: center; justify-content: center; }
   .letter-stage { position: relative; z-index: 1; width: 100%; max-width: 1180px; height: 100vh; max-height: 100vh; padding: 4px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; gap: 10px; }
 
+  /* PC・iPad（横向き）を基準に、画面に収まる範囲でできるだけ大きく・
+     約4:3の比率になるようにサイズを決める。calc()でお互いを参照して、
+     はみ出さない側（横長なら高さ、縦長なら幅）に自動で合わせる。 */
   .stage-frame {
     position: relative;
     margin: 0 auto;
-    width: min(92vw, 66.375vh);
-    aspect-ratio: 16 / 9;
-    max-height: 76vh;
+    width: min(90vw, calc(80vh * 4 / 3), 980px);
+    height: min(80vh, calc(90vw * 3 / 4), 720px);
   }
 
-  /* スマホ縦画面では横幅基準にすると手紙が低くなりすぎるため、
-     高さに余裕を持たせた縦長めのフレームに切り替える */
-  @media (max-width: 560px) {
-    .letter-stage { justify-content: flex-start; padding-top: 14px; }
+  /* iPad縦向きなど、画面が横より縦に長いときは比率を反転
+     （幅基準・高さ優先にして、縦の余白をしっかり使う） */
+  @media (orientation: portrait) {
     .stage-frame {
-      width: min(94vw, 68vh);
-      aspect-ratio: 3 / 4;
-      max-height: 68vh;
+      width: min(92vw, calc(84vh * 3 / 4), 900px);
+      height: min(84vh, calc(92vw * 4 / 3), 900px);
     }
-    .letter-body { font-size: clamp(0.72rem, 1.95vh, 0.95rem); line-height: 1.42; }
-    .letter-content { padding: 34px 22px 16px; }
-    .letter-cta { margin-top: 4px; }
   }
 
   .parchment-bg {
@@ -405,8 +402,8 @@
 
   .letter-body {
     font-family: "Yuji Boku", serif;
-    font-size: clamp(0.78rem, 2.3vh, 1.1rem);
-    line-height: 1.28;
+    font-size: clamp(0.85rem, 2.5vh, 1.5rem);
+    line-height: 1.32;
     white-space: pre-wrap;
     color: #34240f;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
