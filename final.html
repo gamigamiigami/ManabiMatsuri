@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>扉ひらきの謎 ― Xの部屋へ | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body.final-page {
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(155, 127, 232, 0.10), transparent 60%),
+      linear-gradient(178deg, #0c0714 0%, #070510 55%, #030208 100%);
+  }
+  body.final-page .vignette {
+    background: radial-gradient(ellipse 120% 90% at 50% 40%, transparent 38%, rgba(0, 0, 0, 0.82) 100%);
+  }
+
+  #finalCard { border-color: #4a2036; box-shadow: 0 24px 55px rgba(0, 0, 0, 0.7), 0 0 40px rgba(207, 79, 104, 0.12), inset 0 0 46px rgba(155, 127, 232, 0.05); }
+  #finalCard h2 { background: linear-gradient(135deg, #e08aa0, #cf4f68); color: #2a0812; }
+
+  .final-lead { text-align: center; font-family: "Yuji Syuku", serif; font-size: 1rem; color: var(--text-dim); margin-bottom: 18px; line-height: 1.9; }
+
+  .equation-row { display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; gap: clamp(3px, 1.2vw, 8px); margin: 14px 0 20px; transform-origin: center; }
+  .paren { font-family: "Yuji Syuku", serif; font-size: clamp(1.3rem, 5vw, 2.4rem); color: var(--gold); line-height: 1; flex: none; }
+
+  .key-chip { position: relative; width: clamp(38px, 11vw, 58px); height: clamp(38px, 11vw, 58px); flex: none; border-radius: 6px; background: #17102a; border: 1.5px solid #3a2d54; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); }
+  .key-chip .num { font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(0.9rem, 3vw, 1.5rem); color: var(--gold); text-shadow: 0 0 10px rgba(212, 175, 106, 0.4); }
+
+  .key-icon { position: absolute; top: 6px; left: 6px; width: 14px; height: 14px; display: none; }
+  @media (min-width: 420px) { .key-icon { display: block; } }
+  .key-icon::before { content: ""; position: absolute; top: 0; left: 0; width: 8px; height: 8px; border: 1.5px solid var(--gold-deep); border-radius: 50%; }
+  .key-icon::after { content: ""; position: absolute; top: 6px; left: 6px; width: 8px; height: 2px; background: var(--gold-deep); box-shadow: 6px 1px 0 -0.5px var(--gold-deep); }
+
+  .op-symbol { position: relative; width: clamp(28px, 8vw, 46px); height: clamp(28px, 8vw, 46px); flex: none; }
+  .op-symbol .star-shape { position: absolute; inset: 2px; border: 1.4px solid rgba(212, 175, 106, 0.75); }
+  .op-symbol .star-shape:nth-child(1) { transform: rotate(0deg); }
+  .op-symbol .star-shape:nth-child(2) { transform: rotate(24deg); }
+  .op-symbol .star-shape:nth-child(3) { transform: rotate(48deg); }
+  .op-symbol .star-shape:nth-child(4) { transform: rotate(72deg); }
+  .op-symbol.wreath { border-radius: 50%; border: 1.4px solid rgba(155, 127, 232, 0.7); background: repeating-conic-gradient(rgba(155, 127, 232, 0.55) 0deg 6deg, transparent 6deg 18deg); -webkit-mask-image: radial-gradient(circle, transparent 62%, black 64%); mask-image: radial-gradient(circle, transparent 62%, black 64%); }
+
+  .equals { font-family: "Yuji Syuku", serif; font-size: 2rem; color: var(--text-dim); margin: 0 4px; }
+
+  .digits-hint { text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; }
+  .digit-inputs { display: flex; justify-content: center; gap: 10px; margin: 8px 0 18px; }
+  .digit-inputs input { width: 56px; height: 66px; text-align: center; font-family: "Shippori Mincho B1", serif; font-size: 1.8rem; padding: 0; }
+
+  .lock-shake { animation: lockShake 0.5s; }
+  @keyframes lockShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+
+  .backlash-flash { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: radial-gradient(circle at 50% 40%, rgba(207, 79, 104, 0.35), transparent 60%); opacity: 0; }
+  .backlash-flash.go { animation: backlashGo 0.6s ease-out; }
+  @keyframes backlashGo { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* ===== Xの部屋の扉（成功時に開く） ===== */
+  .door-scene { position: relative; width: 100%; max-width: 320px; height: 220px; margin: 6px auto 18px; perspective: 1000px; }
+  .door-frame { position: absolute; inset: 0; border: 3px solid #3a2d54; border-radius: 8px 8px 4px 4px; background: #0a0714; box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7); overflow: hidden; }
+  .door-glow { position: absolute; inset: 8px; background: radial-gradient(ellipse 70% 90% at 50% 50%, rgba(212, 175, 106, 0.9), rgba(155, 127, 232, 0.4) 55%, transparent 80%); opacity: 0; transition: opacity 1.2s ease; }
+  .door-scene.open .door-glow { opacity: 1; }
+  .door-leaf { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(180deg, #241633, #150c22 60%, #0c0716); border-right: 1px solid rgba(212, 175, 106, 0.15); transition: transform 1.3s cubic-bezier(0.5, 0, 0.2, 1); transform-style: preserve-3d; }
+  .door-leaf.left { left: 0; transform-origin: 0% 50%; }
+  .door-leaf.right { right: 0; border-right: none; border-left: 1px solid rgba(212, 175, 106, 0.15); transform-origin: 100% 50%; }
+  .door-scene.open .door-leaf.left { transform: rotateY(-108deg); }
+  .door-scene.open .door-leaf.right { transform: rotateY(108deg); }
+  .door-sigil { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px 0 0 -35px; border: 1.5px solid rgba(212, 175, 106, 0.5); border-radius: 50%; z-index: 2; }
+  .door-sigil::before { content: "X"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: "Shippori Mincho B1", serif; font-size: 1.6rem; color: var(--gold); text-shadow: 0 0 14px rgba(212, 175, 106, 0.6); }
+  .door-scene.open .door-sigil { opacity: 0; transition: opacity 0.4s ease; }
+
+  .success-msg { text-align: center; font-family: "Yuji Syuku", serif; font-size: 1.05rem; line-height: 2.1; white-space: pre-wrap; color: #ecdff0; text-shadow: 0 0 14px rgba(155, 127, 232, 0.35); }
+</style>
+</head>
+<body class="final-page">
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="runes">
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
+  </div>
+  <div class="vignette"></div>
+</div>
+
+<div class="backlash-flash" id="backlashFlash"></div>
+
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">最後の扉の前で</div>
+    <h1>扉ひらきの謎</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <div class="stars" id="stars"></div>
+
+  <!-- デバッグ表示中バナー -->
+  <div class="card debug-banner" id="debugBanner" hidden>
+    <p>🔧 デバッグ表示中（記録されません）</p>
+  </div>
+
+  <!-- 5つの鍵が未集合の場合 -->
+  <section class="card" id="lockedCard" hidden>
+    <h2>まだ扉は開かない</h2>
+    <p class="note center">5つの鍵がすべてそろうまで、この先には進めない。<br>まずは各封印を解いてこよう。</p>
+    <a class="btn" href="index.html">進捗を見る（ホームへ）</a>
+    <button class="btn ghost small" id="debugCompleteBtn" hidden style="margin-top:10px;">（デバッグ）5つの鍵を解決済みにする</button>
+  </section>
+
+  <button class="btn ghost small" id="debugResetBtn" hidden style="max-width:480px; margin:20px auto 0; display:block;">（デバッグ）最終謎を未解決に戻す</button>
+
+  <!-- 到着演出：3通目の手紙（FINALE_MESSAGE）を読んでから挑戦へ -->
+  <section class="card" id="arrivalCard" hidden>
+    <h2>✉ Xからの手紙・参</h2>
+    <div class="letter" id="arrivalLetter"></div>
+    <button class="btn gold" id="beginFinalBtn" style="margin-top:16px;">→ 扉ひらきの謎に挑戦する</button>
+  </section>
+
+  <!-- 最終謎 -->
+  <section class="card" id="finalCard" hidden>
+    <h2>扉ひらきの謎</h2>
+    <p class="final-lead">5つの鍵を、正しい順に組み合わせよ。<br>答えは3桁の数。</p>
+
+    <div class="equation-row">
+      <span class="paren">(</span>
+      <div class="key-chip"><span class="key-icon"></span><span class="num" id="k1"></span></div>
+      <div class="key-chip"><span class="key-icon"></span><span class="num" id="k2"></span></div>
+      <div class="op-symbol">
+        <div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div>
+      </div>
+      <div class="key-chip"><span class="key-icon"></span><span class="num" id="k3"></span></div>
+      <div class="key-chip"><span class="key-icon"></span><span class="num" id="k4"></span></div>
+      <span class="paren">)</span>
+      <div class="op-symbol wreath"></div>
+      <div class="key-chip"><span class="key-icon"></span><span class="num" id="k5"></span></div>
+    </div>
+
+    <div class="equals" style="text-align:center;">＝ ？？？</div>
+
+    <div class="digits-hint">答えの3桁を入力してください</div>
+    <div class="digit-inputs" id="digitInputs">
+      <input type="text" inputmode="numeric" maxlength="1" class="digit">
+      <input type="text" inputmode="numeric" maxlength="1" class="digit">
+      <input type="text" inputmode="numeric" maxlength="1" class="digit">
+    </div>
+
+    <button class="btn gold" id="submitBtn">扉に数字をきざむ</button>
+    <div class="feedback" id="feedback"></div>
+
+    <div class="hint-box" id="hintBox" hidden>
+      <span class="tag">⚠ 手がかり</span>
+      <div id="hintText"></div>
+    </div>
+    <button class="btn ghost small" id="hintBtn" style="margin-top:14px;">⚠ 手がかりを見る</button>
+    <p class="note">どうしても解けないときは、近くのスタッフに声をかけてね。</p>
+  </section>
+
+  <!-- 成功：扉が開く -->
+  <section class="card" id="successCard" hidden>
+    <h2>扉、開く</h2>
+    <div class="door-scene" id="doorScene">
+      <div class="door-frame">
+        <div class="door-glow"></div>
+        <div class="door-leaf left"></div>
+        <div class="door-leaf right"></div>
+      </div>
+      <div class="door-sigil"></div>
+    </div>
+    <div class="success-msg" id="successMsg"></div>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fx.js"></script>
+<script>
+(function () {
+  document.body.classList.add("final-page");
+
+  const isDebug = new URLSearchParams(location.search).get("debug") === "1";
+  if (isDebug) {
+    document.getElementById("debugBanner").hidden = false;
+    document.getElementById("debugCompleteBtn").hidden = false;
+    document.getElementById("debugResetBtn").hidden = false;
+  }
+
+  const team = Store.load();
+  if (!team) {
+    location.replace("index.html");
+    return;
+  }
+
+  document.getElementById("stars").innerHTML = POINT_ORDER.map(function (q) {
+    const solved = team.points[q] && team.points[q].solvedAt;
+    return solved ? '<span class="on">★</span>' : '<span class="off">☆</span>';
+  }).join("");
+
+  const allSolved = POINT_ORDER.every(function (q) {
+    return team.points[q] && team.points[q].solvedAt;
+  });
+
+  if (!allSolved) {
+    document.getElementById("lockedCard").hidden = false;
+
+    document.getElementById("debugCompleteBtn").addEventListener("click", function () {
+      POINT_ORDER.forEach(function (q) {
+        if (!team.points[q]) team.points[q] = {};
+        team.points[q].solvedAt = new Date().toISOString();
+      });
+      Store.save(team);
+      location.reload();
+    });
+
+    return;
+  }
+
+  const finalState = (function () {
+    if (!team.finalGate) team.finalGate = { solvedAt: null, wrong: 0, hintClicked: false };
+    return team.finalGate;
+  })();
+
+  document.getElementById("arrivalLetter").textContent = FINALE_MESSAGE;
+
+  if (finalState.solvedAt) {
+    showSuccess();
+  } else {
+    document.getElementById("arrivalCard").hidden = false;
+  }
+
+  document.getElementById("beginFinalBtn").addEventListener("click", function () {
+    document.getElementById("arrivalCard").hidden = true;
+    document.getElementById("finalCard").hidden = false;
+  });
+
+  document.getElementById("debugResetBtn").addEventListener("click", function () {
+    finalState.solvedAt = null;
+    finalState.wrong = 0;
+    finalState.hintClicked = false;
+    Store.save(team);
+    location.reload();
+  });
+
+  if (finalState.solvedAt) return;
+
+  POINT_ORDER.forEach(function (q) {
+    document.getElementById("k" + q).textContent = PUZZLES[q].keyNumber;
+  });
+
+  const hintBox = document.getElementById("hintBox");
+  const hintBtn = document.getElementById("hintBtn");
+  hintBtn.addEventListener("click", function () {
+    document.getElementById("hintText").textContent = FINAL_HINT;
+    hintBox.hidden = false;
+    hintBtn.hidden = true;
+    if (!finalState.hintClicked) {
+      finalState.hintClicked = true;
+      Store.save(team);
+    }
+    if (!isDebug) Store.send(team, "final_hint", "final", {});
+  });
+
+  const digits = Array.prototype.slice.call(document.querySelectorAll(".digit"));
+  digits.forEach(function (input, i) {
+    input.addEventListener("input", function () {
+      input.value = input.value.replace(/[^0-9]/g, "");
+      if (input.value && digits[i + 1]) digits[i + 1].focus();
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && !input.value && digits[i - 1]) digits[i - 1].focus();
+    });
+  });
+
+  const feedback = document.getElementById("feedback");
+  const finalCard = document.getElementById("finalCard");
+  const backlash = document.getElementById("backlashFlash");
+
+  document.getElementById("submitBtn").addEventListener("click", function () {
+    const code = digits.map(function (d) { return d.value; }).join("");
+    if (code.length < 3) {
+      feedback.className = "feedback ng";
+      feedback.textContent = "3桁すべて入力してね。";
+      return;
+    }
+    if (code === FINAL_ANSWER) {
+      finalState.solvedAt = new Date().toISOString();
+      if (!isDebug) {
+        Store.save(team);
+        Store.send(team, "final_correct", "final", {});
+      }
+      feedback.className = "feedback ok";
+      feedback.textContent = "封印が、音をたてて崩れていく――";
+      FX.circle();
+      setTimeout(showSuccess, 1400);
+    } else {
+      finalState.wrong += 1;
+      if (!isDebug) {
+        Store.save(team);
+        Store.send(team, "final_wrong", "final", { code: code });
+      }
+      feedback.className = "feedback ng";
+      feedback.textContent = "扉は、まだ静かに閉じたまま。";
+      finalCard.classList.add("lock-shake");
+      backlash.classList.remove("go");
+      void backlash.offsetWidth;
+      backlash.classList.add("go");
+      setTimeout(function () { finalCard.classList.remove("lock-shake"); }, 500);
+      digits.forEach(function (d) { d.value = ""; });
+      digits[0].focus();
+    }
+  });
+
+  function showSuccess() {
+    document.getElementById("finalCard").hidden = true;
+    document.getElementById("successCard").hidden = false;
+    document.getElementById("successMsg").textContent = FINAL_SUCCESS_MESSAGE;
+    setTimeout(function () {
+      document.getElementById("doorScene").classList.add("open");
+    }, 250);
+  }
+})();
+</script>
+</body>
+</html>
