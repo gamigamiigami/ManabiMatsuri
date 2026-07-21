@@ -168,6 +168,12 @@
     </div>
     <div class="success-msg" id="successMsg"></div>
   </section>
+
+  <!-- 4通目の手紙（扉を開けたあとに表示） -->
+  <section class="card" id="letterCard" hidden>
+    <h2>✉ Xからの手紙・四</h2>
+    <div class="letter" id="letterFour"></div>
+  </section>
 </div>
 
 <script src="js/config.js"></script>
@@ -220,7 +226,7 @@
     return team.finalGate;
   })();
 
-  document.getElementById("arrivalLetter").textContent = FINALE_MESSAGE;
+  document.getElementById("arrivalLetter").textContent = ARRIVAL_MESSAGE;
 
   if (finalState.solvedAt) {
     showSuccess();
@@ -314,9 +320,13 @@
     document.getElementById("finalCard").hidden = true;
     document.getElementById("successCard").hidden = false;
     document.getElementById("successMsg").textContent = FINAL_SUCCESS_MESSAGE;
+    document.getElementById("letterFour").textContent = FINALE_MESSAGE;
     setTimeout(function () {
       document.getElementById("doorScene").classList.add("open");
     }, 250);
+    setTimeout(function () {
+      document.getElementById("letterCard").hidden = false;
+    }, 1400);
   }
 })();
 </script>
