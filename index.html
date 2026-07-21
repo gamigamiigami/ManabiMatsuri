@@ -73,17 +73,7 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
-  <!-- プロローグ（Xからの手紙）。未登録時は封筒→開封の演出つきで表示 -->
-  <section class="card" id="prologueCard" hidden>
-    <h2>✉ Xからの手紙</h2>
-    <div class="envelope" id="envelope">
-      <div class="seal">X</div>
-      <button class="btn gold" id="openLetterBtn">手紙をひらく</button>
-    </div>
-    <div class="letter" id="prologueText" hidden></div>
-  </section>
-
-  <!-- チーム登録（未登録のときだけ表示） -->
+  <!-- チーム登録（未登録のときだけ表示。手紙は letter.html で読んでからここに来る） -->
   <section id="register" class="card" hidden>
     <h2>調査チーム登録</h2>
     <p style="font-size:0.92rem;">親子ペアで1チーム。チーム名を決めて、調査を開始しよう。</p>
@@ -115,11 +105,10 @@
       </div>
     </div>
 
-    <!-- プロローグの読みかえし -->
+    <!-- プロローグの読みかえし（手紙演出をもう一度見られる） -->
     <div class="card">
       <h2>✉ Xからの手紙</h2>
-      <div class="letter" id="prologueText2" hidden></div>
-      <button class="btn ghost small" id="togglePrologue">手紙をひらく</button>
+      <a class="btn ghost small" href="letter.html?replay=1">手紙を読みかえす</a>
     </div>
 
     <div class="card">
@@ -159,7 +148,6 @@
 
   function renderHome() {
     document.getElementById("register").hidden = true;
-    document.getElementById("prologueCard").hidden = true; // 手紙はホーム内の読みかえしに一本化
     show(document.getElementById("home"));
     document.getElementById("welcome").textContent = team.teamName + " の調査記録";
 
@@ -235,29 +223,16 @@
     location.href = "point.html?p=" + n + "&via=manual";
   });
 
-  // プロローグ（Xからの手紙）：封筒をタップすると開封
-  document.getElementById("prologueText").textContent = PROLOGUE;
-  document.getElementById("prologueText2").textContent = PROLOGUE;
-  document.getElementById("openLetterBtn").addEventListener("click", function () {
-    // 封蝋が解けて光が弾ける
-    const seal = document.querySelector("#envelope .seal");
-    const c = FX.centerOf(seal);
-    FX.burst({ x: c.x, y: c.y, count: 16 });
-    setTimeout(function () {
-      document.getElementById("envelope").hidden = true;
-      document.getElementById("prologueText").hidden = false;
-    }, 350);
-  });
-  document.getElementById("togglePrologue").addEventListener("click", function () {
-    const letter = document.getElementById("prologueText2");
-    letter.hidden = !letter.hidden;
-    this.textContent = letter.hidden ? "手紙をひらく" : "手紙をとじる";
-  });
-
   if (team) {
     renderHome();
   } else {
-    show(document.getElementById("prologueCard")); // 初回はまず手紙から
+    // 手紙をまだ読んでいなければ、まず letter.html へ（QRのパラメータを引き継ぐ）
+    let letterSeen = false;
+    try { letterSeen = localStorage.getItem("fuin_letter_seen") === "1"; } catch (e) {}
+    if (!letterSeen) {
+      location.replace("letter.html" + location.search);
+      return;
+    }
     show(document.getElementById("register"));
   }
 })();
