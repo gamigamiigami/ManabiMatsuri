@@ -184,7 +184,7 @@
 (function () {
   document.body.classList.add("final-page");
 
-  const isDebug = new URLSearchParams(location.search).get("debug") === "1";
+  const isDebug = new URLSearchParams(location.search).get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   if (isDebug) {
     document.getElementById("debugBanner").hidden = false;
     document.getElementById("debugCompleteBtn").hidden = false;

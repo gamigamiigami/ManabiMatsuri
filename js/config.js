@@ -14,4 +14,9 @@ const CONFIG = {
 
   // ダッシュボードの自動更新間隔（秒）
   DASHBOARD_POLL_SECONDS: 10,
+
+  // デバッグ機能（?debug=1 での謎プレビュー、final.htmlの「デバッグ用」
+  // ボタンなど）を使えるかどうか。本番前に false に変えるだけで、
+  // サイト全体のデバッグ機能が一括で無効になる。
+  DEBUG_ENABLED: true,
 };

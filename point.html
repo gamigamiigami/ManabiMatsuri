@@ -84,7 +84,7 @@
   const params = new URLSearchParams(location.search);
   const p = params.get("p");
   const via = params.get("via") === "manual" ? "manual" : "qr";
-  const isDebug = params.get("debug") === "1";
+  const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
 
   if (!PUZZLES[p]) {
     location.replace("index.html");

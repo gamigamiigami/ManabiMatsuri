@@ -76,7 +76,7 @@
 (function () {
   const params = new URLSearchParams(location.search);
   const d = params.get("d");
-  const isDebug = params.get("debug") === "1";
+  const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
 
   if (!DUMMY_PUZZLES[d]) {
     location.replace("index.html");

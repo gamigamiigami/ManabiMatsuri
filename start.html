@@ -56,7 +56,7 @@
 (function () {
   const params = new URLSearchParams(location.search);
   const s = params.get("s"); // スタート地点（1〜5）
-  const isDebug = params.get("debug") === "1";
+  const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
 
   if (!PUZZLES[s]) {
     location.replace("index.html");
