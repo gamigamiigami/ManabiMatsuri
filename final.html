@@ -109,7 +109,7 @@
 
   <button class="btn ghost small" id="debugResetBtn" hidden style="max-width:480px; margin:20px auto 0; display:block;">（デバッグ）最終謎を未解決に戻す</button>
 
-  <!-- 到着演出：3通目の手紙（FINALE_MESSAGE）を読んでから挑戦へ -->
+  <!-- 到着演出：3通目の手紙（ARRIVAL_MESSAGE）を読んでから挑戦へ -->
   <section class="card" id="arrivalCard" hidden>
     <h2>✉ Xからの手紙・参</h2>
     <div class="letter" id="arrivalLetter"></div>
@@ -182,8 +182,6 @@
 <script src="js/fx.js"></script>
 <script>
 (function () {
-  document.body.classList.add("final-page");
-
   const isDebug = new URLSearchParams(location.search).get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   if (isDebug) {
     document.getElementById("debugBanner").hidden = false;
