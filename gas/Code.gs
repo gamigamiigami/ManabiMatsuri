@@ -135,7 +135,7 @@ function aggregate_() {
     t.lastEventAt = ts;
 
     if (type === "register") t.registeredAt = ts;
-    if (point) t.lastPoint = point;
+    if (point && type !== "start") t.lastPoint = point;
     if (type === "correct" && point) t.solved[point] = ts;
     if (type === "wrong" && point) t.wrong[point] = (t.wrong[point] || 0) + 1;
     if ((type === "hint_click" || type === "hint_auto") && point) {

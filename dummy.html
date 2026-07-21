@@ -34,7 +34,10 @@
   <!-- ゲート：これはダミーだ -->
   <section class="card" id="gateCard" hidden>
     <h2>🃏 これはダミーだ</h2>
-    <div class="question">封印の鍵は、ここにはない。\nこの謎を解いても、封印は解けない。\n\n……それでも解く？</div>
+    <div class="question">封印の鍵は、ここにはない。
+この謎を解いても、封印は解けない。
+
+……それでも解く？</div>
     <button class="btn gold" id="challengeBtn">それでも解く</button>
     <a class="btn ghost small" href="index.html">やめておく（ホームへ）</a>
     <p class="note center" id="gateCount"></p>
@@ -123,9 +126,6 @@
   // ---------- ゲート表示 ----------
   document.getElementById("gateCard").hidden = false;
   document.getElementById("gateCount").textContent = countText();
-  // \n を実改行に（HTML直書きのため）
-  const gateQ = document.querySelector("#gateCard .question");
-  gateQ.textContent = gateQ.textContent.replace(/\\n/g, "\n");
 
   document.getElementById("challengeBtn").addEventListener("click", function () {
     document.getElementById("gateCard").hidden = true;

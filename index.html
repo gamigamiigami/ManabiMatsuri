@@ -75,13 +75,13 @@
 
   <!-- チーム登録（未登録のときだけ表示。手紙は letter.html で読んでからここに来る） -->
   <section id="register" class="card" hidden>
-    <h2>調査チーム登録</h2>
-    <p style="font-size:0.92rem;">親子ペアで1チーム。チーム名を決めて、調査を開始しよう。</p>
+    <h2>冒険チーム登録</h2>
+    <p style="font-size:0.92rem;">親子ペアで1チーム。チーム名を決めて、冒険を開始しよう。</p>
     <label class="field">チーム名（必須）</label>
     <input type="text" id="teamName" maxlength="20" placeholder="例）チーム やまだ" autocomplete="off">
     <label class="field">あなたの名前</label>
     <input type="text" id="playerName" maxlength="20" placeholder="例）山田 太郎" autocomplete="off">
-    <button class="btn gold" id="registerBtn" style="margin-top:16px;">▶ 調査を開始する</button>
+    <button class="btn gold" id="registerBtn" style="margin-top:16px;">▶ 冒険を開始する</button>
     <p class="note">※ 入力した名前は運営の進捗確認のためだけに使い、イベント終了後に削除します。</p>
   </section>
 
@@ -119,7 +119,7 @@
     </div>
 
     <div class="card">
-      <h2>捜査の手順</h2>
+      <h2>冒険の手順</h2>
       <ol class="howto">
         <li>プリントに書いてある<strong>スタート地点</strong>へ向かう</li>
         <li>その場所の<strong>QRコード</strong>を読み取る</li>
@@ -149,7 +149,7 @@
   function renderHome() {
     document.getElementById("register").hidden = true;
     show(document.getElementById("home"));
-    document.getElementById("welcome").textContent = team.teamName + " の調査記録";
+    document.getElementById("welcome").textContent = team.teamName + " の冒険記録";
 
     const starsEl = document.getElementById("stars");
     starsEl.innerHTML = POINT_ORDER.map(function (p) {
