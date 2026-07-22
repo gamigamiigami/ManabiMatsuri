@@ -23,29 +23,7 @@
 
   .final-lead { text-align: center; font-family: "Yuji Syuku", serif; font-size: 1rem; color: var(--text-dim); margin-bottom: 18px; line-height: 1.9; }
 
-  .equation-wrap { width: 100%; overflow: hidden; display: flex; justify-content: center; }
-  .equation-row { display: flex; align-items: flex-start; flex-wrap: nowrap; flex: none; gap: clamp(3px, 1.2vw, 8px); width: max-content; margin: 14px 0 20px; transform-origin: center top; }
-  .paren { font-family: "Yuji Syuku", serif; font-size: clamp(1.3rem, 5vw, 2.4rem); color: var(--gold); line-height: 1; flex: none; display: flex; align-items: center; height: clamp(38px, 11vw, 58px); }
-  .op-chip { margin-top: calc((clamp(38px, 11vw, 58px) - clamp(28px, 8vw, 46px)) / 2); }
-
-  .key-chip-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: none; }
-  .key-chip-label { font-family: "Zen Kaku Gothic New", sans-serif; font-size: clamp(0.55rem, 1.6vw, 0.72rem); color: var(--text-dim); letter-spacing: 0.02em; white-space: nowrap; }
-  .key-chip { position: relative; width: clamp(38px, 11vw, 58px); height: clamp(38px, 11vw, 58px); flex: none; border-radius: 6px; background: #17102a; border: 1.5px solid #3a2d54; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); }
-  .key-chip .num { font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(0.9rem, 3vw, 1.5rem); color: var(--gold); text-shadow: 0 0 10px rgba(212, 175, 106, 0.4); }
-  input.keynum-input { width: 100%; height: 1.4em; padding: 0; margin: 0; border: none; border-radius: 3px; background: transparent; text-align: center; box-shadow: none; }
-  input.keynum-input:focus { outline: none; border: none; box-shadow: 0 0 0 2px rgba(212, 175, 106, 0.5); }
-
-  .key-icon { position: absolute; top: 6px; left: 6px; width: 14px; height: 14px; display: none; }
-  @media (min-width: 420px) { .key-icon { display: block; } }
-  .key-icon::before { content: ""; position: absolute; top: 0; left: 0; width: 8px; height: 8px; border: 1.5px solid var(--gold-deep); border-radius: 50%; }
-  .key-icon::after { content: ""; position: absolute; top: 6px; left: 6px; width: 8px; height: 2px; background: var(--gold-deep); box-shadow: 6px 1px 0 -0.5px var(--gold-deep); }
-
-  .op-symbol { position: relative; width: clamp(28px, 8vw, 46px); height: clamp(28px, 8vw, 46px); flex: none; }
-  .op-chip { position: relative; width: clamp(28px, 8vw, 46px); height: clamp(28px, 8vw, 46px); flex: none; border-radius: 50%; border: 1.5px solid rgba(155, 127, 232, 0.7); background: #17102a; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); }
-  input.op-input { width: 100%; height: 100%; padding: 0; margin: 0; border: none; border-radius: 50%; background: transparent; text-align: center; font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(0.9rem, 3vw, 1.5rem); color: #9b7fe8; text-shadow: 0 0 10px rgba(155, 127, 232, 0.4); box-shadow: none; }
-  input.op-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(155, 127, 232, 0.5); }
-
-  .equals { font-family: "Yuji Syuku", serif; font-size: 2rem; color: var(--text-dim); margin: 0 4px; }
+  .tobira-img { display: block; width: 100%; max-width: 480px; margin: 14px auto 20px; border-radius: 8px; }
 
   .digits-hint { text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; }
   .digit-inputs { display: flex; justify-content: center; gap: 10px; margin: 8px 0 18px; }
@@ -123,25 +101,11 @@
   <!-- 最終謎 -->
   <section class="card" id="finalCard" hidden>
     <h2>扉の謎</h2>
-    <p class="final-lead">5つの鍵を、正しい順に組み合わせよ。<br>答えは3桁の数。</p>
+    <p class="final-lead">5つの鍵を、正しい順に組み合わせよ。</p>
 
-    <div class="equation-wrap" id="equationWrap">
-      <div class="equation-row" id="equationRow">
-        <span class="paren">(</span>
-        <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k1"></div><span class="key-chip-label">鍵1</span></div>
-        <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k2"></div><span class="key-chip-label">鍵2</span></div>
-        <div class="op-chip op-symbol"><input type="text" maxlength="1" class="op-input" id="op1" placeholder="？"></div>
-        <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k3"></div><span class="key-chip-label">鍵3</span></div>
-        <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k4"></div><span class="key-chip-label">鍵4</span></div>
-        <span class="paren">)</span>
-        <div class="op-chip op-symbol"><input type="text" maxlength="1" class="op-input" id="op2" placeholder="？"></div>
-        <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k5"></div><span class="key-chip-label">鍵5</span></div>
-      </div>
-    </div>
+    <img class="tobira-img" src="images/tobira.png" alt="扉の謎の魔法陣">
 
-    <div class="equals" style="text-align:center;">＝ ？？？</div>
-
-    <div class="digits-hint">答えの3桁を入力してください</div>
+    <div class="digits-hint">答えの3桁を入力せよ</div>
     <div class="digit-inputs" id="digitInputs">
       <input type="text" inputmode="numeric" maxlength="1" class="digit">
       <input type="text" inputmode="numeric" maxlength="1" class="digit">
@@ -244,7 +208,6 @@
   document.getElementById("beginFinalBtn").addEventListener("click", function () {
     document.getElementById("arrivalCard").hidden = true;
     document.getElementById("finalCard").hidden = false;
-    fitEquationRow();
   });
 
   document.getElementById("debugResetBtn").addEventListener("click", function () {
@@ -257,51 +220,7 @@
 
   if (finalState.solvedAt) return;
 
-  // 鍵の数字と魔法陣（演算子）はプレイヤーが自分で入力する
-  var op1 = document.getElementById("op1");
-  var op2 = document.getElementById("op2");
-  var allEqInputs = [
-    document.getElementById("k1"),
-    document.getElementById("k2"),
-    op1,
-    document.getElementById("k3"),
-    document.getElementById("k4"),
-    op2,
-    document.getElementById("k5")
-  ];
-  allEqInputs.forEach(function (input, i) {
-    var isOp = (input === op1 || input === op2);
-    input.addEventListener("input", function () {
-      if (isOp) {
-        input.value = input.value.replace(/[^+\-×✕*÷／/]/g, "");
-      } else {
-        input.value = input.value.replace(/[^0-9]/g, "");
-      }
-      if (input.value && allEqInputs[i + 1]) allEqInputs[i + 1].focus();
-    });
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Backspace" && !input.value && allEqInputs[i - 1]) allEqInputs[i - 1].focus();
-    });
-  });
 
-  // 数式がカードの幅からはみ出すときは自動で縮小してぴったり収める
-  function fitEquationRow() {
-    const wrap = document.getElementById("equationWrap");
-    const row = document.getElementById("equationRow");
-    if (!wrap || !row) return;
-    row.style.transform = "scale(1)";
-    const wrapWidth = wrap.clientWidth;
-    const rowWidth = row.scrollWidth;
-    if (rowWidth > wrapWidth) {
-      const scale = wrapWidth / rowWidth;
-      row.style.transform = "scale(" + scale + ")";
-    }
-  }
-  fitEquationRow();
-  window.addEventListener("resize", fitEquationRow);
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(fitEquationRow);
-  }
 
   const hintBox = document.getElementById("hintBox");
   const hintBtn = document.getElementById("hintBtn");
