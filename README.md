@@ -66,13 +66,12 @@ GAS_URL: "https://script.google.com/macros/s/XXXX/exec",
 `js/puzzles.js` を開き、各ポイントの以下を書き換えるだけです（コードの知識は不要）：
 
 - `question` … 鍵謎の問題文（`\n` で改行）
-- `choices` … 4択の選択肢（4つ）
-- `answerIndex` … 正解の番号（0=A, 1=B, 2=C, 3=D）
-- `keyNumber` … 正解時に表示される「鍵の数字」（③大謎の計算で使う数字）
+- `choices` … 4択の選択肢（4つ。数字の1〜4で統一）
+- `answerIndex` … 正解の番号（0=1, 1=2, 2=3, 3=4）。正解時に表示される「鍵の数字」は `choices[answerIndex]` の値がそのまま使われる（③大謎の計算で使う数字）
 - `smallHint` … 小ヒント（答えに直結しない手がかり程度に）
-- `arika` … 在り処謎（次の場所への誘導文。鍵謎に正解するまで表示されません）
+- `arikaImage` … 在り処謎の画像（次の場所への誘導。鍵謎に正解するまで表示されません。テキストの説明文はなし・画像のみ）
 
-画像を使いたい場合は `images/` フォルダを作って画像を入れ、`image: "images/xxx.png"` を指定。
+画像を使いたい場合は `images/` フォルダに `KeyA.png`〜`KeyE.png`（鍵謎の画像）、`PlaceA.png`〜`PlaceE.png`（在り処謎の画像）を入れる。
 
 ## 当日の運用
 

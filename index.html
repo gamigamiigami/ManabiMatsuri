@@ -183,7 +183,7 @@
       const row = document.getElementById("keysRow");
       row.innerHTML = POINT_ORDER.map(function (p) {
         return (
-          '<div class="k"><span class="n">' + PUZZLES[p].keyNumber +
+          '<div class="k"><span class="n">' + PUZZLES[p].choices[PUZZLES[p].answerIndex] +
           '</span><span class="p">鍵 ' + p + "</span></div>"
         );
       }).join("");

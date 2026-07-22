@@ -253,7 +253,7 @@
   if (finalState.solvedAt) return;
 
   POINT_ORDER.forEach(function (q) {
-    document.getElementById("k" + q).textContent = PUZZLES[q].keyNumber;
+    document.getElementById("k" + q).textContent = PUZZLES[q].choices[PUZZLES[q].answerIndex];
   });
 
   const hintBox = document.getElementById("hintBox");

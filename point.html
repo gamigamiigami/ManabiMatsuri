@@ -61,7 +61,6 @@
       </svg>
       <div class="lead" id="keyLead">─ 封印の鍵を手に入れた ─</div>
       <div class="keynum" id="keyNumber"></div>
-      <p class="note" id="keyNote">この数字は最後の扉で使うよ。忘れないようにメモしてね！</p>
     </div>
   </section>
 
@@ -120,13 +119,10 @@
   // 初めての正解直後だけ「ゲット演出」、再訪時は「解除済み」の確認表示にする
   function showSolved(justSolved) {
     document.getElementById("puzzleCard").hidden = true;
-    document.getElementById("keyNumber").textContent = puzzle.keyNumber;
+    document.getElementById("keyNumber").textContent = puzzle.choices[puzzle.answerIndex];
     document.getElementById("keyLead").textContent = justSolved
       ? "─ 封印の鍵 " + p + " を手に入れた ─"
       : "─ この封印は解除ずみ ─";
-    document.getElementById("keyNote").textContent = justSolved
-      ? "この数字は最後の扉で使うよ。忘れないようにメモしてね！"
-      : "鍵の数字と在り処謎を、いつでもここで見返せるよ。";
     document.getElementById("solvedCard").hidden = false;
     // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
     if (puzzle.arikaImage) {
