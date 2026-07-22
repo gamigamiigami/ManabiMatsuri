@@ -38,9 +38,10 @@ const PUZZLES = {
     image: KEY_IMAGES[1],
     arikaImage: PLACE_IMAGES[1],
     choices: ["1", "2", "3", "4"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
-    status: "答え・ヒント待ち",
+    answerIndex: 2,
+    smallHint: "順番に読もう",
+    arikaHint: "何か法則はないか…？",
+    status: "完成",
   },
   2: {
     place: "3-6 時計",
@@ -49,9 +50,10 @@ const PUZZLES = {
     image: KEY_IMAGES[2],
     arikaImage: PLACE_IMAGES[2],
     choices: ["1", "2", "3", "4"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
-    status: "答え・ヒント待ち",
+    answerIndex: 3,
+    smallHint: "左右で○の数が違う…",
+    arikaHint: "どこかで見たような…",
+    status: "完成",
   },
   3: {
     place: "わたり廊下",
@@ -61,8 +63,9 @@ const PUZZLES = {
     arikaImage: PLACE_IMAGES[3],
     choices: ["1", "2", "3", "4"],
     answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
-    status: "画像未着・答え待ち",
+    smallHint: "どこかで見たような…",
+    arikaHint: "どこかで見たような…",
+    status: "画像未着・答え未定",
   },
   4: {
     place: "3-5 うしろの黒板",
@@ -72,8 +75,9 @@ const PUZZLES = {
     arikaImage: PLACE_IMAGES[4],
     choices: ["1", "2", "3", "4"],
     answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
-    status: "画像未着・答え待ち",
+    smallHint: "指示をよく読もう",
+    arikaHint: "どこかで見たような…",
+    status: "画像未着・完成",
   },
   5: {
     place: "音楽室（しょうぞう画）",
@@ -82,9 +86,10 @@ const PUZZLES = {
     image: KEY_IMAGES[5],
     arikaImage: PLACE_IMAGES[5],
     choices: ["1", "2", "3", "4"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
-    status: "答え・ヒント待ち",
+    answerIndex: 2,
+    smallHint: "どんな言葉が入るのだろう…",
+    arikaHint: "これは…何だ…？",
+    status: "完成",
   },
 };
 
@@ -234,8 +239,7 @@ const FINALE_MESSAGE =
 // 本当の最終謎（大謎・「学校の秘密」の答え）はこの先にまだ続く。
 // ========================================
 const FINAL_ANSWER = "915"; // 【仮】正解の3桁（演算方法が決まったら差し替え）
-const FINAL_HINT =
-  "【仮】鍵の並べ方は、配布プリントの小謎を解くとわかるよ。もう一度プリントを見直してみて。";
+const FINAL_HINT = "それぞれ何が入るんだ…？";
 const FINAL_SUCCESS_MESSAGE =
   "扉の向こうから、ひとつの声が聞こえた――\n" +
   "「……よく、ここまで来たね」\n" +

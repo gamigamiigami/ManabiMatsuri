@@ -67,6 +67,11 @@
   <section class="card" id="arikaCard" hidden>
     <h2>📜 在り処謎</h2>
     <div class="question" id="arikaImageBox"></div>
+    <div class="hint-box" id="arikaHintBox" hidden>
+      <span class="tag">🌟 妖精のささやき</span>
+      <div id="arikaHintText"></div>
+    </div>
+    <button class="btn ghost small" id="arikaHintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
   </section>
 
   <div id="backHome" hidden>
@@ -135,6 +140,12 @@
     document.getElementById("arikaCard").hidden = false;
     document.getElementById("backHome").hidden = isDebug; // デバッグ時はチームが無いのでホームに戻れない
   }
+
+  document.getElementById("arikaHintBtn").addEventListener("click", function () {
+    document.getElementById("arikaHintText").textContent = puzzle.arikaHint;
+    document.getElementById("arikaHintBox").hidden = false;
+    document.getElementById("arikaHintBtn").hidden = true;
+  });
 
   // すでに正解済みなら、鍵と在り処謎を「解除済み」表示でそのまま見せる
   if (state.solvedAt) {

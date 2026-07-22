@@ -40,6 +40,11 @@
   <section class="card" id="arikaCard">
     <h2>📜 在り処謎 ─ 最初の鍵 ─</h2>
     <div class="question" id="arikaImageBox"></div>
+    <div class="hint-box" id="arikaHintBox" hidden>
+      <span class="tag">🌟 妖精のささやき</span>
+      <div id="arikaHintText"></div>
+    </div>
+    <button class="btn ghost small" id="arikaHintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
     <p class="note center">たどり着いた場所のQRコードを読み取ると、鍵謎が現れる。</p>
   </section>
 
@@ -98,6 +103,12 @@
     aimg.onerror = function () { this.remove(); };
     document.getElementById("arikaImageBox").appendChild(aimg);
   }
+
+  document.getElementById("arikaHintBtn").addEventListener("click", function () {
+    document.getElementById("arikaHintText").textContent = PUZZLES[prev].arikaHint;
+    document.getElementById("arikaHintBox").hidden = false;
+    document.getElementById("arikaHintBtn").hidden = true;
+  });
 
   // 手紙が届いた瞬間の魔法演出
   FX.burst({ count: 14 });
