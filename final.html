@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>扉ひらきの謎 ― Xの部屋へ | O中の封印を解け！</title>
+<title>扉の謎 ― Xの部屋へ | O中の封印を解け！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -89,7 +89,7 @@
 <div class="wrap">
   <header class="site">
     <div class="subtitle">最後の扉の前で</div>
-    <h1>扉ひらきの謎</h1>
+    <h1>扉の謎</h1>
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
@@ -114,12 +114,12 @@
   <section class="card" id="arrivalCard" hidden>
     <h2>✉ Xからの手紙・参</h2>
     <div class="letter" id="arrivalLetter"></div>
-    <button class="btn gold" id="beginFinalBtn" style="margin-top:16px;">→ 扉ひらきの謎に挑戦する</button>
+    <button class="btn gold" id="beginFinalBtn" style="margin-top:16px;">→ 扉の謎に挑戦する</button>
   </section>
 
   <!-- 最終謎 -->
   <section class="card" id="finalCard" hidden>
-    <h2>扉ひらきの謎</h2>
+    <h2>扉の謎</h2>
     <p class="final-lead">5つの鍵を、正しい順に組み合わせよ。<br>答えは3桁の数。</p>
 
     <div class="equation-row">
@@ -175,6 +175,10 @@
     <h2>✉ Xからの手紙・四</h2>
     <div class="letter" id="letterFour"></div>
   </section>
+
+  <div id="backHome" hidden>
+    <a class="btn" href="index.html">進捗を見る（ホームへ）</a>
+  </div>
 </div>
 
 <script src="js/config.js"></script>
@@ -325,6 +329,7 @@
     }, 250);
     setTimeout(function () {
       document.getElementById("letterCard").hidden = false;
+      document.getElementById("backHome").hidden = false;
     }, 1400);
   }
 })();
