@@ -49,6 +49,14 @@
     <p class="note">どうしても解けないときは、近くのスタッフに声をかけてね。</p>
   </section>
 
+  <!-- バックラッシュ（不正解ペナルティ）状態 -->
+  <section class="card" id="cursedCard" hidden>
+    <h2>⚡ 封印の反動</h2>
+    <p class="note center" style="font-size:1rem; line-height:1.9;">封印が反撃してきた……！<br>しばらく謎に挑むことができない。</p>
+    <p class="center" style="font-family:'Yuji Syuku',serif; font-size:1.05rem; color:var(--gold); margin:18px 0; line-height:1.9;">近くにいる<strong>「賢者」</strong>を探して、<br><strong>解呪の詠唱（QRコード）</strong>を受けよ。</p>
+    <p class="note center">賢者＝スタッフのことだよ。「復活したい」と声をかけてね。</p>
+  </section>
+
   <!-- 正解後：鍵の獲得＋在り処謎（ゲート式：正解前は絶対に表示されない） -->
   <section class="card" id="solvedCard" hidden>
     <div class="key-get">
@@ -213,6 +221,30 @@
     }
   }
 
+  // ---------- バックラッシュ（不正解ペナルティ）管理 ----------
+  function isCursed() {
+    return state.cursed === true;
+  }
+  function showCursed() {
+    document.getElementById("puzzleCard").hidden = true;
+    document.getElementById("cursedCard").hidden = false;
+  }
+
+  // revive.html から戻ってきたとき（?revived=1）→ 呪いを解除
+  if (params.get("revived") === "1" && isCursed()) {
+    state.cursed = false;
+    if (!isDebug) {
+      Store.save(team);
+      Store.send(team, "revived", p, {});
+    }
+  }
+
+  // 現在バックラッシュ中なら謎を表示しない
+  if (isCursed()) {
+    showCursed();
+    return;
+  }
+
   // ---------- 4択 ----------
   const choicesEl = document.getElementById("choices");
   const feedback = document.getElementById("feedback");
@@ -233,7 +265,6 @@
         btn.classList.add("right");
         feedback.className = "feedback ok";
         feedback.textContent = "正解──封印がひとつ、ほどけた。";
-        // 魔法陣が展開して封印が解ける演出
         const c = FX.centerOf(btn);
         FX.burst({ x: c.x, y: c.y, count: 12 });
         FX.circle();
@@ -245,14 +276,15 @@
         setTimeout(function () { showSolved(true); }, 1400);
       } else {
         btn.classList.add("wrong");
-        setTimeout(function () { btn.classList.remove("wrong"); }, 450);
-        feedback.className = "feedback ng";
-        feedback.textContent = "あれれ？ちがうみたい……もう一度考えてみて！";
         state.wrong += 1;
+        state.cursed = true;
         if (!isDebug) {
           Store.save(team);
           Store.send(team, "wrong", p, { choice: i });
         }
+        feedback.className = "feedback ng";
+        feedback.textContent = "封印が反撃してきた──！";
+        setTimeout(function () { showCursed(); }, 800);
       }
     });
     choicesEl.appendChild(btn);

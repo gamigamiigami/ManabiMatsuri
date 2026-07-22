@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>解呪の詠唱 | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .revive-card h2 { background: linear-gradient(135deg, #7bc68f, #3d8a54); color: #0a2010; }
+  .revive-text { text-align: center; font-family: "Yuji Syuku", serif; font-size: 1.1rem; line-height: 2; color: #ecdff0; white-space: pre-wrap; margin: 16px 0; }
+  .revive-rune { text-align: center; font-size: 1.6rem; letter-spacing: 0.5em; color: var(--gold); text-shadow: 0 0 18px rgba(212, 175, 106, 0.5); margin: 20px 0; animation: runeGlow 2s ease-in-out infinite alternate; }
+  @keyframes runeGlow { 0% { opacity: 0.6; } 100% { opacity: 1; text-shadow: 0 0 28px rgba(212, 175, 106, 0.8); } }
+  .revive-ok { text-align: center; font-family: "Yuji Syuku", serif; font-size: 1.2rem; color: #7bc68f; text-shadow: 0 0 14px rgba(123, 198, 143, 0.4); margin: 20px 0; }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="fog fog3"></div>
+  <div class="runes">
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
+  </div>
+  <div class="vignette"></div>
+</div>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1>解呪の詠唱</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <section class="card revive-card" id="reviveCard">
+    <h2>賢者の解呪</h2>
+    <div class="revive-rune">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
+    <div class="revive-text" id="reviveText">賢者が呪文を詠唱している……</div>
+    <div class="revive-ok" id="reviveOk" hidden></div>
+    <a class="btn gold" id="reviveBtn" href="#" hidden style="margin-top:16px;">→ 謎に再挑戦する</a>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fx.js"></script>
+<script>
+(function () {
+  var team = Store.load();
+  if (!team) {
+    location.replace("index.html");
+    return;
+  }
+
+  // どのポイントがバックラッシュ中か探す
+  var cursedPoint = null;
+  POINT_ORDER.forEach(function (q) {
+    if (team.points[q] && team.points[q].cursed && !team.points[q].solvedAt) {
+      cursedPoint = q;
+    }
+  });
+
+  var textEl = document.getElementById("reviveText");
+  var okEl = document.getElementById("reviveOk");
+  var btnEl = document.getElementById("reviveBtn");
+
+  if (!cursedPoint) {
+    textEl.textContent = "反動を受けていないようだ。\n冒険を続けよう。";
+    btnEl.textContent = "→ ホームへ戻る";
+    btnEl.href = "index.html";
+    btnEl.hidden = false;
+    return;
+  }
+
+  // 解呪演出（少し待ってから解除）
+  setTimeout(function () {
+    FX.burst({ count: 18 });
+    FX.circle();
+    textEl.textContent = "封印の反動が、解けていく──";
+    okEl.textContent = "解呪完了。もう一度挑戦できる。";
+    okEl.hidden = false;
+    btnEl.textContent = "→ " + PUZZLES[cursedPoint].title + " に再挑戦する";
+    btnEl.href = "point.html?p=" + cursedPoint + "&revived=1";
+    btnEl.hidden = false;
+  }, 1500);
+})();
+</script>
+</body>
+</html>
