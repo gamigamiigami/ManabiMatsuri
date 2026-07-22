@@ -74,7 +74,19 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
-  <!-- チーム登録（未登録のときだけ表示。手紙は letter.html で読んでからここに来る） -->
+  <!-- 小謎の答え入力（QRから来た未登録ユーザー。skip=1 のとき表示） -->
+  <section id="kozoPuzzle" class="card" hidden>
+    <h2>✉ Xからの小手調べ</h2>
+    <p style="font-size:0.92rem;">謎解きシートの答えを入力して、Xに送信しろ。</p>
+    <label class="field">① の答え</label>
+    <input type="text" id="kozoAns1" maxlength="10" placeholder="答えを入力" autocomplete="off">
+    <label class="field">② の答え</label>
+    <input type="text" id="kozoAns2" maxlength="10" placeholder="答えを入力" autocomplete="off">
+    <button class="btn gold" id="kozoSubmitBtn" style="margin-top:16px;">→ Xに答えを送る</button>
+    <div class="feedback" id="kozoFeedback"></div>
+  </section>
+
+  <!-- チーム登録（小謎クリア後、または手紙経由で来た場合に表示） -->
   <section id="register" class="card" hidden>
     <h2>冒険チーム登録</h2>
     <p style="font-size:0.92rem;">親子ペアで1チーム。チーム名を決めて、冒険を開始しよう。</p>
@@ -146,8 +158,11 @@
   const next = params.get("next");   // 登録後に向かうポイント番号（QR経由で未登録だった場合）
   const start = params.get("start"); // 登録後に向かうスタートQR画面（小謎クリア後のQR経由）
   const dummy = params.get("dummy"); // 登録後に向かうダミー謎
+  const skip = params.get("skip");   // skip=1: 手紙スキップ（謎解きシートのQRから来た場合）
   const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   let team = Store.load();
+  let kozoCleared = false; // 小謎クリア済みフラグ（このセッション内）
+  let assignedRoute = null; // 振り分けられたスタート地点
 
   if (isDebug) {
     const resetAllBtn = document.getElementById("debugResetAllBtn");
@@ -210,6 +225,45 @@
     }
   }
 
+  // --- 小謎の答え合わせ ---
+  function normalizeAnswer(s) {
+    return s.trim().toLowerCase()
+      .replace(/[Ａ-Ｚ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/[ａ-ｚ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); });
+  }
+  function checkKozoAnswer(input, patterns) {
+    var v = normalizeAnswer(input);
+    return patterns.some(function (p) { return normalizeAnswer(p) === v; });
+  }
+
+  document.getElementById("kozoSubmitBtn").addEventListener("click", function () {
+    var a1 = document.getElementById("kozoAns1").value;
+    var a2 = document.getElementById("kozoAns2").value;
+    var fb = document.getElementById("kozoFeedback");
+    if (!a1.trim() || !a2.trim()) {
+      fb.className = "feedback ng";
+      fb.textContent = "両方の答えを入力してね。";
+      return;
+    }
+    var ok1 = checkKozoAnswer(a1, SMALL_PUZZLE_ANSWERS[0]);
+    var ok2 = checkKozoAnswer(a2, SMALL_PUZZLE_ANSWERS[1]);
+    if (ok1 && ok2) {
+      kozoCleared = true;
+      assignedRoute = START_ROUTES[Math.random() < 0.5 ? 0 : 1];
+      fb.className = "feedback ok";
+      fb.textContent = "Xの声「……へえ、やるじゃん。」";
+      FX.burst({ count: 14 });
+      setTimeout(function () {
+        document.getElementById("kozoPuzzle").hidden = true;
+        show(document.getElementById("register"));
+        window.scrollTo(0, 0);
+      }, 1200);
+    } else {
+      fb.className = "feedback ng";
+      fb.textContent = "Xの声「違う……もう一度考えろ。」";
+    }
+  });
+
   document.getElementById("registerBtn").addEventListener("click", function () {
     const name = document.getElementById("teamName").value.trim();
     if (!name) {
@@ -218,10 +272,15 @@
     }
     const player = document.getElementById("playerName").value.trim();
     team = Store.register(name, player);
-    // 魔法陣が発動してから冒険がはじまる
+    if (assignedRoute) {
+      team.startRoute = assignedRoute;
+      Store.save(team);
+    }
     FX.circle();
     setTimeout(function () {
-      if (start && PUZZLES[start]) {
+      if (kozoCleared && assignedRoute) {
+        location.href = "start.html?s=" + assignedRoute;
+      } else if (start && PUZZLES[start]) {
         location.href = "start.html?s=" + start;
       } else if (dummy && DUMMY_PUZZLES[dummy]) {
         location.href = "dummy.html?d=" + dummy;
@@ -245,6 +304,10 @@
 
   if (team) {
     renderHome();
+  } else if (skip === "1") {
+    // 謎解きシートのQRから来た → 手紙スキップ、小謎の答え入力へ
+    try { localStorage.setItem("fuin_letter_seen", "1"); } catch (e) {}
+    show(document.getElementById("kozoPuzzle"));
   } else {
     // 手紙をまだ読んでいなければ、まず letter.html へ（QRのパラメータを引き継ぐ）
     let letterSeen = false;
