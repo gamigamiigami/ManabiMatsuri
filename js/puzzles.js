@@ -291,6 +291,6 @@ const SMALL_PUZZLE_ANSWERS = [
 
 // 小謎を正解した後のスタート地点（2グループに分けて別の場所から開始）
 // QRを2種類用意し、配布時点でグループを決定する。
-//   グループA用QR: index.html?skip=1&route=A → ポイント2へ
-//   グループB用QR: index.html?skip=1&route=B → ポイント5へ
-const START_ROUTES = { A: 2, B: 5 };
+//   グループA用QR: index.html?skip=1&route=A → 鍵謎1の在り処謎を表示
+//   グループB用QR: index.html?skip=1&route=B → 鍵謎3の在り処謎を表示
+const START_ROUTES = { A: 1, B: 3 };
