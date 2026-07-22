@@ -29,6 +29,8 @@
 
   .key-chip { position: relative; width: clamp(38px, 11vw, 58px); height: clamp(38px, 11vw, 58px); flex: none; border-radius: 6px; background: #17102a; border: 1.5px solid #3a2d54; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); }
   .key-chip .num { font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(0.9rem, 3vw, 1.5rem); color: var(--gold); text-shadow: 0 0 10px rgba(212, 175, 106, 0.4); }
+  input.keynum-input { width: 100%; height: 1.4em; padding: 0; margin: 0; border: none; border-radius: 3px; background: transparent; text-align: center; box-shadow: none; }
+  input.keynum-input:focus { outline: none; border: none; box-shadow: 0 0 0 2px rgba(212, 175, 106, 0.5); }
 
   .key-icon { position: absolute; top: 6px; left: 6px; width: 14px; height: 14px; display: none; }
   @media (min-width: 420px) { .key-icon { display: block; } }
@@ -126,16 +128,16 @@
     <div class="equation-wrap" id="equationWrap">
       <div class="equation-row" id="equationRow">
         <span class="paren">(</span>
-        <div class="key-chip"><span class="key-icon"></span><span class="num" id="k1"></span></div>
-        <div class="key-chip"><span class="key-icon"></span><span class="num" id="k2"></span></div>
+        <div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k1"></div>
+        <div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k2"></div>
         <div class="op-symbol">
           <div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div>
         </div>
-        <div class="key-chip"><span class="key-icon"></span><span class="num" id="k3"></span></div>
-        <div class="key-chip"><span class="key-icon"></span><span class="num" id="k4"></span></div>
+        <div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k3"></div>
+        <div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k4"></div>
         <span class="paren">)</span>
         <div class="op-symbol wreath"></div>
-        <div class="key-chip"><span class="key-icon"></span><span class="num" id="k5"></span></div>
+        <div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k5"></div>
       </div>
     </div>
 
@@ -256,8 +258,16 @@
 
   if (finalState.solvedAt) return;
 
-  POINT_ORDER.forEach(function (q) {
-    document.getElementById("k" + q).textContent = PUZZLES[q].choices[PUZZLES[q].answerIndex];
+  // 鍵の数字はここでは表示しない。プレイヤーが自分でメモした数字を入力する。
+  const keyInputs = POINT_ORDER.map(function (q) { return document.getElementById("k" + q); });
+  keyInputs.forEach(function (input, i) {
+    input.addEventListener("input", function () {
+      input.value = input.value.replace(/[^0-9]/g, "");
+      if (input.value && keyInputs[i + 1]) keyInputs[i + 1].focus();
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && !input.value && keyInputs[i - 1]) keyInputs[i - 1].focus();
+    });
   });
 
   // 数式がカードの幅からはみ出すときは自動で縮小してぴったり収める
