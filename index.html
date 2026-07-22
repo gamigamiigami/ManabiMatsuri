@@ -159,10 +159,11 @@
   const start = params.get("start"); // 登録後に向かうスタートQR画面（小謎クリア後のQR経由）
   const dummy = params.get("dummy"); // 登録後に向かうダミー謎
   const skip = params.get("skip");   // skip=1: 手紙スキップ（謎解きシートのQRから来た場合）
+  const route = params.get("route"); // route=A or B: QRで決まるグループ
   const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   let team = Store.load();
-  let kozoCleared = false; // 小謎クリア済みフラグ（このセッション内）
-  let assignedRoute = null; // 振り分けられたスタート地点
+  let kozoCleared = false;
+  let assignedRoute = (route && START_ROUTES[route]) ? START_ROUTES[route] : null;
 
   if (isDebug) {
     const resetAllBtn = document.getElementById("debugResetAllBtn");
@@ -249,7 +250,7 @@
     var ok2 = checkKozoAnswer(a2, SMALL_PUZZLE_ANSWERS[1]);
     if (ok1 && ok2) {
       kozoCleared = true;
-      assignedRoute = START_ROUTES[Math.random() < 0.5 ? 0 : 1];
+      if (!assignedRoute) assignedRoute = START_ROUTES["A"];
       fb.className = "feedback ok";
       fb.textContent = "Xの声「……へえ、やるじゃん。」";
       FX.burst({ count: 14 });

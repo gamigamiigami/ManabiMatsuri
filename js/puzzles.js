@@ -290,6 +290,7 @@ const SMALL_PUZZLE_ANSWERS = [
 ];
 
 // 小謎を正解した後のスタート地点（2グループに分けて別の場所から開始）
-// start.html?s=N に飛ばす。Nはポイント番号。
-// グループA → ポイント2へ向かう在り処謎を表示、グループB → ポイント5へ
-const START_ROUTES = [2, 5];
+// QRを2種類用意し、配布時点でグループを決定する。
+//   グループA用QR: index.html?skip=1&route=A → ポイント2へ
+//   グループB用QR: index.html?skip=1&route=B → ポイント5へ
+const START_ROUTES = { A: 2, B: 5 };
