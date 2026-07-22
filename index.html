@@ -133,6 +133,7 @@
   </section>
 
   <button class="btn ghost small" id="debugResetAllBtn" hidden style="margin:20px auto 0; display:block;">（デバッグ）すべて最初からにする</button>
+  <button class="btn gold" id="debugResetAllConfirmBtn" hidden style="margin:10px auto 0; display:block;">本当にすべて消してよい？（タップで実行）</button>
 </div>
 
 <script src="js/config.js"></script>
@@ -150,9 +151,13 @@
 
   if (isDebug) {
     const resetAllBtn = document.getElementById("debugResetAllBtn");
+    const resetAllConfirmBtn = document.getElementById("debugResetAllConfirmBtn");
     resetAllBtn.hidden = false;
     resetAllBtn.addEventListener("click", function () {
-      if (!confirm("チーム登録・進捗・手紙の既読状態をすべて消去します。よろしいですか？")) return;
+      resetAllBtn.hidden = true;
+      resetAllConfirmBtn.hidden = false;
+    });
+    resetAllConfirmBtn.addEventListener("click", function () {
       localStorage.removeItem(Store.KEY);
       try { localStorage.removeItem("fuin_letter_seen"); } catch (e) {}
       location.href = "index.html?debug=1";
