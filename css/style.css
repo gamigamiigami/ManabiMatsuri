@@ -506,16 +506,6 @@ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px 
   100% { transform: scale(1) rotate(0); }
 }
 
-.arika {
-  font-family: var(--brush);
-  white-space: pre-wrap;
-  font-size: 1.12rem;
-  line-height: 2.35;
-  text-align: center;
-  color: #e6dcff;
-  text-shadow: 0 0 14px rgba(155, 127, 232, 0.35);
-}
-
 #arikaCard { background: linear-gradient(176deg, #1c1132, #150c26); border: 1px solid var(--violet-deep); }
 #arikaCard h2 { background: linear-gradient(135deg, #b79bff, var(--violet)); color: #201040; }
 #solvedCard { background: linear-gradient(170deg, #221535, #1a1129); border: 1.5px solid var(--gold-deep); }

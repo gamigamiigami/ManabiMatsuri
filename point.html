@@ -67,7 +67,6 @@
 
   <section class="card" id="arikaCard" hidden>
     <h2>📜 在り処謎</h2>
-    <div class="arika" id="arikaText"></div>
     <div class="question" id="arikaImageBox"></div>
   </section>
 
@@ -129,7 +128,6 @@
       ? "この数字は最後の扉で使うよ。忘れないようにメモしてね！"
       : "鍵の数字と在り処謎を、いつでもここで見返せるよ。";
     document.getElementById("solvedCard").hidden = false;
-    document.getElementById("arikaText").textContent = puzzle.arika;
     // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
     if (puzzle.arikaImage) {
       const aimg = document.createElement("img");

@@ -39,7 +39,6 @@
 
   <section class="card" id="arikaCard">
     <h2>📜 在り処謎 ─ 最初の鍵 ─</h2>
-    <div class="arika" id="arikaText"></div>
     <div class="question" id="arikaImageBox"></div>
     <p class="note center">たどり着いた場所のQRコードを読み取ると、鍵謎が現れる。</p>
   </section>
@@ -91,7 +90,6 @@
   // このスタート地点(s)へ導く在り処謎＝巡回順で1つ前のポイントの在り処謎
   const idx = POINT_ORDER.indexOf(Number(s));
   const prev = POINT_ORDER[(idx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
-  document.getElementById("arikaText").textContent = PUZZLES[prev].arika;
   // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
   if (PUZZLES[prev].arikaImage) {
     const aimg = document.createElement("img");
