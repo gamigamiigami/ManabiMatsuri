@@ -26,7 +26,7 @@
   .equation-wrap { width: 100%; overflow: hidden; display: flex; justify-content: center; }
   .equation-row { display: flex; align-items: flex-start; flex-wrap: nowrap; flex: none; gap: clamp(3px, 1.2vw, 8px); width: max-content; margin: 14px 0 20px; transform-origin: center top; }
   .paren { font-family: "Yuji Syuku", serif; font-size: clamp(1.3rem, 5vw, 2.4rem); color: var(--gold); line-height: 1; flex: none; display: flex; align-items: center; height: clamp(38px, 11vw, 58px); }
-  .op-symbol { margin-top: calc((clamp(38px, 11vw, 58px) - clamp(28px, 8vw, 46px)) / 2); }
+  .op-chip { margin-top: calc((clamp(38px, 11vw, 58px) - clamp(28px, 8vw, 46px)) / 2); }
 
   .key-chip-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: none; }
   .key-chip-label { font-family: "Zen Kaku Gothic New", sans-serif; font-size: clamp(0.55rem, 1.6vw, 0.72rem); color: var(--text-dim); letter-spacing: 0.02em; white-space: nowrap; }
@@ -41,12 +41,9 @@
   .key-icon::after { content: ""; position: absolute; top: 6px; left: 6px; width: 8px; height: 2px; background: var(--gold-deep); box-shadow: 6px 1px 0 -0.5px var(--gold-deep); }
 
   .op-symbol { position: relative; width: clamp(28px, 8vw, 46px); height: clamp(28px, 8vw, 46px); flex: none; }
-  .op-symbol .star-shape { position: absolute; inset: 2px; border: 1.4px solid rgba(212, 175, 106, 0.75); }
-  .op-symbol .star-shape:nth-child(1) { transform: rotate(0deg); }
-  .op-symbol .star-shape:nth-child(2) { transform: rotate(24deg); }
-  .op-symbol .star-shape:nth-child(3) { transform: rotate(48deg); }
-  .op-symbol .star-shape:nth-child(4) { transform: rotate(72deg); }
-  .op-symbol.wreath { border-radius: 50%; border: 1.4px solid rgba(155, 127, 232, 0.7); background: repeating-conic-gradient(rgba(155, 127, 232, 0.55) 0deg 6deg, transparent 6deg 18deg); -webkit-mask-image: radial-gradient(circle, transparent 62%, black 64%); mask-image: radial-gradient(circle, transparent 62%, black 64%); }
+  .op-chip { position: relative; width: clamp(28px, 8vw, 46px); height: clamp(28px, 8vw, 46px); flex: none; border-radius: 50%; border: 1.5px solid rgba(155, 127, 232, 0.7); background: #17102a; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); }
+  input.op-input { width: 100%; height: 100%; padding: 0; margin: 0; border: none; border-radius: 50%; background: transparent; text-align: center; font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(0.9rem, 3vw, 1.5rem); color: #9b7fe8; text-shadow: 0 0 10px rgba(155, 127, 232, 0.4); box-shadow: none; }
+  input.op-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(155, 127, 232, 0.5); }
 
   .equals { font-family: "Yuji Syuku", serif; font-size: 2rem; color: var(--text-dim); margin: 0 4px; }
 
@@ -133,13 +130,11 @@
         <span class="paren">(</span>
         <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k1"></div><span class="key-chip-label">鍵1</span></div>
         <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k2"></div><span class="key-chip-label">鍵2</span></div>
-        <div class="op-symbol">
-          <div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div><div class="star-shape"></div>
-        </div>
+        <div class="op-chip op-symbol"><input type="text" maxlength="1" class="op-input" id="op1" placeholder="？"></div>
         <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k3"></div><span class="key-chip-label">鍵3</span></div>
         <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k4"></div><span class="key-chip-label">鍵4</span></div>
         <span class="paren">)</span>
-        <div class="op-symbol wreath"></div>
+        <div class="op-chip op-symbol"><input type="text" maxlength="1" class="op-input" id="op2" placeholder="？"></div>
         <div class="key-chip-group"><div class="key-chip"><span class="key-icon"></span><input type="text" inputmode="numeric" maxlength="1" class="num keynum-input" id="k5"></div><span class="key-chip-label">鍵5</span></div>
       </div>
     </div>
@@ -162,6 +157,7 @@
     </div>
     <button class="btn ghost small" id="hintBtn" style="margin-top:14px;">⚠ 手がかりを見る</button>
     <p class="note">どうしても解けないときは、近くのスタッフに声をかけてね。</p>
+    <a class="btn ghost small" href="index.html" style="margin-top:10px;">← ホームに戻る（鍵の答えを確認する）</a>
   </section>
 
   <!-- 成功：扉が開く -->
@@ -261,15 +257,30 @@
 
   if (finalState.solvedAt) return;
 
-  // 鍵の数字はここでは表示しない。プレイヤーが自分でメモした数字を入力する。
-  const keyInputs = POINT_ORDER.map(function (q) { return document.getElementById("k" + q); });
-  keyInputs.forEach(function (input, i) {
+  // 鍵の数字と魔法陣（演算子）はプレイヤーが自分で入力する
+  var op1 = document.getElementById("op1");
+  var op2 = document.getElementById("op2");
+  var allEqInputs = [
+    document.getElementById("k1"),
+    document.getElementById("k2"),
+    op1,
+    document.getElementById("k3"),
+    document.getElementById("k4"),
+    op2,
+    document.getElementById("k5")
+  ];
+  allEqInputs.forEach(function (input, i) {
+    var isOp = (input === op1 || input === op2);
     input.addEventListener("input", function () {
-      input.value = input.value.replace(/[^0-9]/g, "");
-      if (input.value && keyInputs[i + 1]) keyInputs[i + 1].focus();
+      if (isOp) {
+        input.value = input.value.replace(/[^+\-×✕*÷／/]/g, "");
+      } else {
+        input.value = input.value.replace(/[^0-9]/g, "");
+      }
+      if (input.value && allEqInputs[i + 1]) allEqInputs[i + 1].focus();
     });
     input.addEventListener("keydown", function (e) {
-      if (e.key === "Backspace" && !input.value && keyInputs[i - 1]) keyInputs[i - 1].focus();
+      if (e.key === "Backspace" && !input.value && allEqInputs[i - 1]) allEqInputs[i - 1].focus();
     });
   });
 
