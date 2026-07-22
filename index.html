@@ -131,6 +131,8 @@
       <p class="note">困ったらヒントボタンを押すか、近くのスタッフに声をかけてね。</p>
     </div>
   </section>
+
+  <button class="btn ghost small" id="debugResetAllBtn" hidden style="margin:20px auto 0; display:block;">（デバッグ）すべて最初からにする</button>
 </div>
 
 <script src="js/config.js"></script>
@@ -143,7 +145,19 @@
   const next = params.get("next");   // 登録後に向かうポイント番号（QR経由で未登録だった場合）
   const start = params.get("start"); // 登録後に向かうスタートQR画面（小謎クリア後のQR経由）
   const dummy = params.get("dummy"); // 登録後に向かうダミー謎
+  const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   let team = Store.load();
+
+  if (isDebug) {
+    const resetAllBtn = document.getElementById("debugResetAllBtn");
+    resetAllBtn.hidden = false;
+    resetAllBtn.addEventListener("click", function () {
+      if (!confirm("チーム登録・進捗・手紙の既読状態をすべて消去します。よろしいですか？")) return;
+      localStorage.removeItem(Store.KEY);
+      try { localStorage.removeItem("fuin_letter_seen"); } catch (e) {}
+      location.href = "index.html?debug=1";
+    });
+  }
 
   function show(el) { el.hidden = false; }
 
