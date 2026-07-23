@@ -123,6 +123,13 @@
       <p class="center note" id="dummyText" style="margin-top:14px;"></p>
     </div>
 
+    <!-- 次の場所（在り処謎の再表示） -->
+    <div class="card" id="nextPlaceCard" hidden>
+      <h2>📜 次に向かう場所</h2>
+      <div class="question" id="nextPlaceImage"></div>
+      <p class="note center" id="nextPlaceNote"></p>
+    </div>
+
     <!-- 全クリア表示 -->
     <div class="card" id="clearCard" hidden>
       <h2>封印 ― 完全解除</h2>
@@ -233,6 +240,48 @@
         '<span class="st">' + (solved ? "★" : "☆") + "</span>";
       list.appendChild(li);
     });
+
+    // 次に向かう場所（在り処謎の再表示）
+    if (solvedCount > 0 && solvedCount < POINT_ORDER.length) {
+      // 最後に解いたポイントを探す（solvedAtの時刻が一番新しいもの）
+      var lastSolved = null;
+      var lastTime = "";
+      POINT_ORDER.forEach(function (q) {
+        if (team.points[q] && team.points[q].solvedAt && team.points[q].solvedAt > lastTime) {
+          lastTime = team.points[q].solvedAt;
+          lastSolved = q;
+        }
+      });
+      if (lastSolved && PUZZLES[lastSolved].arikaImage) {
+        var npCard = document.getElementById("nextPlaceCard");
+        var npImg = document.createElement("img");
+        npImg.src = PUZZLES[lastSolved].arikaImage;
+        npImg.alt = "在り処謎";
+        npImg.onerror = function () { npCard.hidden = true; };
+        document.getElementById("nextPlaceImage").innerHTML = "";
+        document.getElementById("nextPlaceImage").appendChild(npImg);
+        document.getElementById("nextPlaceNote").textContent =
+          "この在り処謎が、次の鍵の隠し場所を示している。";
+        npCard.hidden = false;
+      }
+    } else if (solvedCount === 0 && team.startRoute) {
+      // まだ1つも解いていないが、スタートルートがある場合
+      var startPoint = team.startRoute;
+      var prevIdx = POINT_ORDER.indexOf(startPoint);
+      var prevPoint = POINT_ORDER[(prevIdx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
+      if (PUZZLES[prevPoint] && PUZZLES[prevPoint].arikaImage) {
+        var npCard = document.getElementById("nextPlaceCard");
+        var npImg = document.createElement("img");
+        npImg.src = PUZZLES[prevPoint].arikaImage;
+        npImg.alt = "在り処謎";
+        npImg.onerror = function () { npCard.hidden = true; };
+        document.getElementById("nextPlaceImage").innerHTML = "";
+        document.getElementById("nextPlaceImage").appendChild(npImg);
+        document.getElementById("nextPlaceNote").textContent =
+          "この在り処謎が、最初の鍵の隠し場所を示している。";
+        npCard.hidden = false;
+      }
+    }
 
     if (solvedCount === POINT_ORDER.length) {
       show(document.getElementById("clearCard"));

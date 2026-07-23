@@ -82,6 +82,11 @@
     <button class="btn ghost small" id="arikaHintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
   </section>
 
+  <div id="gateLink" hidden>
+    <p class="note center" style="font-family:'Yuji Syuku',serif; font-size:1.05rem; color:var(--gold); margin-bottom:14px;">5つの鍵がすべてそろった──！<br>最後の扉に挑め！</p>
+    <a class="btn gold" href="final.html">→ Xの部屋の扉へ向かう</a>
+  </div>
+
   <div id="backHome" hidden>
     <a class="btn" href="index.html">進捗を見る（ホームへ）</a>
   </div>
@@ -137,16 +142,27 @@
       ? "─ 封印の鍵 " + p + " を手に入れた ─"
       : "─ この封印は解除ずみ ─";
     document.getElementById("solvedCard").hidden = false;
-    // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
-    if (puzzle.arikaImage) {
-      const aimg = document.createElement("img");
-      aimg.src = puzzle.arikaImage;
-      aimg.alt = "在り処謎の画像";
-      aimg.onerror = function () { this.remove(); };
-      document.getElementById("arikaImageBox").appendChild(aimg);
+
+    // 全鍵がそろったら在り処謎ではなく扉謎へ誘導
+    var allSolved = POINT_ORDER.every(function (q) {
+      return team.points[q] && team.points[q].solvedAt;
+    });
+    if (allSolved) {
+      document.getElementById("arikaCard").hidden = true;
+      document.getElementById("backHome").hidden = true;
+      document.getElementById("gateLink").hidden = false;
+    } else {
+      // 在り処謎の画像（ファイルがまだ無ければ自動で非表示）
+      if (puzzle.arikaImage) {
+        const aimg = document.createElement("img");
+        aimg.src = puzzle.arikaImage;
+        aimg.alt = "在り処謎の画像";
+        aimg.onerror = function () { this.remove(); };
+        document.getElementById("arikaImageBox").appendChild(aimg);
+      }
+      document.getElementById("arikaCard").hidden = false;
+      document.getElementById("backHome").hidden = isDebug;
     }
-    document.getElementById("arikaCard").hidden = false;
-    document.getElementById("backHome").hidden = isDebug; // デバッグ時はチームが無いのでホームに戻れない
   }
 
   document.getElementById("arikaHintBtn").addEventListener("click", function () {
@@ -248,6 +264,7 @@
   // ---------- 4択 ----------
   const choicesEl = document.getElementById("choices");
   const feedback = document.getElementById("feedback");
+  var locked = false; // 不正解後の連打防止
 
   puzzle.choices.forEach(function (text, i) {
     const btn = document.createElement("button");
@@ -260,8 +277,9 @@
     btn.appendChild(abc);
     btn.appendChild(label);
     btn.addEventListener("click", function () {
-      if (state.solvedAt) return;
+      if (state.solvedAt || locked) return;
       if (i === puzzle.answerIndex) {
+        locked = true;
         btn.classList.add("right");
         feedback.className = "feedback ok";
         feedback.textContent = "正解──封印がひとつ、ほどけた。";
@@ -275,6 +293,7 @@
         }
         setTimeout(function () { showSolved(true); }, 1400);
       } else {
+        locked = true;
         btn.classList.add("wrong");
         state.wrong += 1;
         state.cursed = true;
@@ -288,6 +307,16 @@
       }
     });
     choicesEl.appendChild(btn);
+  });
+
+  // ブラウザバック(bfcache)で戻ってきたとき、cursed状態を再チェック
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) {
+      var freshTeam = Store.load();
+      if (freshTeam && freshTeam.points[p] && freshTeam.points[p].cursed) {
+        showCursed();
+      }
+    }
   });
 })();
 </script>
