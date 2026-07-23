@@ -49,6 +49,14 @@
     <p class="note">どうしても解けないときは、近くのスタッフに声をかけてね。</p>
   </section>
 
+  <!-- 順番違反（正しい在り処謎を辿らずに来た） -->
+  <section class="card" id="wrongOrderCard" hidden>
+    <h2>まだ開かない</h2>
+    <p class="note center" style="font-size:1rem; line-height:1.9;">この封印は、まだお前には解けない。<br>正しい道筋をたどってこい。</p>
+    <p class="note center">《在り処謎》が示す場所へ向かおう。</p>
+    <a class="btn ghost small" href="index.html" style="margin-top:10px;">← ホームに戻る（次の場所を確認する）</a>
+  </section>
+
   <!-- バックラッシュ（不正解ペナルティ）状態 -->
   <section class="card" id="cursedCard" hidden>
     <h2>⚡ 封印の反動</h2>
@@ -175,6 +183,26 @@
   if (state.solvedAt) {
     showSolved(false);
     return;
+  }
+
+  // ---------- 順番チェック（在り処謎が示す順番でしか挑戦できない） ----------
+  function getExpectedPoint() {
+    const route = team.startRoute || POINT_ORDER[0];
+    let startIdx = POINT_ORDER.indexOf(route);
+    if (startIdx === -1) startIdx = 0;
+    const rotated = POINT_ORDER.slice(startIdx).concat(POINT_ORDER.slice(0, startIdx));
+    for (let i = 0; i < rotated.length; i++) {
+      if (!(team.points[rotated[i]] && team.points[rotated[i]].solvedAt)) return rotated[i];
+    }
+    return null; // 全て解決済み
+  }
+
+  if (!isDebug) {
+    const expected = getExpectedPoint();
+    if (expected !== null && String(expected) !== String(p)) {
+      document.getElementById("wrongOrderCard").hidden = false;
+      return;
+    }
   }
 
   // ---------- 鍵謎の表示 ----------
