@@ -35,9 +35,9 @@
   </header>
 
   <section class="card revive-card" id="reviveCard">
-    <h2>賢者の解呪</h2>
+    <h2>復活の呪文</h2>
     <div class="revive-rune">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
-    <div class="revive-text" id="reviveText">賢者が呪文を詠唱している……</div>
+    <div class="revive-text" id="reviveText">大人が復活の呪文を唱えている……</div>
     <div class="revive-ok" id="reviveOk" hidden></div>
     <a class="btn gold" id="reviveBtn" href="#" hidden style="margin-top:16px;">→ 謎に再挑戦する</a>
   </section>
@@ -68,19 +68,19 @@
   var btnEl = document.getElementById("reviveBtn");
 
   if (!cursedPoint) {
-    textEl.textContent = "反動を受けていないようだ。\n冒険を続けよう。";
+    textEl.textContent = "Xの呪いは受けていないようだ。\n冒険を続けよう。";
     btnEl.textContent = "→ ホームへ戻る";
     btnEl.href = "index.html";
     btnEl.hidden = false;
     return;
   }
 
-  // 解呪演出（少し待ってから解除）
+  // 復活演出（少し待ってから解除）
   setTimeout(function () {
     FX.burst({ count: 18 });
     FX.circle();
-    textEl.textContent = "封印の反動が、解けていく──";
-    okEl.textContent = "解呪完了。もう一度挑戦できる。";
+    textEl.textContent = "Xの呪いが、解けていく──";
+    okEl.textContent = "復活完了！もう一度挑戦できるぞ。";
     okEl.hidden = false;
     btnEl.textContent = "→ " + PUZZLES[cursedPoint].title + " に再挑戦する";
     btnEl.href = "point.html?p=" + cursedPoint + "&revived=1";
