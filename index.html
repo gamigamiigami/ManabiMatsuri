@@ -74,9 +74,16 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
-  <!-- 小謎の答え入力（QRから来た未登録ユーザー。skip=1 のとき表示） -->
+  <!-- Xからのメッセージ（QRから来た未登録ユーザー。skip=1 のとき表示） -->
+  <section id="kozoMessage" class="card" hidden>
+    <h2>✉ Xからの挑戦</h2>
+    <div class="letter" id="kozoLetter"></div>
+    <button class="btn gold" id="kozoStartBtn" style="margin-top:16px;">→ 謎に挑戦する</button>
+  </section>
+
+  <!-- 小謎の答え入力 -->
   <section id="kozoPuzzle" class="card" hidden>
-    <h2>✉ Xからの小手調べ</h2>
+    <h2>✉ Xへの回答</h2>
     <p style="font-size:0.92rem;">謎解きシートの答えを入力して、Xに送信しろ。</p>
     <label class="field">① の答え</label>
     <input type="text" id="kozoAns1" maxlength="10" placeholder="答えを入力" autocomplete="off">
@@ -84,6 +91,14 @@
     <input type="text" id="kozoAns2" maxlength="10" placeholder="答えを入力" autocomplete="off">
     <button class="btn gold" id="kozoSubmitBtn" style="margin-top:16px;">→ Xに答えを送る</button>
     <div class="feedback" id="kozoFeedback"></div>
+  </section>
+
+  <!-- 小謎クリア後：5つの鍵メッセージ＋最初の在り処謎 -->
+  <section id="kozoCleared" class="card" hidden>
+    <h2>✉ Xからの宣言</h2>
+    <div class="letter" id="kozoClearedLetter"></div>
+    <div class="question" id="kozoClearedArika" style="margin-top:16px;"></div>
+    <button class="btn gold" id="kozoClearedBtn" style="margin-top:16px;">→ 冒険チームを登録する</button>
   </section>
 
   <!-- チーム登録（小謎クリア後、または手紙経由で来た場合に表示） -->
@@ -144,6 +159,11 @@
     </div>
   </section>
 
+  <div id="debugLinks" hidden style="margin:20px auto 0; max-width:480px; text-align:center;">
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:8px;">（デバッグ）小謎フローテスト：</p>
+    <a class="btn ghost small" href="index.html?skip=1&route=A&debug=1" style="margin:4px;">ルートA（鍵1方面）</a>
+    <a class="btn ghost small" href="index.html?skip=1&route=B&debug=1" style="margin:4px;">ルートB（鍵3方面）</a>
+  </div>
   <button class="btn ghost small" id="debugResetAllBtn" hidden style="margin:20px auto 0;">（デバッグ）すべて最初からにする</button>
   <button class="btn gold" id="debugResetAllConfirmBtn" hidden style="margin:10px auto 0;">本当にすべて消してよい？（タップで実行）</button>
 </div>
@@ -166,6 +186,7 @@
   let assignedRoute = (route && START_ROUTES[route]) ? START_ROUTES[route] : null;
 
   if (isDebug) {
+    document.getElementById("debugLinks").hidden = false;
     const resetAllBtn = document.getElementById("debugResetAllBtn");
     const resetAllConfirmBtn = document.getElementById("debugResetAllConfirmBtn");
     resetAllBtn.hidden = false;
@@ -237,6 +258,14 @@
     return patterns.some(function (p) { return normalizeAnswer(p) === v; });
   }
 
+  // Xのメッセージ → 「謎に挑戦する」→ 答え入力画面へ
+  document.getElementById("kozoLetter").textContent = KOZO_CHALLENGE_MESSAGE;
+  document.getElementById("kozoStartBtn").addEventListener("click", function () {
+    document.getElementById("kozoMessage").hidden = true;
+    show(document.getElementById("kozoPuzzle"));
+    window.scrollTo(0, 0);
+  });
+
   document.getElementById("kozoSubmitBtn").addEventListener("click", function () {
     var a1 = document.getElementById("kozoAns1").value;
     var a2 = document.getElementById("kozoAns2").value;
@@ -252,17 +281,36 @@
       kozoCleared = true;
       if (!assignedRoute) assignedRoute = START_ROUTES["A"];
       fb.className = "feedback ok";
-      fb.textContent = "Xの声「……へえ、やるじゃん。」";
+      fb.textContent = "正解──";
       FX.burst({ count: 14 });
       setTimeout(function () {
         document.getElementById("kozoPuzzle").hidden = true;
-        show(document.getElementById("register"));
+        // 5つの鍵メッセージ＋最初の在り処謎を表示
+        document.getElementById("kozoClearedLetter").textContent = KOZO_CLEARED_MESSAGE;
+        var arikaBox = document.getElementById("kozoClearedArika");
+        var prevIdx = POINT_ORDER.indexOf(assignedRoute);
+        var prevPoint = POINT_ORDER[(prevIdx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
+        if (PUZZLES[prevPoint] && PUZZLES[prevPoint].arikaImage) {
+          var aimg = document.createElement("img");
+          aimg.src = PUZZLES[prevPoint].arikaImage;
+          aimg.alt = "在り処謎";
+          aimg.onerror = function () { this.remove(); };
+          arikaBox.appendChild(aimg);
+        }
+        show(document.getElementById("kozoCleared"));
         window.scrollTo(0, 0);
       }, 1200);
     } else {
       fb.className = "feedback ng";
       fb.textContent = "Xの声「違う……もう一度考えろ。」";
     }
+  });
+
+  // 在り処謎を見た → チーム登録へ
+  document.getElementById("kozoClearedBtn").addEventListener("click", function () {
+    document.getElementById("kozoCleared").hidden = true;
+    show(document.getElementById("register"));
+    window.scrollTo(0, 0);
   });
 
   document.getElementById("registerBtn").addEventListener("click", function () {
@@ -280,7 +328,10 @@
     FX.circle();
     setTimeout(function () {
       if (kozoCleared && assignedRoute) {
-        location.href = "start.html?s=" + assignedRoute;
+        // 在り処謎は既に見せたので、ホーム画面へ
+        renderHome();
+        window.scrollTo(0, 0);
+        return;
       } else if (start && PUZZLES[start]) {
         location.href = "start.html?s=" + start;
       } else if (dummy && DUMMY_PUZZLES[dummy]) {
@@ -306,9 +357,9 @@
   if (team) {
     renderHome();
   } else if (skip === "1") {
-    // 謎解きシートのQRから来た → 手紙スキップ、小謎の答え入力へ
+    // 謎解きシートのQRから来た → 手紙スキップ、Xのメッセージへ
     try { localStorage.setItem("fuin_letter_seen", "1"); } catch (e) {}
-    show(document.getElementById("kozoPuzzle"));
+    show(document.getElementById("kozoMessage"));
   } else {
     // 手紙をまだ読んでいなければ、まず letter.html へ（QRのパラメータを引き継ぐ）
     let letterSeen = false;
