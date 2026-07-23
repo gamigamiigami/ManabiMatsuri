@@ -956,6 +956,18 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
   animation: starFlicker 2.8s ease-in-out infinite alternate, starFloat 3.5s ease-in-out infinite;
 }
 
+/* ---------- 直前に解いた星が点灯する演出 ---------- */
+.stars span.star-lit {
+  animation: starLightUp 1s ease-out, starFlicker 2.8s ease-in-out 1s infinite alternate, starFloat 3.5s ease-in-out 1s infinite;
+}
+
+@keyframes starLightUp {
+  0% { transform: scale(0.3); color: #453a5e; text-shadow: none; opacity: 0.6; }
+  35% { transform: scale(1.5); color: var(--gold); text-shadow: 0 0 26px var(--gold-glow), 0 0 46px rgba(255, 255, 255, 0.8); opacity: 1; }
+  65% { transform: scale(0.92); text-shadow: 0 0 30px var(--gold-glow), 0 0 50px rgba(155, 127, 232, 0.6); }
+  100% { transform: scale(1); text-shadow: 0 0 20px var(--gold-glow), 0 0 34px rgba(155, 127, 232, 0.5); }
+}
+
 @keyframes starFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
