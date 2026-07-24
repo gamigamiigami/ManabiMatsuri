@@ -95,7 +95,6 @@
     <h2>📜 在り処謎</h2>
     <div class="question" id="arikaImageBox"></div>
     <div class="hint-box" id="arikaHintBox" hidden>
-      <span class="tag">🌟 妖精のささやき</span>
       <div id="arikaHintText"></div>
     </div>
     <button class="btn ghost small" id="arikaHintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
@@ -214,6 +213,11 @@
       wrap.appendChild(himg);
       himg.onerror = function () { wrap.remove(); };
       hintTextEl.appendChild(wrap);
+      const caption = document.createElement("p");
+      caption.className = "note center";
+      caption.style.marginTop = "8px";
+      caption.textContent = "これが使えそうだ…。";
+      hintTextEl.appendChild(caption);
     } else {
       hintTextEl.textContent = puzzle.arikaHint;
     }
