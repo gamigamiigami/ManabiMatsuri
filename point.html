@@ -183,8 +183,18 @@
         const aimg = document.createElement("img");
         aimg.src = puzzle.arikaImage;
         aimg.alt = "在り処謎の画像";
-        aimg.onerror = function () { this.remove(); };
-        document.getElementById("arikaImageBox").appendChild(aimg);
+        const box = document.getElementById("arikaImageBox");
+        if (puzzle.arikaHintIsImage) {
+          // 画像の下半分にヒント表が埋め込まれているので、上半分だけを切り出して表示
+          const wrap = document.createElement("div");
+          wrap.className = "arika-crop-wrap arika-crop-top";
+          wrap.appendChild(aimg);
+          aimg.onerror = function () { wrap.remove(); };
+          box.appendChild(wrap);
+        } else {
+          aimg.onerror = function () { this.remove(); };
+          box.appendChild(aimg);
+        }
       }
       document.getElementById("arikaCard").hidden = false;
       document.getElementById("backHome").hidden = isDebug;
@@ -192,7 +202,21 @@
   }
 
   document.getElementById("arikaHintBtn").addEventListener("click", function () {
-    document.getElementById("arikaHintText").textContent = puzzle.arikaHint;
+    const hintTextEl = document.getElementById("arikaHintText");
+    if (puzzle.arikaHintIsImage) {
+      // 画像の下半分（ヒント表）だけを切り出して表示する
+      hintTextEl.textContent = "";
+      const himg = document.createElement("img");
+      himg.src = puzzle.arikaImage;
+      himg.alt = "ヒントの五十音表";
+      const wrap = document.createElement("div");
+      wrap.className = "arika-crop-wrap arika-crop-hint";
+      wrap.appendChild(himg);
+      himg.onerror = function () { wrap.remove(); };
+      hintTextEl.appendChild(wrap);
+    } else {
+      hintTextEl.textContent = puzzle.arikaHint;
+    }
     document.getElementById("arikaHintBox").hidden = false;
     document.getElementById("arikaHintBtn").hidden = true;
   });

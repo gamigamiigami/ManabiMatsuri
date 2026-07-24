@@ -85,6 +85,10 @@ const PUZZLES = {
     question: "封印の紋様が浮かびあがった……\n色の法則を見抜き、答えに合うイラストを選べ。",
     image: KEY_IMAGES[5],
     arikaImage: PLACE_IMAGES[1],
+    // PlaceA.png は画像の下半分に五十音表のヒントが埋め込まれている。
+    // 通常時は上半分（謎部分）だけを見せ、ヒントボタンを押したら
+    // 下半分（表）を切り出して見せる（point.htmlのCSSクロップで実現）。
+    arikaHintIsImage: true,
     choices: ["1", "2", "3", "4"],
     answerIndex: 2,
     smallHint: "どんな言葉が入るのだろう…",
