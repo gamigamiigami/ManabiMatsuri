@@ -56,6 +56,27 @@
     return;
   }
 
+  var textEl = document.getElementById("reviveText");
+  var okEl = document.getElementById("reviveOk");
+  var btnEl = document.getElementById("reviveBtn");
+
+  // このページへの到達がブラウザの「戻る／進む」によるものかを判定する。
+  // QRを読み取った直後の遷移は type が "navigate"、
+  // 一度離れたあとに戻る操作で再びこのページに来た場合は "back_forward" になる。
+  // これを許すと、再び呪われたときにQRを読まずブラウザバックだけで
+  // 復活の呪文を再発動できてしまうため、この場合は呪いを解除しない。
+  var navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
+  var navType = (navEntries && navEntries[0] && navEntries[0].type) ||
+    (performance.navigation ? ["navigate", "reload", "back_forward"][performance.navigation.type] : "navigate");
+
+  if (navType === "back_forward") {
+    textEl.textContent = "この呪文は、もう使えないようだ。\nもう一度、スタッフの復活QRを読み取ってね。";
+    btnEl.textContent = "→ ホームへ戻る";
+    btnEl.href = "index.html";
+    btnEl.hidden = false;
+    return;
+  }
+
   // どのポイントがバックラッシュ中か探す
   var cursedPoint = null;
   POINT_ORDER.forEach(function (q) {
@@ -63,10 +84,6 @@
       cursedPoint = q;
     }
   });
-
-  var textEl = document.getElementById("reviveText");
-  var okEl = document.getElementById("reviveOk");
-  var btnEl = document.getElementById("reviveBtn");
 
   if (!cursedPoint) {
     textEl.textContent = "Xの呪いは受けていないようだ。\n冒険を続けよう。";
@@ -77,8 +94,6 @@
   }
 
   // このページに来た時点で即座に呪いを解除する（ボタンを押すかどうかに関係なく消費）。
-  // ブラウザバックでこのページに再び来ても、もう cursed ではないので
-  // 「呪いは受けていないようだ」表示になり、復活の呪文を再発動できない。
   team.points[cursedPoint].cursed = false;
   team.points[cursedPoint].revivedAt = new Date().toISOString();
   Store.save(team);
