@@ -37,7 +37,8 @@ const FX = {
     setTimeout(function () { overlay.remove(); }, 1500);
   },
 
-  // 呪いが解けるときの演出（正解時の金の魔法陣とは違う、緑紫の「解呪」演出）
+  // 呪いが解けるときの演出（攻撃的な印象を避け、優しく癒されるような
+  // 柔らかい光の輪でゆっくりフェードする「解呪」演出）
   dispel(opts) {
     opts = opts || {};
     const overlay = document.createElement("div");
@@ -45,25 +46,31 @@ const FX = {
     overlay.innerHTML =
       '<div class="fx-flash-dispel"></div>' +
       '<svg class="fx-dispel" viewBox="0 0 400 400" aria-hidden="true">' +
-      '<g fill="none" stroke="#7bc68f">' +
-      '<circle cx="200" cy="200" r="188" stroke-width="2"/>' +
-      '<circle cx="200" cy="200" r="150" stroke-width="1" opacity="0.6"/>' +
-      '<path d="M200,12 L184,146 L232,196 L172,232 L206,388" stroke-width="1.6" opacity="0.85"/>' +
-      '<path d="M12,200 L148,180 L192,228 L236,168 L388,204" stroke-width="1.6" opacity="0.85"/>' +
+      '<g fill="none" stroke="#bfe8d3">' +
+      '<circle cx="200" cy="200" r="170" stroke-width="1.2" opacity="0.5"/>' +
+      '<circle cx="200" cy="200" r="128" stroke-width="1" opacity="0.55"/>' +
       "</g>" +
-      '<g fill="none" stroke="#9b7fe8" opacity="0.85">' +
-      '<circle cx="200" cy="200" r="70" stroke-width="1.2" stroke-dasharray="3 8"/>' +
-      '<circle cx="200" cy="200" r="30" stroke-width="1" opacity="0.7"/>' +
+      '<g fill="none" stroke="#7bc68f" opacity="0.8">' +
+      '<circle cx="200" cy="200" r="90" stroke-width="1.4"/>' +
+      '<circle cx="200" cy="200" r="55" stroke-width="1.1" stroke-dasharray="2 10"/>' +
+      "</g>" +
+      '<g fill="#eaf6ef" opacity="0.9">' +
+      '<circle cx="200" cy="86" r="5"/>' +
+      '<circle cx="296" cy="148" r="4"/>' +
+      '<circle cx="296" cy="252" r="4"/>' +
+      '<circle cx="200" cy="314" r="5"/>' +
+      '<circle cx="104" cy="252" r="4"/>' +
+      '<circle cx="104" cy="148" r="4"/>' +
       "</g>" +
       "</svg>";
     document.body.appendChild(overlay);
     this.burst({
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
-      count: opts.count || 16,
-      colors: ["#7bc68f", "#3d8a54", "#9b7fe8", "#c4b0ee", "#ffffff"],
+      count: opts.count || 14,
+      colors: ["#bfe8d3", "#7bc68f", "#eaf6ef", "#c9b8f0", "#ffffff"],
     });
-    setTimeout(function () { overlay.remove(); }, 1500);
+    setTimeout(function () { overlay.remove(); }, 2700);
   },
 
   // 光の粒バースト（x,y は画面座標）

@@ -60,20 +60,28 @@
   var okEl = document.getElementById("reviveOk");
   var btnEl = document.getElementById("reviveBtn");
 
+  function showBlocked() {
+    okEl.hidden = true;
+    textEl.textContent = "この呪文は、もう使えないようだ。\nもう一度、スタッフの復活QRを読み取ってね。";
+    btnEl.textContent = "→ ホームへ戻る";
+    btnEl.href = "index.html";
+    btnEl.hidden = false;
+  }
+
   // このページへの到達がブラウザの「戻る／進む」によるものかを判定する。
   // QRを読み取った直後の遷移は type が "navigate"、
   // 一度離れたあとに戻る操作で再びこのページに来た場合は "back_forward" になる。
   // これを許すと、再び呪われたときにQRを読まずブラウザバックだけで
   // 復活の呪文を再発動できてしまうため、この場合は呪いを解除しない。
-  var navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
-  var navType = (navEntries && navEntries[0] && navEntries[0].type) ||
-    (performance.navigation ? ["navigate", "reload", "back_forward"][performance.navigation.type] : "navigate");
+  function isBackForward() {
+    var navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
+    var navType = (navEntries && navEntries[0] && navEntries[0].type) ||
+      (performance.navigation ? ["navigate", "reload", "back_forward"][performance.navigation.type] : "navigate");
+    return navType === "back_forward";
+  }
 
-  if (navType === "back_forward") {
-    textEl.textContent = "この呪文は、もう使えないようだ。\nもう一度、スタッフの復活QRを読み取ってね。";
-    btnEl.textContent = "→ ホームへ戻る";
-    btnEl.href = "index.html";
-    btnEl.hidden = false;
+  if (isBackForward()) {
+    showBlocked();
     return;
   }
 
@@ -86,6 +94,7 @@
   });
 
   if (!cursedPoint) {
+    okEl.hidden = true;
     textEl.textContent = "Xの呪いは受けていないようだ。\n冒険を続けよう。";
     btnEl.textContent = "→ ホームへ戻る";
     btnEl.href = "index.html";
@@ -110,9 +119,11 @@
     btnEl.hidden = false;
   }, 1500);
 
-  // bfcacheから復元された場合は状態を再評価するため強制リロードする
+  // bfcacheから復元された場合（＝戻る操作でこのページに来た場合）は、
+  // location.reloadすると通常のnavigate扱いになり上のback_forward判定を
+  // すり抜けてしまうため、リロードせず直接ブロック表示に切り替える
   window.addEventListener("pageshow", function (e) {
-    if (e.persisted) location.reload();
+    if (e.persisted) showBlocked();
   });
 })();
 </script>

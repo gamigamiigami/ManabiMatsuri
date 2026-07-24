@@ -1129,25 +1129,32 @@ header.site h1 {
   z-index: 2;
 }
 
-/* ---------- 解呪演出（fx-overlay-dispel）：正解時の金の魔法陣とは逆に、
-   縮みながら消えていく緑紫の演出でバックラッシュ解除を表現する ---------- */
+/* ---------- 解呪演出（fx-overlay-dispel）：正解時の金の魔法陣とは違う、
+   優しく癒されるような柔らかい光でゆっくりフェードする演出 ---------- */
 .fx-overlay-dispel .fx-flash-dispel {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(123, 198, 143, 0.35), rgba(155, 127, 232, 0.18) 40%, transparent 70%);
-  animation: fxFlash 1.4s ease-out forwards;
+  background: radial-gradient(circle at 50% 50%, rgba(191, 232, 211, 0.32), rgba(155, 127, 232, 0.12) 45%, transparent 75%);
+  animation: fxFlashDispel 2.7s ease-out forwards;
+}
+
+@keyframes fxFlashDispel {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  55% { opacity: 0.85; }
+  100% { opacity: 0; }
 }
 
 .fx-overlay-dispel .fx-dispel {
   width: min(78vw, 420px);
   height: min(78vw, 420px);
-  filter: drop-shadow(0 0 22px rgba(123, 198, 143, 0.7)) drop-shadow(0 0 50px rgba(155, 127, 232, 0.4));
-  animation: fxDispel 1.5s cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+  filter: drop-shadow(0 0 20px rgba(123, 198, 143, 0.6)) drop-shadow(0 0 46px rgba(155, 127, 232, 0.3));
+  animation: fxDispel 2.7s cubic-bezier(0.25, 0.75, 0.35, 1) forwards;
 }
 
 @keyframes fxDispel {
-  0% { opacity: 0; transform: scale(1.35) rotate(35deg); }
-  22% { opacity: 1; }
-  60% { opacity: 0.9; transform: scale(0.85) rotate(-8deg); }
-  100% { opacity: 0; transform: scale(0.45) rotate(-30deg); }
+  0% { opacity: 0; transform: scale(0.8) rotate(-4deg); }
+  22% { opacity: 1; transform: scale(1) rotate(0deg); }
+  55% { opacity: 1; transform: scale(1.04) rotate(1deg); }
+  100% { opacity: 0; transform: scale(1.12) rotate(2deg); }
 }
