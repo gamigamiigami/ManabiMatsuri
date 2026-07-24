@@ -64,6 +64,16 @@
     <p class="note center" style="font-size:1rem; line-height:1.9;">封印が反撃してきた……！<br>Xの魔法で、しばらく謎に挑めない。</p>
     <p class="center" style="font-family:'Yuji Syuku',serif; font-size:1.05rem; color:var(--gold); margin:18px 0; line-height:1.9;">大人たちも少しだけ魔法が使える。<br>近くの<strong>大人（スタッフ）</strong>を探して、<br><strong>復活の呪文（QRコード）</strong>を唱えてもらおう！</p>
     <p class="note center">スタッフに「復活したいです！」と声をかけてね。</p>
+
+    <button class="btn gold" id="cursedScanBtn" style="margin-top:16px;">📷 復活のQRを読み取る</button>
+    <p class="note center" style="margin-top:8px;">ボタンを押すとカメラが起動するよ。</p>
+
+    <div class="qr-scanner" id="qrScanner" hidden>
+      <video id="qrVideo" playsinline muted></video>
+      <div class="qr-frame"></div>
+      <button class="btn ghost small qr-cancel" id="qrCancelBtn">✕ 閉じる</button>
+    </div>
+    <p class="note center" id="qrStatus"></p>
   </section>
 
   <!-- 正解後：鍵の獲得＋在り処謎（ゲート式：正解前は絶対に表示されない） -->
@@ -101,6 +111,7 @@
   </div>
 </div>
 
+<script src="js/vendor/jsQR.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/store.js"></script>
@@ -280,6 +291,73 @@
     document.getElementById("puzzleCard").hidden = true;
     document.getElementById("cursedCard").hidden = false;
   }
+
+  // ---------- ページ内カメラで復活のQRを読み取る ----------
+  (function setupQrScanner() {
+    var scanBtn = document.getElementById("cursedScanBtn");
+    var scannerBox = document.getElementById("qrScanner");
+    var cancelBtn = document.getElementById("qrCancelBtn");
+    var statusEl = document.getElementById("qrStatus");
+    var video = document.getElementById("qrVideo");
+    if (!scanBtn || typeof jsQR === "undefined") return;
+
+    var stream = null;
+    var scanning = false;
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+
+    function stopScan() {
+      scanning = false;
+      if (stream) {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        stream = null;
+      }
+      scannerBox.hidden = true;
+    }
+
+    function tick() {
+      if (!scanning) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code && code.data && code.data.indexOf("revive.html") !== -1) {
+          statusEl.textContent = "読み取り成功……呪文が発動する。";
+          var target = code.data;
+          stopScan();
+          setTimeout(function () { location.href = target; }, 500);
+          return;
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function startScan() {
+      scannerBox.hidden = false;
+      statusEl.textContent = "カメラを起動しています…";
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function (s) {
+          stream = s;
+          video.srcObject = stream;
+          video.play();
+          scanning = true;
+          statusEl.textContent = "スタッフの復活QRを枠内に映してね";
+          requestAnimationFrame(tick);
+        })
+        .catch(function () {
+          statusEl.textContent = "カメラを使えなかった……カメラアプリで直接QRを読み取ってね。";
+          scannerBox.hidden = true;
+        });
+    }
+
+    scanBtn.addEventListener("click", startScan);
+    cancelBtn.addEventListener("click", stopScan);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) stopScan();
+    });
+  })();
 
   // revive.html から戻ってきたとき（?revived=1）→ 呪いを解除
   if (params.get("revived") === "1" && isCursed()) {

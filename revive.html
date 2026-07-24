@@ -76,10 +76,9 @@
     return;
   }
 
-  // 復活演出（少し待ってから解除）
+  // 復活演出（少し待ってから解除。正解時の金の魔法陣とは違う緑紫の解呪演出）
   setTimeout(function () {
-    FX.burst({ count: 18 });
-    FX.circle();
+    FX.dispel({ count: 18 });
     textEl.textContent = "Xの呪いが、解けていく──";
     okEl.textContent = "復活完了！もう一度挑戦できるぞ。";
     okEl.hidden = false;

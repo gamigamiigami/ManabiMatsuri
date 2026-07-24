@@ -1086,3 +1086,68 @@ header.site h1 {
   from { filter: drop-shadow(0 0 20px var(--gold-glow)); }
   to   { filter: drop-shadow(0 0 30px var(--gold-glow)) drop-shadow(0 0 50px rgba(155, 127, 232, 0.3)); }
 }
+
+/* ---------- ページ内カメラQRスキャナー（復活の呪文用） ---------- */
+.qr-scanner {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 3 / 4;
+  margin: 16px auto 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.qr-scanner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.qr-scanner .qr-frame {
+  position: absolute;
+  inset: 14% 10%;
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  animation: qrFramePulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes qrFramePulse {
+  from { box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45), 0 0 10px rgba(212, 175, 106, 0.4); }
+  to   { box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45), 0 0 22px rgba(212, 175, 106, 0.75); }
+}
+
+.qr-scanner .qr-cancel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(10, 7, 20, 0.7);
+  z-index: 2;
+}
+
+/* ---------- 解呪演出（fx-overlay-dispel）：正解時の金の魔法陣とは逆に、
+   縮みながら消えていく緑紫の演出でバックラッシュ解除を表現する ---------- */
+.fx-overlay-dispel .fx-flash-dispel {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(123, 198, 143, 0.35), rgba(155, 127, 232, 0.18) 40%, transparent 70%);
+  animation: fxFlash 1.4s ease-out forwards;
+}
+
+.fx-overlay-dispel .fx-dispel {
+  width: min(78vw, 420px);
+  height: min(78vw, 420px);
+  filter: drop-shadow(0 0 22px rgba(123, 198, 143, 0.7)) drop-shadow(0 0 50px rgba(155, 127, 232, 0.4));
+  animation: fxDispel 1.5s cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+}
+
+@keyframes fxDispel {
+  0% { opacity: 0; transform: scale(1.35) rotate(35deg); }
+  22% { opacity: 1; }
+  60% { opacity: 0.9; transform: scale(0.85) rotate(-8deg); }
+  100% { opacity: 0; transform: scale(0.45) rotate(-30deg); }
+}
