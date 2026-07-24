@@ -76,7 +76,15 @@
     return;
   }
 
-  // 復活演出（少し待ってから解除。正解時の金の魔法陣とは違う緑紫の解呪演出）
+  // このページに来た時点で即座に呪いを解除する（ボタンを押すかどうかに関係なく消費）。
+  // ブラウザバックでこのページに再び来ても、もう cursed ではないので
+  // 「呪いは受けていないようだ」表示になり、復活の呪文を再発動できない。
+  team.points[cursedPoint].cursed = false;
+  team.points[cursedPoint].revivedAt = new Date().toISOString();
+  Store.save(team);
+  Store.send(team, "revived", cursedPoint, {});
+
+  // 復活演出（少し待ってから表示。正解時の金の魔法陣とは違う緑紫の解呪演出）
   setTimeout(function () {
     FX.dispel({ count: 18 });
     textEl.textContent = "Xの呪いが、解けていく──";
@@ -86,6 +94,11 @@
     btnEl.href = "point.html?p=" + cursedPoint + "&revived=1";
     btnEl.hidden = false;
   }, 1500);
+
+  // bfcacheから復元された場合は状態を再評価するため強制リロードする
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) location.reload();
+  });
 })();
 </script>
 </body>
