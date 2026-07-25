@@ -924,15 +924,46 @@
     },
   };
 
+  // ========================================
+  // 組み合わせプリセット
+  //
+  // モチーフごとに大きさ・位置を上書きできる。書式は
+  //   "モチーフID|大きさ|位置"
+  // 例: "quill|22% auto|8% 7%" → 羽根ペンを22%の大きさで左上に置く
+  // 並び順は「手前 → 奥」。
+  // ========================================
+  var PRESETS = {
+    // Xの手紙・4点セット（魔法陣を背に、鍵・魔導書・羽根ペンを配置）
+    xLetter: [
+      "quill|26% auto|6% 5%",
+      "grimoire|36% auto|6% 88%",
+      "keyWatermark|56% auto|center 48%",
+      "magicCircle|80% auto|center 48%",
+    ],
+  };
+
   // 既定の組み合わせ（手前 → 奥）
-  var DEFAULT_DECOR = ["keyWatermark", "magicCircle", "stardust"];
+  var DEFAULT_DECOR = PRESETS.xLetter;
 
   function toDataUri(svgText) {
     return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText) + '")';
   }
 
+  // "モチーフID|大きさ|位置|繰り返し" の記法をばらす
+  function parseItem(raw) {
+    if (raw && typeof raw === "object") return raw;
+    var parts = String(raw).split("|");
+    var item = { id: parts[0].trim() };
+    if (parts[1] && parts[1].trim()) item.size = parts[1].trim();
+    if (parts[2] && parts[2].trim()) item.position = parts[2].trim();
+    if (parts[3] && parts[3].trim()) item.repeat = parts[3].trim();
+    return item;
+  }
+
   // モチーフ1つを background の各プロパティに展開する
-  function expand(motif) {
+  // ov で大きさ・位置・繰り返しを個別に上書きできる
+  function expand(motif, ov) {
+    ov = ov || {};
     var n = motif.layers || 1;
     var images = [];
     var sizes = [];
@@ -940,9 +971,9 @@
     var repeats = [];
     for (var i = 0; i < n; i++) {
       images.push(toDataUri(motif.svg));
-      sizes.push(motif.sizes ? motif.sizes[i] : motif.size);
-      positions.push(motif.positions ? motif.positions[i] : motif.position);
-      repeats.push(motif.repeat);
+      sizes.push(ov.size || (motif.sizes ? motif.sizes[i] : motif.size));
+      positions.push(ov.position || (motif.positions ? motif.positions[i] : motif.position));
+      repeats.push(ov.repeat || motif.repeat);
     }
     return { images: images, sizes: sizes, positions: positions, repeats: repeats };
   }
@@ -958,7 +989,11 @@
     if (!list) {
       var attr = el.getAttribute("data-decor");
       if (attr === "none") { el.setAttribute("data-decor-applied", "1"); return; }
-      list = attr ? attr.split(",") : DEFAULT_DECOR;
+      if (attr && attr.indexOf("preset:") === 0) {
+        list = PRESETS[attr.slice(7).trim()] || DEFAULT_DECOR;
+      } else {
+        list = attr ? attr.split(",") : DEFAULT_DECOR;
+      }
     }
 
     var images = [];
@@ -968,10 +1003,10 @@
     var blends = [];
 
     list.forEach(function (raw) {
-      var key = String(raw).trim();
-      var motif = MOTIFS[key];
+      var item = parseItem(raw);
+      var motif = MOTIFS[item.id];
       if (!motif) return;
-      var e = expand(motif);
+      var e = expand(motif, item);
       images = images.concat(e.images);
       sizes = sizes.concat(e.sizes);
       positions = positions.concat(e.positions);
@@ -1006,6 +1041,7 @@
 
   global.LetterDecor = {
     MOTIFS: MOTIFS,
+    PRESETS: PRESETS,
     DEFAULT_DECOR: DEFAULT_DECOR,
     apply: apply,
     applyAll: applyAll,
