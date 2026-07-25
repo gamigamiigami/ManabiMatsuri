@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手紙の背景デザイン見本 | O中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .wrap { max-width: 1100px; }
+
+  .lead-note {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.9;
+    margin-bottom: 8px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+    margin-top: 26px;
+  }
+
+  .swatch { display: flex; flex-direction: column; }
+
+  .swatch-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .swatch-name {
+    font-family: var(--brush);
+    font-size: 1.05rem;
+    color: var(--gold);
+  }
+  .swatch-id {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--violet);
+    background: rgba(155, 127, 232, 0.12);
+    border: 1px solid rgba(155, 127, 232, 0.35);
+    border-radius: 6px;
+    padding: 1px 7px;
+    cursor: pointer;
+    user-select: all;
+  }
+  .swatch-note {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.75;
+    margin-bottom: 8px;
+  }
+
+  /* 実際の手紙と同じ紙の質感で見比べる */
+  .paper {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border: 1.5px solid #b09a6d;
+    border-radius: 12px;
+    padding: 20px 18px;
+    color: #3d3018;
+    font-family: var(--serif);
+    font-size: 0.8rem;
+    line-height: 2.1;
+    white-space: pre-wrap;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 15%, rgba(120, 90, 40, 0.16), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 80%, rgba(120, 90, 40, 0.14), transparent 60%),
+      linear-gradient(178deg, #ecdfc0 0%, #e2d2ab 55%, #d8c599 100%);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), inset 0 0 40px rgba(120, 90, 40, 0.16);
+    overflow: hidden;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 18px 0 4px;
+  }
+  .toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: rgba(155, 127, 232, 0.08);
+    border: 1px solid rgba(155, 127, 232, 0.3);
+    border-radius: 999px;
+    padding: 5px 14px;
+    cursor: pointer;
+  }
+
+  /* 重ねがけの試し置き場 */
+  .mix-area { margin-top: 34px; }
+  .mix-paper { max-width: 420px; margin: 0 auto; aspect-ratio: 3 / 4.2; }
+  .mix-input {
+    max-width: 420px;
+    margin: 12px auto 0;
+    display: block;
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    justify-content: center;
+    max-width: 700px;
+    margin: 14px auto 0;
+  }
+  .chip {
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: var(--text);
+    background: rgba(15, 8, 28, 0.7);
+    border: 1px solid var(--panel-edge);
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+  }
+  .chip.on {
+    color: #2a1f10;
+    background: linear-gradient(135deg, #f0d9a4, #d4af6a);
+    border-color: var(--gold);
+  }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="fog fog3"></div>
+  <div class="vignette"></div>
+</div>
+
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">運営用ツール</div>
+    <h1>手紙の背景デザイン見本</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <div class="card">
+    <p class="lead-note">
+      Xの手紙の紙面（文字の後ろ）に敷ける装飾の一覧です。<br>
+      気に入ったものの <b>ID</b> を教えてください。手紙に適用します。<br>
+      複数を重ねることもできます（下の「重ねて試す」で確認できます）。
+    </p>
+    <div class="toolbar">
+      <label><input type="checkbox" id="showText" checked> 本文を重ねて表示する</label>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="card mix-area">
+    <h2>重ねて試す</h2>
+    <p class="lead-note">下のIDを押すと重ねがけを試せます。</p>
+    <div class="chip-row" id="chipRow"></div>
+    <div class="paper mix-paper" id="mixPaper"></div>
+    <input class="mix-input" id="mixInput" readonly value="">
+  </div>
+</div>
+
+<script src="../js/letter-decor.js"></script>
+<script>
+(function () {
+  var SAMPLE =
+    "\n" +
+    "やあ。\n" +
+    "ぼくの名前はX。\n" +
+    "もうすぐ中学生になる。\n" +
+    "\n" +
+    "解けるものなら、\n" +
+    "解いてみろ。\n" +
+    "\n" +
+    "── 学校ぎらいのXより";
+
+  var grid = document.getElementById("grid");
+  var showText = document.getElementById("showText");
+  var papers = [];
+
+  Object.keys(LetterDecor.MOTIFS).forEach(function (id) {
+    var m = LetterDecor.MOTIFS[id];
+
+    var sw = document.createElement("div");
+    sw.className = "swatch";
+
+    var head = document.createElement("div");
+    head.className = "swatch-head";
+    var nm = document.createElement("span");
+    nm.className = "swatch-name";
+    nm.textContent = m.name;
+    var idEl = document.createElement("span");
+    idEl.className = "swatch-id";
+    idEl.textContent = id;
+    idEl.title = "クリックで選択";
+    head.appendChild(nm);
+    head.appendChild(idEl);
+
+    var note = document.createElement("p");
+    note.className = "swatch-note";
+    note.textContent = m.note;
+
+    var paper = document.createElement("div");
+    paper.className = "paper";
+    paper.textContent = SAMPLE;
+    papers.push(paper);
+
+    sw.appendChild(head);
+    sw.appendChild(note);
+    sw.appendChild(paper);
+    grid.appendChild(sw);
+
+    // 背景を適用（textContent より後に呼ぶ必要はないが、順序を揃えておく）
+    LetterDecor.apply(paper, [id]);
+  });
+
+  showText.addEventListener("change", function () {
+    papers.forEach(function (p) {
+      p.style.color = showText.checked ? "" : "transparent";
+    });
+    mixPaper.style.color = showText.checked ? "" : "transparent";
+  });
+
+  // ---- 重ねて試す ----
+  var chipRow = document.getElementById("chipRow");
+  var mixPaper = document.getElementById("mixPaper");
+  var mixInput = document.getElementById("mixInput");
+  var selected = [];
+
+  function renderMix() {
+    mixInput.value = selected.length ? selected.join(",") : "（未選択）";
+    // 一度リセットしてから貼り直す
+    mixPaper.removeAttribute("data-decor-applied");
+    mixPaper.style.backgroundImage = "";
+    mixPaper.style.backgroundSize = "";
+    mixPaper.style.backgroundPosition = "";
+    mixPaper.style.backgroundRepeat = "";
+    mixPaper.style.backgroundBlendMode = "";
+    if (selected.length) LetterDecor.apply(mixPaper, selected);
+    else mixPaper.setAttribute("data-decor-applied", "1");
+  }
+
+  mixPaper.textContent = SAMPLE;
+
+  Object.keys(LetterDecor.MOTIFS).forEach(function (id) {
+    var chip = document.createElement("button");
+    chip.className = "chip";
+    chip.textContent = id;
+    chip.addEventListener("click", function () {
+      var i = selected.indexOf(id);
+      if (i >= 0) { selected.splice(i, 1); chip.classList.remove("on"); }
+      else { selected.push(id); chip.classList.add("on"); }
+      renderMix();
+    });
+    chipRow.appendChild(chip);
+  });
+
+  renderMix();
+})();
+</script>
+</body>
+</html>
