@@ -540,10 +540,392 @@
         "</g>" +
         '<text x="60" y="76" fill="' + RED + '" font-family="serif" font-size="46" text-anchor="middle">X</text>'),
     },
+
+    // ==========================================================
+    // 追加分：魔法使い感の強いモチーフ
+    // ==========================================================
+
+    // ---- 21. アストロラーベ ----
+    astrolabe: {
+      name: "アストロラーベ",
+      note: "中世の天体観測儀。目盛と回転盤が「かっこいい魔術師」の空気。",
+      size: "66% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.2">' +
+        '<circle cx="100" cy="100" r="92"/><circle cx="100" cy="100" r="83"/>' +
+        '<circle cx="100" cy="100" r="62"/><circle cx="100" cy="100" r="13"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_FAINT + '" stroke-width="1">' +
+        '<circle cx="100" cy="86" r="47"/><circle cx="100" cy="72" r="30"/>' +
+        '<line x1="17" y1="100" x2="183" y2="100"/><line x1="100" y1="17" x2="100" y2="183"/>' +
+        "</g>" +
+        '<g stroke="' + INK_SOFT + '" stroke-width="0.8">' +
+        ring(100, 100, 92, 36, function (x, y) {
+          return '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (100 + (x - 100) * 0.9).toFixed(1) + '" y2="' + (100 + (y - 100) * 0.9).toFixed(1) + '"/>';
+        }) +
+        "</g>" +
+        '<g transform="rotate(-27 100 100)" fill="none" stroke="' + INK + '" stroke-width="1.3">' +
+        '<rect x="22" y="95.5" width="156" height="9" rx="4.5"/>' +
+        '<circle cx="42" cy="100" r="3.6"/><circle cx="158" cy="100" r="3.6"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.1">' +
+        '<path d="M100,38 C112,44 118,54 112,62"/>' +
+        '<path d="M46,120 C56,128 68,128 74,120"/>' +
+        '<path d="M152,124 C144,132 132,132 126,124"/>' +
+        "</g>" +
+        '<g fill="' + INK + '">' +
+        '<circle cx="112" cy="62" r="2.8"/><circle cx="74" cy="120" r="2.8"/><circle cx="126" cy="124" r="2.8"/>' +
+        "</g>"),
+    },
+
+    // ---- 22. ウロボロス ----
+    ouroboros: {
+      name: "ウロボロス",
+      note: "自らの尾を噛む蛇。「終わりと始まり」の象徴で見栄えも強い。",
+      size: "60% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<path d="M170.7,133.0 A78,78 0 1,1 170.7,67.0 L154.4,74.6 A60,60 0 1,0 154.4,125.4 Z" ' +
+        'fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6"/>' +
+        '<path d="M158,54 L196,66 L170,92 L161,73 Z" fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+        '<circle cx="173" cy="68" r="2.6" fill="' + INK + '"/>' +
+        '<g fill="' + INK_FAINT + '">' +
+        ring(100, 100, 69, 20, function (x, y, rot, i) {
+          if (i > 16) return "";
+          return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2"/>';
+        }) +
+        "</g>" +
+        '<circle cx="100" cy="100" r="44" fill="none" stroke="' + INK_FAINT + '" stroke-width="0.9" stroke-dasharray="3 7"/>'),
+    },
+
+    // ---- 23. 万物を見通す目 ----
+    allSeeingEye: {
+      name: "万物を見通す目",
+      note: "三角形の中の目。ミステリアスさが一気に増す一枚看板。",
+      size: "58% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g stroke="' + INK_FAINT + '" stroke-width="1">' +
+        ring(100, 108, 96, 16, function (x, y) {
+          return '<line x1="' + (100 + (x - 100) * 0.72).toFixed(1) + '" y1="' + (108 + (y - 108) * 0.72).toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>';
+        }) +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6">' +
+        '<polygon points="' + polygonPoints(100, 108, 76, 3, 0) + '" stroke-linejoin="round"/>' +
+        '<path d="M60,112 Q100,80 140,112 Q100,144 60,112 Z"/>' +
+        "</g>" +
+        '<circle cx="100" cy="112" r="14" fill="none" stroke="' + INK_SOFT + '" stroke-width="1.4"/>' +
+        '<circle cx="100" cy="112" r="5.5" fill="' + INK + '"/>'),
+    },
+
+    // ---- 24. 交差する杖 ----
+    wands: {
+      name: "交差する杖",
+      note: "魔法使いの得物。紋章のように構えが決まる。",
+      size: "62% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="2.6" stroke-linecap="round">' +
+        '<line x1="36" y1="168" x2="150" y2="54"/>' +
+        '<line x1="164" y1="168" x2="50" y2="54"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK + '" stroke-width="1.4">' +
+        '<line x1="52" y1="152" x2="64" y2="164"/><line x1="60" y1="144" x2="72" y2="156"/>' +
+        '<line x1="148" y1="152" x2="136" y2="164"/><line x1="140" y1="144" x2="128" y2="156"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.3">' +
+        '<path d="M150,54 l6,-14 l6,14 l14,6 l-14,6 l-6,14 l-6,-14 l-14,-6 Z"/>' +
+        '<path d="M50,54 l4,-10 l4,10 l10,4 l-10,4 l-4,10 l-4,-10 l-10,-4 Z"/>' +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '">' +
+        '<circle cx="100" cy="30" r="2.4"/><circle cx="176" cy="104" r="2"/><circle cx="26" cy="104" r="2"/>' +
+        "</g>"),
+    },
+
+    // ---- 25. 魔導書 ----
+    grimoire: {
+      name: "魔導書",
+      note: "開いた本から魔法陣が浮かぶ図。「Xの研究ノート」感が出る。",
+      size: "72% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 180",
+        '<g fill="none" stroke="' + INK_FAINT + '" stroke-width="1">' +
+        '<circle cx="100" cy="48" r="34"/><circle cx="100" cy="48" r="26"/>' +
+        '<polygon points="' + polygonPoints(100, 48, 26, 3, 0) + '"/>' +
+        '<polygon points="' + polygonPoints(100, 48, 26, 3, Math.PI) + '"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<path d="M100,120 C74,106 44,104 18,110 L18,158 C44,152 74,154 100,168 Z"/>' +
+        '<path d="M100,120 C126,106 156,104 182,110 L182,158 C156,152 126,154 100,168 Z"/>' +
+        '<line x1="100" y1="120" x2="100" y2="168"/>' +
+        "</g>" +
+        '<g stroke="' + INK_FAINT + '" stroke-width="0.9">' +
+        '<line x1="30" y1="122" x2="86" y2="132"/><line x1="30" y1="134" x2="86" y2="144"/>' +
+        '<line x1="30" y1="146" x2="72" y2="153"/>' +
+        '<line x1="114" y1="132" x2="170" y2="122"/><line x1="114" y1="144" x2="170" y2="134"/>' +
+        '<line x1="114" y1="153" x2="156" y2="146"/>' +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '">' +
+        '<circle cx="100" cy="92" r="2"/><circle cx="88" cy="102" r="1.5"/><circle cx="112" cy="102" r="1.5"/>' +
+        "</g>"),
+    },
+
+    // ---- 26. 水晶玉 ----
+    crystalBall: {
+      name: "水晶玉",
+      note: "占いの水晶。中に星を仕込めるので謎の仕掛けにも使える。",
+      size: "48% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 160 200",
+        '<circle cx="80" cy="84" r="58" fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6"/>' +
+        '<path d="M44,50 C34,60 30,74 34,88" fill="none" stroke="' + INK_FAINT + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<g fill="none" stroke="' + INK_FAINT + '" stroke-width="0.9">' +
+        '<path d="M40,104 C58,92 74,104 92,92 C106,82 118,90 124,100"/>' +
+        '<path d="M46,118 C64,108 80,118 98,108"/>' +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '">' +
+        '<circle cx="66" cy="70" r="2.2"/><circle cx="96" cy="60" r="1.7"/><circle cx="104" cy="82" r="1.5"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<path d="M46,132 C58,146 102,146 114,132"/>' +
+        '<path d="M52,142 L44,176"/><path d="M108,142 L116,176"/>' +
+        '<rect x="34" y="176" width="92" height="10" rx="4"/>' +
+        "</g>"),
+    },
+
+    // ---- 27. 錬金の蒸留器 ----
+    alembic: {
+      name: "錬金の蒸留器",
+      note: "フラスコと炎。理科室の謎ともつながる錬金術らしい一枚。",
+      size: "64% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 180",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<circle cx="58" cy="86" r="34"/>' +
+        '<path d="M46,54 L46,32 L70,32 L70,54"/>' +
+        '<path d="M86,72 C120,64 138,80 140,102"/>' +
+        '<path d="M92,84 C122,78 132,92 132,104"/>' +
+        '<path d="M120,104 L152,104 L146,146 C144,156 128,156 126,146 Z"/>' +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '" stroke="none">' +
+        '<path d="M129,132 L149,132 L146,146 C144,156 132,156 130,146 Z"/>' +
+        '<circle cx="50" cy="92" r="3"/><circle cx="64" cy="80" r="2.2"/><circle cx="70" cy="96" r="2.6"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.3">' +
+        '<path d="M44,150 C44,138 52,134 52,124 C58,132 54,140 58,146 C64,140 62,130 68,126 C72,138 74,142 74,150" />' +
+        '<line x1="34" y1="152" x2="84" y2="152"/>' +
+        "</g>"),
+    },
+
+    // ---- 28. 大釜 ----
+    cauldron: {
+      name: "大釜",
+      note: "煮えたぎる魔女の釜。泡と炎でにぎやかにできる。",
+      size: "58% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 180",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6">' +
+        '<ellipse cx="100" cy="84" rx="60" ry="14"/>' +
+        '<path d="M40,84 C40,132 62,150 100,150 C138,150 160,132 160,84"/>' +
+        '<path d="M32,84 L168,84"/>' +
+        '<path d="M70,150 L60,168"/><path d="M130,150 L140,168"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_FAINT + '" stroke-width="1.1">' +
+        '<circle cx="82" cy="60" r="7"/><circle cx="106" cy="46" r="5"/><circle cx="124" cy="62" r="4"/>' +
+        '<circle cx="94" cy="30" r="3.4"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.3">' +
+        '<path d="M64,168 C64,158 72,154 72,146 C78,153 74,160 78,165"/>' +
+        '<path d="M122,165 C126,160 122,153 128,146 C128,154 136,158 136,168"/>' +
+        "</g>" +
+        '<ellipse cx="100" cy="86" rx="52" ry="9" fill="' + INK_FAINT + '" stroke="none"/>'),
+    },
+
+    // ---- 29. 召喚陣 ----
+    summonCircle: {
+      name: "召喚陣",
+      note: "六芒星＋蝋燭。magicCircleより儀式感・禍々しさが強い版。",
+      size: "76% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.3">' +
+        '<circle cx="100" cy="100" r="94"/><circle cx="100" cy="100" r="72"/>' +
+        '<polygon points="' + polygonPoints(100, 100, 72, 3, 0) + '"/>' +
+        '<polygon points="' + polygonPoints(100, 100, 72, 3, Math.PI) + '"/>' +
+        '<circle cx="100" cy="100" r="36"/>' +
+        '<polygon points="' + starPath(100, 100, 36, 5, 2) + '" stroke="' + INK_FAINT + '"/>' +
+        "</g>" +
+        // 頂点の蝋燭
+        '<g fill="none" stroke="' + INK + '" stroke-width="1.2">' +
+        ring(100, 100, 83, 6, function (x, y) {
+          return '<rect x="' + (x - 4).toFixed(1) + '" y="' + (y - 3).toFixed(1) + '" width="8" height="12" rx="2"/>' +
+            '<path d="M' + x.toFixed(1) + ',' + (y - 4).toFixed(1) + ' C' + (x - 4).toFixed(1) + ',' + (y - 10).toFixed(1) + ' ' + (x + 4).toFixed(1) + ',' + (y - 12).toFixed(1) + ' ' + x.toFixed(1) + ',' + (y - 18).toFixed(1) + '"/>';
+        }) +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '" font-family="serif" font-size="10" text-anchor="middle">' +
+        ring(100, 100, 55, 6, function (x, y, rot, i) {
+          return '<text x="' + x.toFixed(1) + '" y="' + (y + 3).toFixed(1) + '">' + RUNES[i * 4 % RUNES.length] + "</text>";
+        }) +
+        "</g>"),
+    },
+
+    // ---- 30. 封印の鎖 ----
+    sealChains: {
+      name: "封印の鎖",
+      note: "錠前と交差する鎖。まさに「封印」。鍵の透かしと相性◎。",
+      size: "70% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        (function () {
+          var o = "";
+          for (var i = 0; i < 9; i++) {
+            var t = i / 8;
+            var x = 12 + t * 176, y = 30 + t * 140;
+            o += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="11" ry="6.5" transform="rotate(38 ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')"/>';
+          }
+          for (var j = 0; j < 9; j++) {
+            var u = j / 8;
+            var x2 = 188 - u * 176, y2 = 30 + u * 140;
+            o += '<ellipse cx="' + x2.toFixed(1) + '" cy="' + y2.toFixed(1) + '" rx="11" ry="6.5" transform="rotate(-38 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ')"/>';
+          }
+          return o;
+        })() +
+        "</g>" +
+        '<g fill="rgba(236,223,192,0.55)" stroke="' + INK + '" stroke-width="1.8">' +
+        '<path d="M82,92 L82,78 A18,18 0 0,1 118,78 L118,92" fill="none"/>' +
+        '<rect x="68" y="92" width="64" height="50" rx="8"/>' +
+        "</g>" +
+        '<g fill="' + INK + '">' +
+        '<circle cx="100" cy="112" r="6"/>' +
+        '<path d="M97,116 L103,116 L105,132 L95,132 Z"/>' +
+        "</g>"),
+    },
+
+    // ---- 31. 燭台 ----
+    candelabra: {
+      name: "燭台",
+      note: "三叉の蝋燭立て。夜の書斎感が出て、上下の余白にも収まる。",
+      size: "56% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 180",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.6">' +
+        '<path d="M100,150 L100,86"/>' +
+        '<path d="M100,104 C82,104 62,96 54,80"/>' +
+        '<path d="M100,104 C118,104 138,96 146,80"/>' +
+        '<path d="M54,80 L54,64"/><path d="M146,80 L146,64"/>' +
+        '<rect x="44" y="52" width="20" height="12" rx="3"/>' +
+        '<rect x="136" y="52" width="20" height="12" rx="3"/>' +
+        '<rect x="90" y="60" width="20" height="12" rx="3"/>' +
+        '<path d="M100,86 L100,72"/>' +
+        '<path d="M78,150 C78,158 70,160 70,166 L130,166 C130,160 122,158 122,150 Z"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<rect x="48" y="34" width="12" height="18" rx="3"/>' +
+        '<rect x="140" y="34" width="12" height="18" rx="3"/>' +
+        '<rect x="94" y="42" width="12" height="18" rx="3"/>' +
+        "</g>" +
+        '<g fill="' + INK_FAINT + '" stroke="' + INK_SOFT + '" stroke-width="1.1">' +
+        '<path d="M54,32 C48,24 58,20 54,10 C62,18 62,26 54,32 Z"/>' +
+        '<path d="M146,32 C140,24 150,20 146,10 C154,18 154,26 146,32 Z"/>' +
+        '<path d="M100,40 C94,32 104,28 100,18 C108,26 108,34 100,40 Z"/>' +
+        "</g>"),
+    },
+
+    // ---- 32. 天球儀 ----
+    orbits: {
+      name: "天球儀",
+      note: "惑星の軌道。傾いた楕円が重なる図で知的な魔術師っぽさ。",
+      size: "72% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.1">' +
+        '<ellipse cx="100" cy="100" rx="92" ry="34" transform="rotate(-20 100 100)"/>' +
+        '<ellipse cx="100" cy="100" rx="74" ry="28" transform="rotate(28 100 100)"/>' +
+        '<ellipse cx="100" cy="100" rx="56" ry="22" transform="rotate(-64 100 100)"/>' +
+        '<ellipse cx="100" cy="100" rx="38" ry="15" transform="rotate(72 100 100)"/>' +
+        "</g>" +
+        '<circle cx="100" cy="100" r="12" fill="none" stroke="' + INK + '" stroke-width="1.4"/>' +
+        '<g stroke="' + INK_SOFT + '" stroke-width="1">' +
+        ring(100, 100, 20, 8, function (x, y) {
+          return '<line x1="' + (100 + (x - 100) * 0.7).toFixed(1) + '" y1="' + (100 + (y - 100) * 0.7).toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>';
+        }) +
+        "</g>" +
+        '<g fill="' + INK + '">' +
+        '<circle cx="176" cy="72" r="4.4"/><circle cx="46" cy="132" r="3.6"/>' +
+        '<circle cx="132" cy="146" r="3"/><circle cx="70" cy="66" r="2.6"/>' +
+        "</g>"),
+    },
+
+    // ---- 33. 魔術記号（シジル） ----
+    sigilMark: {
+      name: "魔術記号",
+      note: "意味を持たせられる抽象記号。オリジナルの紋章として使える。",
+      size: "54% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 200 200",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M100,20 L100,150"/>' +
+        '<path d="M62,58 L138,58"/>' +
+        '<path d="M100,150 L58,112"/>' +
+        '<path d="M100,150 L142,112"/>' +
+        '<path d="M62,58 L44,92"/>' +
+        '<path d="M138,58 L156,92"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.4">' +
+        '<circle cx="100" cy="20" r="8"/>' +
+        '<circle cx="44" cy="92" r="7"/>' +
+        '<circle cx="156" cy="92" r="7"/>' +
+        '<circle cx="100" cy="88" r="22"/>' +
+        "</g>" +
+        '<g fill="' + INK + '">' +
+        '<circle cx="58" cy="112" r="3.6"/><circle cx="142" cy="112" r="3.6"/>' +
+        '<circle cx="100" cy="150" r="4.6"/>' +
+        "</g>" +
+        '<circle cx="100" cy="100" r="86" fill="none" stroke="' + INK_FAINT + '" stroke-width="0.9" stroke-dasharray="4 8"/>'),
+    },
+
+    // ---- 34. 羽根ペンとインク壺 ----
+    quill: {
+      name: "羽根ペン",
+      note: "Xが手紙を書いた道具そのもの。署名まわりに置くと効く。",
+      size: "44% auto",
+      position: "center",
+      repeat: "no-repeat",
+      svg: svg("0 0 180 180",
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<path d="M40,150 C60,96 96,50 148,20 C142,74 116,120 62,144 Z"/>' +
+        '<path d="M148,20 C120,60 92,102 40,150"/>' +
+        "</g>" +
+        '<g stroke="' + INK_FAINT + '" stroke-width="0.9">' +
+        '<path d="M126,44 L104,44"/><path d="M136,60 L96,64"/>' +
+        '<path d="M118,80 L82,88"/><path d="M104,100 L70,112"/>' +
+        '<path d="M86,120 L58,132"/>' +
+        "</g>" +
+        '<g fill="none" stroke="' + INK_SOFT + '" stroke-width="1.5">' +
+        '<path d="M26,146 C26,140 42,138 42,146 L42,164 C42,170 26,170 26,164 Z"/>' +
+        '<ellipse cx="34" cy="146" rx="8" ry="3.4"/>' +
+        "</g>" +
+        '<ellipse cx="34" cy="152" rx="7" ry="2.6" fill="' + INK_FAINT + '" stroke="none"/>'),
+    },
   };
 
   // 既定の組み合わせ（手前 → 奥）
-  var DEFAULT_DECOR = ["magicCircle", "stardust"];
+  var DEFAULT_DECOR = ["keyWatermark", "magicCircle", "stardust"];
 
   function toDataUri(svgText) {
     return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText) + '")';
