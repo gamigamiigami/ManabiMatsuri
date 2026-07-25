@@ -940,10 +940,33 @@
       "keyWatermark|56% auto|center 48%",
       "magicCircle|80% auto|center 48%",
     ],
+
+    // ------------------------------------------------------------------
+    // パンフレット合わせ用（謎のギミック）
+    //
+    // 4つの図形を手紙の右端に、それぞれ「左半分だけ」見えるように置く。
+    // 図形の中心はちょうど紙の右端の線上にくるので、
+    // 同じ図形の「右半分」を左端に印刷したパンフレットを
+    // 画面のこの端に突き合わせると、4つの図形が同時に完成する。
+    //
+    // ▼ パンフレット側を作るときの寸法（紙の左端からの位置）
+    //     魔法陣   直径 34mm ／ 手紙の高さの 14% の位置
+    //     鍵       幅  30mm ／ 同 38%
+    //     魔導書   幅  32mm ／ 同 62%
+    //     羽根ペン 幅  26mm ／ 同 86%
+    //   ※ 上下位置は手紙の高さに対する割合なので、実際に使う手紙で
+    //      現物合わせをして最終決定すること。
+    // ------------------------------------------------------------------
+    pamphletEdge: [
+      "magicCircle|34mm auto|calc(100% + 17mm) 14%",
+      "keyWatermark|30mm auto|calc(100% + 15mm) 38%",
+      "grimoire|32mm auto|calc(100% + 16mm) 62%",
+      "quill|26mm auto|calc(100% + 13mm) 86%",
+    ],
   };
 
   // 既定の組み合わせ（手前 → 奥）
-  var DEFAULT_DECOR = PRESETS.xLetter;
+  var DEFAULT_DECOR = PRESETS.pamphletEdge;
 
   function toDataUri(svgText) {
     return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText) + '")';
