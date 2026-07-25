@@ -416,6 +416,21 @@
     position: relative;
   }
 
+  /* PC・iPad横向きは箱（.stage-frame）がvhに対して頭打ちで大きくなるため、
+     vh基準のクランプだけだと上余白と文字が箱に対して相対的に小さく見える。
+     横向きのときだけ、上限を箱の実寸（720px）に合わせて底上げする。 */
+  @media (orientation: landscape) {
+    .letter-content {
+      padding: clamp(14px, 3.4vh, 34px) clamp(20px, 4vw, 44px);
+    }
+    .letter-body {
+      font-size: clamp(0.9rem, 2.9vh, 1.9rem);
+    }
+    .letter-sign {
+      font-size: clamp(0.9rem, 2.9vh, 1.55rem);
+    }
+  }
+
   .letter-sign {
     text-align: right;
     margin-top: 4px;
