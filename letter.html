@@ -408,8 +408,12 @@
 
   .letter-body {
     font-family: "Yuji Boku", serif;
-    font-size: clamp(0.7rem, 2.2vh, 1.5rem);
-    line-height: 1.28;
+    font-size: clamp(0.95rem, 2.6vh, 1.35rem);
+    /* 罫線（.letter-content::beforeの28px周期）に文字が必ず1行ずつ
+       収まるよう、line-heightを罫線の間隔と同じ28pxに固定する。
+       font-sizeを画面サイズで変えても行送りは28pxのまま変わらないため、
+       改行するたびに必ず次の罫線の間に文字が来る。 */
+    line-height: 28px;
     white-space: pre-wrap;
     color: #34240f;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -418,13 +422,15 @@
 
   /* PC・iPad横向きは箱（.stage-frame）がvhに対して頭打ちで大きくなるため、
      vh基準のクランプだけだと上余白と文字が箱に対して相対的に小さく見える。
-     横向きのときだけ、上限を箱の実寸（720px）に合わせて底上げする。 */
+     横向きのときだけ、上限を箱の実寸（720px）に合わせて底上げする。
+     line-heightは罫線の間隔に合わせて28px固定のまま変えない。 */
   @media (orientation: landscape) {
     .letter-content {
       padding: clamp(14px, 3.4vh, 34px) clamp(20px, 4vw, 44px);
     }
     .letter-body {
-      font-size: clamp(0.9rem, 2.9vh, 1.9rem);
+      font-size: clamp(1.05rem, 2.6vh, 1.6rem);
+      line-height: 28px;
     }
     .letter-sign {
       font-size: clamp(0.9rem, 2.9vh, 1.55rem);
