@@ -941,10 +941,10 @@
     //   パンフレットの印刷サイズに合わせる想定なので、実寸指定にはしない。
     // ------------------------------------------------------------------
     pamphletAlign: [
-      "magicCircle|26% auto|17% 11%",
-      "keyWatermark|28% auto|85% 33%",
-      "grimoire|28% auto|15% 63%",
-      "quill|22% auto|86% 87%",
+      "magicCircle|18% auto|16% 10%",
+      "keyWatermark|38% auto|86% 31%",
+      "grimoire|24% auto|13% 64%",
+      "quill|30% auto|88% 89%",
     ],
   };
 
