@@ -26,19 +26,33 @@
 //   フォント読み込み後に組み直すようにしてあるが、
 //   万一読み込めなかった端末では代替フォントで組まれる点だけ注意。
 //
-// ▼ 対象と除外
-//   .letter に自動適用する。個別に外すときは data-nowrap="off"。
-//   letter.html の .letter-body は構造が異なるため、
-//   折り返しを止めるだけの簡易対応にしている。
+// ▼ 適用範囲（重要）
+//   この処理は「入れた手紙だけ」に効く。既定では何もしない。
+//   全部の手紙に効かせると、基準幅から縮める分だけ文字・枠線・影が
+//   小さくなり、元の手紙のデザインが変わってしまうため。
+//
+//   謎で使う手紙にだけ、HTMLで次の属性を付けて有効にする。
+//     <div class="letter" data-fixed="1" id="..."></div>
+//
+//   基準幅を変えたいときは data-ref="360" のように指定する
+//   （小さいほど文字は大きく表示され、原寸に近づく）。
 // ========================================
 
 (function (global) {
   "use strict";
 
+  // 有効にする手紙を選ぶ目印（既定では誰にも効かない）
+  var SELECTOR = ".letter[data-fixed], .letter-body[data-fixed]";
+
   // 手紙を組み立てる基準の幅（px）。実際の表示はここから拡大縮小される。
-  // 原文の一番長い行（22文字）がちょうど収まる幅にしてある。
-  var REF_WIDTH = 380;
+  // 手持ちのスマホの手紙の幅（およそ280〜350px）に近いほど原寸に近くなる。
+  var DEFAULT_REF_WIDTH = 360;
   var MIN_FONT_PX = 9;
+
+  function refWidthOf(el) {
+    var v = parseFloat(el.getAttribute("data-ref"));
+    return v > 0 ? v : DEFAULT_REF_WIDTH;
+  }
 
   // 折り返さずに書いたときの「一番長い行」の幅を測る
   function naturalWidth(el, text, fontSizePx) {
@@ -58,22 +72,39 @@
     return w;
   }
 
-  // 拡大縮小の器を用意する（手紙を包み、縮尺後の高さを確保する）
+  // 拡大縮小の器を用意する。
+  // 手紙そのものには transform を掛けない。
+  // .letter には開封アニメーション（letterOpen）が付いており、
+  // 同じ transform を奪い合って一瞬はみ出してしまうため、
+  // 縮尺は外側の器に持たせて、手紙側のアニメーションはそのまま動かす。
+  //
+  //   .letter-scaler … 縮尺後の高さを確保する外枠（幅100%）
+  //     .letter-scale … 基準幅で組み、transform で拡大縮小する内枠
+  //       .letter     … 手紙そのもの（元のCSSのまま）
   function ensureScaler(el) {
-    var parent = el.parentNode;
-    if (parent && parent.classList && parent.classList.contains("letter-scaler")) return parent;
-    var wrap = document.createElement("div");
-    wrap.className = "letter-scaler";
-    wrap.style.position = "relative";
-    wrap.style.width = "100%";
-    parent.insertBefore(wrap, el);
-    wrap.appendChild(el);
-    // 手紙自身の外側の余白は器に移す（縮尺の影響を受けないように）
+    var inner = el.parentNode;
+    if (inner && inner.classList && inner.classList.contains("letter-scale")) {
+      return { outer: inner.parentNode, inner: inner };
+    }
+    var outer = document.createElement("div");
+    outer.className = "letter-scaler";
+    outer.style.position = "relative";
+    outer.style.width = "100%";
+
+    inner = document.createElement("div");
+    inner.className = "letter-scale";
+    inner.style.transformOrigin = "top left";
+
+    el.parentNode.insertBefore(outer, el);
+    outer.appendChild(inner);
+    inner.appendChild(el);
+
+    // 手紙自身の外側の余白は外枠に移す（縮尺の影響を受けないように）
     var cs = global.getComputedStyle(el);
-    wrap.style.marginTop = cs.marginTop;
-    wrap.style.marginBottom = cs.marginBottom;
+    outer.style.marginTop = cs.marginTop;
+    outer.style.marginBottom = cs.marginBottom;
     el.style.margin = "0";
-    return wrap;
+    return { outer: outer, inner: inner };
   }
 
   // 手紙1通を基準幅で組み、画面幅に合わせて拡大縮小する
@@ -81,13 +112,15 @@
     var text = el.textContent || "";
     if (!text.replace(/\s/g, "")) return;
 
-    var wrap = ensureScaler(el);
-    var outer = wrap.clientWidth;
-    if (!(outer > 0)) return;              // 非表示のうちは組まない
+    var box = ensureScaler(el);
+    var availOuter = box.outer.clientWidth;
+    if (!(availOuter > 0)) return;         // 非表示のうちは組まない
+
+    var REF_WIDTH = refWidthOf(el);
 
     // ---- 1. 基準幅で組み立てる（ここまでは全機種で同じ結果になる） ----
-    el.style.transform = "none";
-    el.style.width = REF_WIDTH + "px";
+    box.inner.style.transform = "none";
+    box.inner.style.width = REF_WIDTH + "px";
     el.style.maxWidth = "none";
     el.style.whiteSpace = "pre";
     el.style.fontSize = "";
@@ -103,11 +136,10 @@
     }
 
     // ---- 2. 全体を相似変換で画面幅に合わせる ----
-    var k = outer / REF_WIDTH;
-    el.style.transformOrigin = "top left";
-    el.style.transform = "scale(" + k + ")";
-    wrap.style.height = (el.offsetHeight * k) + "px";
-    wrap.setAttribute("data-fitted-width", String(outer));
+    var k = availOuter / REF_WIDTH;
+    box.inner.style.transform = "scale(" + k + ")";
+    box.outer.style.height = (box.inner.offsetHeight * k) + "px";
+    box.outer.setAttribute("data-fitted-width", String(availOuter));
   }
 
   // letter.html の本文は構造が違うので、折り返しを止めるだけにする
@@ -129,18 +161,16 @@
   }
 
   function each(sel, fn) {
-    Array.prototype.forEach.call(document.querySelectorAll(sel), function (el) {
-      if (el.getAttribute("data-nowrap") === "off") return;
-      fn(el);
-    });
+    Array.prototype.forEach.call(document.querySelectorAll(sel), fn);
   }
 
   function fitAll() {
-    each(".letter", fitLetter);
-    each(".letter-body", fitBody);
+    each(".letter[data-fixed]", fitLetter);
+    each(".letter-body[data-fixed]", fitBody);
   }
 
   function start() {
+    if (!document.querySelector(SELECTOR)) return;   // 対象がなければ何もしない
     fitAll();
 
     // 本文は textContent で後から差し込まれるので、変化を見て組み直す。
@@ -151,7 +181,7 @@
         clearTimeout(t);
         t = setTimeout(fitAll, 0);
       });
-      each(".letter, .letter-body", function (el) {
+      each(SELECTOR, function (el) {
         mo.observe(el, { childList: true, characterData: true, subtree: true });
       });
     }
@@ -183,7 +213,7 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
   }
 
-  global.LetterFixed = { fitAll: fitAll, REF_WIDTH: REF_WIDTH };
+  global.LetterFixed = { fitAll: fitAll, DEFAULT_REF_WIDTH: DEFAULT_REF_WIDTH };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start);
