@@ -942,9 +942,9 @@
     // ------------------------------------------------------------------
     pamphletAlign: [
       "magicCircle|18% auto|16% 10%",
-      "keyWatermark|38% auto|86% 31%",
-      "grimoire|24% auto|13% 64%",
-      "quill|30% auto|88% 89%",
+      "keyWatermark|18% auto|86% 31%",
+      "grimoire|18% auto|13% 64%",
+      "quill|18% auto|88% 89%",
     ],
   };
 
