@@ -388,8 +388,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
   .letter-paper.opened .letter-content {
@@ -397,40 +396,41 @@
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(120, 90, 40, 0.15), inset 0 0 3px rgba(60, 40, 20, 0.4), 0 0 60px rgba(212, 175, 106, 0.35);
   }
 
+  .letter-content {
+    /* 罫線の間隔とline-heightは、JS（fitLetterBody）が文章の行数と
+       箱の高さから逆算してこの変数に入れる。スクロールなしで全行が
+       収まる最大の間隔を選ぶので、短い手紙ほど28px（＝今の見た目の
+       大きさ）に近くなり、長い手紙は自動で少し詰まる。 */
+    --rule-unit: 28px;
+  }
+
   .letter-content::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: repeating-linear-gradient(0deg, rgba(120, 90, 40, 0.05) 0px, transparent 2px, transparent 26px, rgba(120, 90, 40, 0.05) 28px);
+    background-image: repeating-linear-gradient(0deg, rgba(120, 90, 40, 0.05) 0px, transparent 2px, transparent calc(var(--rule-unit) - 2px), rgba(120, 90, 40, 0.05) var(--rule-unit));
     pointer-events: none;
     mix-blend-mode: multiply;
   }
 
   .letter-body {
     font-family: "Yuji Boku", serif;
-    font-size: clamp(0.95rem, 2.6vh, 1.35rem);
-    /* 罫線（.letter-content::beforeの28px周期）に文字が必ず1行ずつ
-       収まるよう、line-heightを罫線の間隔と同じ28pxに固定する。
-       font-sizeを画面サイズで変えても行送りは28pxのまま変わらないため、
-       改行するたびに必ず次の罫線の間に文字が来る。 */
-    line-height: 28px;
-    white-space: pre-wrap;
+    font-size: 1.1rem;    /* JSが実測して上書きする。これは読み込み直後の一瞬だけ使う初期値 */
+    /* 罫線に文字が必ず1行ずつ収まるよう、line-heightを罫線の間隔と
+       同じ値に固定する（値はJSが--rule-unitと同期して入れる）。 */
+    line-height: var(--rule-unit);
+    white-space: pre;
     color: #34240f;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
     position: relative;
   }
 
   /* PC・iPad横向きは箱（.stage-frame）がvhに対して頭打ちで大きくなるため、
-     vh基準のクランプだけだと上余白と文字が箱に対して相対的に小さく見える。
-     横向きのときだけ、上限を箱の実寸（720px）に合わせて底上げする。
-     line-heightは罫線の間隔に合わせて28px固定のまま変えない。 */
+     余白だけは横向きのときに箱の実寸（720px）に合わせて底上げする
+     （文字サイズと行間はJSが箱の実寸から計算するのでここでは触らない）。 */
   @media (orientation: landscape) {
     .letter-content {
       padding: clamp(14px, 3.4vh, 34px) clamp(20px, 4vw, 44px);
-    }
-    .letter-body {
-      font-size: clamp(1.05rem, 2.6vh, 1.6rem);
-      line-height: 28px;
     }
     .letter-sign {
       font-size: clamp(0.9rem, 2.9vh, 1.55rem);
@@ -589,6 +589,79 @@
   document.getElementById("letterBody").textContent = bodyText;
   document.getElementById("letterSign").textContent = signText;
 
+  // ---------------------------------------------------------------
+  // 手紙をスクロールなしで箱に収める。
+  //
+  // line-heightは罫線の間隔と常に同じ値にする（1行=1罫線を保つ）ため、
+  // 「行間を詰めて全部見せる」ことと「文字を大きくする」ことは
+  // 同じ1つの値（罫線の間隔）を動かすことでしか両立できない。
+  //
+  //   1. 文章の行数と箱の高さから、全行がちょうど収まる罫線間隔を出す
+  //      （収まる範囲でできるだけ28pxに近い値＝今の見た目の大きさを保つ）
+  //   2. その間隔の中に一番長い行が横方向にも収まるよう、文字サイズを
+  //      間隔よりわずかに小さい値に決める（読みやすい比率になるよう
+  //      間隔の82%を基準にしつつ、幅が足りなければさらに縮める）
+  //   3. 決めた間隔を --rule-unit に反映し、罫線の背景も同じ間隔になる
+  // ---------------------------------------------------------------
+  function fitLetterBody() {
+    var body = document.getElementById("letterBody");
+    var content = document.querySelector(".letter-content");
+    var sign = document.getElementById("letterSign");
+    var text = body.textContent || "";
+    if (!content || !text.replace(/\s/g, "")) return;
+
+    var MAX_UNIT = 28;   // 今の見た目（罫線28px）を超えて大きくはしない
+    var MIN_UNIT = 13;   // これ以上は詰めない（読めなくなるため）
+    var FONT_RATIO = 0.8; // 行間に対する文字サイズの比率
+
+    var cs = getComputedStyle(content);
+    var innerW = content.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    var innerH = content.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if (!(innerW > 0) || !(innerH > 0)) return;
+
+    var signH = 0;
+    if (sign && sign.textContent.trim()) {
+      var scs = getComputedStyle(sign);
+      signH = sign.getBoundingClientRect().height + parseFloat(scs.marginTop);
+    }
+    var availH = innerH - signH;
+
+    var lineList = text.split("\n");
+    var n = lineList.length;
+
+    // 1. 縦方向：全行が収まる最大の間隔（28pxを超えない）
+    var unit = Math.max(MIN_UNIT, Math.min(MAX_UNIT, Math.floor(availH / n)));
+
+    // 2. 横方向：一番長い行の実測幅から文字サイズを決める
+    var longest = lineList.reduce(function (a, b) { return b.length > a.length ? b : a; }, "");
+    var fontSize = unit * FONT_RATIO;
+
+    var probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;padding:0;margin:0;border:0;";
+    probe.style.fontFamily = cs.fontFamily || '"Yuji Boku", serif';
+    document.body.appendChild(probe);
+    probe.style.fontSize = fontSize + "px";
+    probe.textContent = longest || "　";
+    var natW = probe.getBoundingClientRect().width;
+    if (natW > innerW) {
+      fontSize = fontSize * (innerW / natW);
+    }
+    probe.parentNode.removeChild(probe);
+    if (fontSize < 9) fontSize = 9;
+
+    content.style.setProperty("--rule-unit", unit + "px");
+    body.style.fontSize = fontSize.toFixed(2) + "px";
+  }
+
+  window.__fitLetterBody = fitLetterBody;
+  fitLetterBody();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLetterBody);
+  var letterFitTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(letterFitTimer);
+    letterFitTimer = setTimeout(fitLetterBody, 120);
+  });
+
   // 再読み込み（ホームからの読みかえし）ではCTAをホームに戻すボタンにする
   var ctaLink = document.getElementById("ctaLink");
   if (isReplay) {
@@ -667,7 +740,7 @@
 
     setTimeout(function () { morphFlash.classList.add("burst"); }, 1520);
     setTimeout(function () { paper.classList.add("rise"); }, 1550);
-    setTimeout(function () { paper.classList.add("opened"); }, 2300);
+    setTimeout(function () { paper.classList.add("opened"); if (window.__fitLetterBody) window.__fitLetterBody(); }, 2300);
     setTimeout(function () { cta.classList.add("show"); }, 3500);
     setTimeout(function () { castFx.classList.remove("active"); }, 1500);
   });
