@@ -76,9 +76,17 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 }
 
 /* 印刷 */
+/* 印刷 / PDF書き出し（A4横・余白なし・等倍）
+   1920px × 1357px = 297mm × 210mm として出力する。
+   ブラウザから Ctrl+P する場合は「余白：なし」「背景のグラフィック：オン」
+   「用紙に合わせる（縮小）は使わない＝拡大縮小 100%」にすること。
+   非等倍で印刷すると図形の比率が崩れて謎が解けなくなる。 */
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { background: none; }
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: none; }
+  #side-a, #side-b { margin: 0 !important; }
+  #side-b { break-before: page; page-break-before: always; }
 }
 </style>
 </head>

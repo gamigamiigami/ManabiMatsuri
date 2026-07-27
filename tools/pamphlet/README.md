@@ -156,3 +156,48 @@ https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&fa
 
 ### マップ画像の差し込み
 B2-B3パネルの `<!-- MAP_PLACEHOLDER -->` 部分を `<img>` に差し替え。
+
+---
+
+## 印刷 / PDF
+
+`pamphlet.pdf` … A4横・2ページ（1ページ目＝A面おもて、2ページ目＝B面うら）の
+書き出し済みPDF。`pamphlet.html` を変更したら作り直すこと。
+
+### 作り直しかた
+
+リポジトリのルートで:
+
+```bash
+node - <<'JS'
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const p = await b.newPage();
+  await p.goto('file://' + process.cwd() + '/tools/pamphlet/pamphlet.html', { waitUntil: 'networkidle' });
+  await p.evaluate(() => document.fonts.ready);
+  await p.waitForTimeout(1500);
+  await p.pdf({
+    path: 'tools/pamphlet/pamphlet.pdf',
+    width: '297mm', height: '210mm',
+    margin: { top: '0', bottom: '0', left: '0', right: '0' },
+    scale: 1122.52 / 1920,       // 1920px → 297mm
+    printBackground: true,
+  });
+  await b.close();
+})();
+JS
+```
+
+### 印刷時の注意（重要）
+
+A2パネル下辺の紋章3つは「パンフレットをスマホ画面に重ねる謎」に使うため、
+**印刷の縮尺が設計どおりでないと謎が解けなくなる**。
+
+- 拡大縮小は必ず **100%（実際のサイズ）**。「用紙に合わせる」は使わない。
+- 用紙は **A4・横**。
+- **フチなし印刷**にする。紋章は紙の下辺でちょうど半分に切れる設計なので、
+  フチなしにできないプリンタで印刷した場合は、印刷後に下辺を紋章の
+  切れ目に合わせてカットする。
+- 設計値：紋章の直径 約12.4mm、左端の紋章の中心から右端の紋章の中心まで
+  約71.8mm。印刷後に定規で測って確認できる。
