@@ -153,40 +153,36 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
          その状態で矢印①②③の先にある文字を読むと「おやこ」になる。
 
          ▼ 寸法の根拠（変更するとナゾが解けなくなるので注意）
-           手紙側の図形は紙幅の18%、直線 y=1.628x-0.139 の上に並ぶ。
+           手紙側の図形は紙幅の18%、直線 y=0.944x+0.064（43.3°）の上に並ぶ。
            ここではその比率をそのまま px に換算している。
-             紙幅比1 = 411.1px  →  図形の直径 74px
-             下辺方向の全長 520px（図形1〜図形3）
+             図形の直径 80px ／ 下辺方向の全長 464px（図形1〜図形3）
            矢印は「スマホ画面の真下」を向く必要があり、
-           パンフレットを58.4°傾けて重ねるため、
-           紙の上では水平から31.6°下向きに描く。
+           パンフレットを43.3°傾けて重ねるため、
+           紙の上では水平から46.7°下向きに描く。
+           3文字は一直線に並ぶので、下から順に読むと「おやこ」になる。
          ═══════════════════════════════════════════════════════════ -->
     <div class="decorations">
       <!-- 装飾（謎には使わない） -->
       <div style="top:-120px;left:-130px;width:400px;height:400px"><img src="../../images/motifs/quill-bold.png" style="display:block;width:400px;height:400px;opacity:.5" alt="羽ペン"></div>
 
       <!-- 謎用：下辺にまたがる図形3つ（パネルのoverflow:hiddenで下半分が切れる） -->
-      <div style="left:23px;bottom:-37px;width:74px;height:74px"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:74px;height:74px;opacity:.85" alt="魔法陣"></div>
-      <div style="left:351.3px;bottom:-37px;width:74px;height:74px"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:74px;height:74px;opacity:.85" alt="鍵"></div>
-      <div style="left:543px;bottom:-15.5px;width:74px;height:31px"><img src="../../images/motifs/grimoire-bold.png" style="display:block;width:74px;height:31px;opacity:.85" alt="魔導書"></div>
+      <div style="left:48px;bottom:-40px;width:80px;height:80px"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:80px;height:80px;opacity:.85" alt="魔法陣"></div>
+      <div style="left:267.8px;bottom:-40px;width:80px;height:80px"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:80px;height:80px;opacity:.85" alt="鍵"></div>
+      <div style="left:512px;bottom:-16.7px;width:80px;height:33.5px"><img src="../../images/motifs/grimoire-bold.png" style="display:block;width:80px;height:33.5px;opacity:.85" alt="魔導書"></div>
 
-      <!-- 謎用：矢印3本（先端が下辺、水平から31.6°下向き） -->
+      <!-- 謎用：矢印3本（先端が下辺、水平から46.7°下向き） -->
       <svg style="left:0;bottom:0;width:640px;height:220px" viewBox="0 0 640 220" fill="none">
         <defs>
           <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
             <path d="M0,0 L7,3.5 L0,7 z" fill="#1d2a5e"/>
           </marker>
         </defs>
-        <!-- 各矢印: 先端(tipX,220) から 水平から31.6°上流へ 110px 戻った点が始点 -->
+        <!-- 各矢印: 先端(tipX,220) から 水平から46.7°上流へ 110px 戻った点が始点
+             （始点 = tipX-75.5, 220-80.1） -->
         <g stroke="#1d2a5e" stroke-width="3.4" marker-end="url(#ah)">
-          <line x1="44.8"  y1="162.4" x2="138.5" y2="220"/>
-          <line x1="211.4" y1="162.4" x2="305.1" y2="220"/>
-          <line x1="378.7" y1="162.4" x2="472.4" y2="220"/>
-        </g>
-        <g fill="#1d2a5e" font-family="RocknRoll One, sans-serif" font-size="26" text-anchor="middle">
-          <text x="34" y="152">③</text>
-          <text x="200" y="152">①</text>
-          <text x="368" y="152">②</text>
+          <line x1="89.4"  y1="139.9" x2="164.9" y2="220"/>
+          <line x1="166.9" y1="139.9" x2="242.4" y2="220"/>
+          <line x1="296.4" y1="139.9" x2="371.9" y2="220"/>
         </g>
       </svg>
     </div>
@@ -224,7 +220,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
         <div style="font-family:var(--font-display);font-size:23px;color:var(--navy);letter-spacing:1px">✦ Xからの挑戦 ✦</div>
         <div style="font-size:20px;line-height:1.65;margin-top:6px;color:var(--text-sub)">
           この紙のふちで切れた3つの<b>紋章</b>を、スマホに映したXの手紙の同じ紋章に<b>ぴったり重ねよ</b>。<br>
-          重なったとき、矢印がさす文字を <b>①②③</b> の順に読め。
+          重なったとき、矢印がさす文字を <b>下から順に</b> 読め。
         </div>
       </div>
     </div>
