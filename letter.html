@@ -25,8 +25,11 @@
   }
 
   @media (orientation: portrait) {
+    /* 上限は 3:4 の関係を保った組（675 / 900）にする。
+       別々の値で頭打ちさせると大画面で比率が崩れ、
+       紙の中の文字位置が他の機種とずれてしまう。 */
     .stage-frame {
-      width: min(92vw, calc(78vh * 3 / 4), 900px);
+      width: min(92vw, calc(78vh * 3 / 4), 675px);
       height: min(78vh, calc(92vw * 4 / 3), 900px);
     }
   }
@@ -373,7 +376,11 @@
   .letter-content {
     position: absolute;
     inset: 0;
-    padding: clamp(10px, 2vh, 18px) clamp(20px, 4vw, 40px);
+    /* 余白は紙の幅に対する％にする。
+       紙は縦向きでは必ず3:4になるので、余白・行間・文字がすべて幅に比例し、
+       どの機種でも紙の中の文字の位置がぴったり同じ（相似）になる。
+       パンフレットを重ねる謎はこの一致が前提。 */
+    padding: 4.7% 5.6%;
     color: #3c2c17;
     clip-path: polygon(
       0.5% 3%, 4% 0.5%, 12% 1.8%, 22% 0.2%, 34% 1.5%, 48% 0.3%, 61% 1.6%, 75% 0.4%, 88% 1.9%, 96% 0.6%, 99.5% 2.8%,
@@ -425,15 +432,12 @@
     position: relative;
   }
 
-  /* PC・iPad横向きは箱（.stage-frame）がvhに対して頭打ちで大きくなるため、
-     余白だけは横向きのときに箱の実寸（720px）に合わせて底上げする
-     （文字サイズと行間はJSが箱の実寸から計算するのでここでは触らない）。 */
+  /* 横向き（PC・iPad）は紙が4:3になり縦向きと比率が変わるため、
+     余白の比率だけ横向き用に振り直す。
+     謎（パンフレット合わせ）は縦向きを前提にしている。 */
   @media (orientation: landscape) {
     .letter-content {
-      padding: clamp(14px, 3.4vh, 34px) clamp(20px, 4vw, 44px);
-    }
-    .letter-sign {
-      font-size: clamp(0.9rem, 2.9vh, 1.55rem);
+      padding: 3.5% 4.5%;
     }
   }
 
@@ -610,17 +614,23 @@
     var text = body.textContent || "";
     if (!content || !text.replace(/\s/g, "")) return;
 
-    var MAX_UNIT = 28;   // 今の見た目（罫線28px）を超えて大きくはしない
-    var MIN_UNIT = 13;   // これ以上は詰めない（読めなくなるため）
-    var FONT_RATIO = 0.8; // 行間に対する文字サイズの比率
+    // 機種によらず紙の中の文字位置を完全一致させるため、
+    // ここで使う値はすべて「紙の幅に対する比率」で決める。
+    // px固定の上限や四捨五入を混ぜると、そこだけ比例が崩れて
+    // 文字の位置が機種ごとにずれる（パンフレット合わせの謎が成立しなくなる）。
+    var MAX_UNIT_RATIO = 0.088;  // 行間の上限（紙の内側の幅に対する比率）
+    var FONT_RATIO = 0.8;        // 行間に対する文字サイズの比率
+    var SIGN_RATIO = 0.062;      // 署名の文字サイズ（紙の内側の幅に対する比率）
 
     var cs = getComputedStyle(content);
     var innerW = content.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     var innerH = content.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
     if (!(innerW > 0) || !(innerH > 0)) return;
 
+    // 署名も幅に比例させる（vh基準のままだと比例が崩れるため）
     var signH = 0;
     if (sign && sign.textContent.trim()) {
+      sign.style.fontSize = (innerW * SIGN_RATIO).toFixed(3) + "px";
       var scs = getComputedStyle(sign);
       signH = sign.getBoundingClientRect().height + parseFloat(scs.marginTop);
     }
@@ -629,8 +639,8 @@
     var lineList = text.split("\n");
     var n = lineList.length;
 
-    // 1. 縦方向：全行が収まる最大の間隔（28pxを超えない）
-    var unit = Math.max(MIN_UNIT, Math.min(MAX_UNIT, Math.floor(availH / n)));
+    // 1. 縦方向：全行が収まる最大の行間（丸めない）
+    var unit = Math.min(innerW * MAX_UNIT_RATIO, availH / n);
 
     // 2. 横方向：一番長い行の実測幅から文字サイズを決める
     var longest = lineList.reduce(function (a, b) { return b.length > a.length ? b : a; }, "");
@@ -640,17 +650,19 @@
     probe.style.cssText = "position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;padding:0;margin:0;border:0;";
     probe.style.fontFamily = cs.fontFamily || '"Yuji Boku", serif';
     document.body.appendChild(probe);
-    probe.style.fontSize = fontSize + "px";
+    // 一定の大きさで測ってから比例計算する（測定サイズによる丸め差を避ける）
+    var PROBE = 100;
+    probe.style.fontSize = PROBE + "px";
     probe.textContent = longest || "　";
-    var natW = probe.getBoundingClientRect().width;
-    if (natW > innerW) {
-      fontSize = fontSize * (innerW / natW);
-    }
+    var natWper100 = probe.getBoundingClientRect().width;
     probe.parentNode.removeChild(probe);
-    if (fontSize < 9) fontSize = 9;
+    if (natWper100 > 0) {
+      var maxFont = innerW / (natWper100 / PROBE);
+      if (fontSize > maxFont) fontSize = maxFont;
+    }
 
-    content.style.setProperty("--rule-unit", unit + "px");
-    body.style.fontSize = fontSize.toFixed(2) + "px";
+    content.style.setProperty("--rule-unit", unit.toFixed(3) + "px");
+    body.style.fontSize = fontSize.toFixed(3) + "px";
   }
 
   window.__fitLetterBody = fitLetterBody;
