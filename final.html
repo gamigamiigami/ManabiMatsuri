@@ -67,37 +67,28 @@
   #k5Label { left: 86.85%; width: 8.42%; }
 
   /* 演算子（魔法陣の紋章）の入力欄：紋章の中心に合わせて配置。
+     背景は透明にして、下の魔法陣の紋章がそのまま見えるようにする。
+     文字は紋章の線と重なっても読めるよう、縁取り（text-shadow）で
+     視認性を確保する。
      「ぷらす」「かける」のような複数文字のIME変換前入力も受けられる幅を確保。 */
   input.tobira-op-input {
     position: absolute;
     top: 15.6%; height: 5%;
     width: 16%;
     border: none; border-radius: 8px;
-    background: rgba(255, 255, 255, 0.88);
+    background: transparent;
     text-align: center;
     font-family: "Zen Kaku Gothic New", sans-serif;
     font-weight: 800;
     font-size: clamp(0.68rem, 2.3vw, 0.9rem);
     color: #3a2a5c;
-    box-shadow: 0 0 0 1.5px rgba(155, 127, 232, 0.75);
+    text-shadow: 0 0 4px #fff, 0 0 4px #fff, 0 0 8px #fff;
+    box-shadow: none;
     padding: 0 4px;
   }
-  input.tobira-op-input:focus { outline: none; box-shadow: 0 0 0 2.5px var(--violet); }
+  input.tobira-op-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(155, 127, 232, 0.6); border-radius: 8px; }
   #op1 { left: 30.19%; }
   #op2 { left: 70.5%; }
-
-  .tobira-op-label {
-    position: absolute;
-    top: 21%; height: 3%;
-    width: 16%;
-    font-family: "Zen Kaku Gothic New", sans-serif;
-    font-size: clamp(0.55rem, 1.8vw, 0.72rem);
-    color: var(--text-dim);
-    text-align: center;
-    white-space: nowrap;
-  }
-  #op1Label { left: 30.19%; }
-  #op2Label { left: 70.5%; }
 
   .digits-hint { text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; }
   .digit-inputs { display: flex; justify-content: center; gap: 10px; margin: 8px 0 18px; }
@@ -191,8 +182,6 @@
       <span class="tobira-key-label" id="k5Label">鍵5</span>
       <input type="text" maxlength="6" class="tobira-op-input" id="op1" placeholder="？">
       <input type="text" maxlength="6" class="tobira-op-input" id="op2" placeholder="？">
-      <span class="tobira-op-label" id="op1Label">①</span>
-      <span class="tobira-op-label" id="op2Label">②</span>
     </div>
 
     <div class="digits-hint">答えの3桁を入力せよ</div>
