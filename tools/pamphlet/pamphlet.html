@@ -95,7 +95,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 <!-- ╔══════════════════════════════════════════════════════════╗
      ║  A面（おもて）— 三つ折り 3等分                          ║
      ╚══════════════════════════════════════════════════════════╝ -->
-<div id="side-a" style="display:grid;grid-template-columns:1fr 1fr 1fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
+<div id="side-a" style="position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
 
   <!-- ═══════════════════════════════════════════
        PANEL: A1 — 運営からのメッセージ
@@ -104,7 +104,8 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
     <!-- A1: 装飾レイヤー -->
     <div class="decorations">
-      <div style="bottom:0;left:0;right:0;height:42px;background:linear-gradient(90deg,var(--gold) 0%,var(--orange) 50%,var(--gold) 100%)"></div>
+      <!-- 切り取り線(y=1315)より上に置く。下辺いっぱいだと切り落とされてしまう -->
+      <div style="bottom:56px;left:0;right:0;height:42px;background:linear-gradient(90deg,var(--gold) 0%,var(--orange) 50%,var(--gold) 100%)"></div>
       <div style="top:170px;right:16px;font-size:56px;transform:rotate(15deg);opacity:.15">📐</div>
       <div style="top:320px;left:16px;font-size:52px;transform:rotate(-12deg);opacity:.15">🔬</div>
       <div style="bottom:96px;right:26px;font-size:46px;transform:rotate(8deg);opacity:.15">🗝️</div>
@@ -155,42 +156,52 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     <!-- ═══════════════════════════════════════════════════════════════
          A2: 謎解きギミック（スマホのXの手紙に重ねる）
 
-         下辺にそって図形3つを「中心が紙のフチの線上」に置く。
-         参加者はこの3つを、スマホに表示されたXの手紙の同じ図形に
-         重ねることで、パンフレットの位置・角度・拡大率を確定させる。
-         その状態で矢印①②③の先にある文字を読むと「おやこ」になる。
+         切り取り線（下辺から6.5mm上）にまたがるように図形2つを置く。
+         参加者は紙を点線で切り、45.6°傾けてスマホの画面に置き、
+         2つの図形がそれぞれ「1つの完全な図形」に見えるように合わせる。
+         2点そろえばパンフレットの位置・角度・拡大率が一意に決まる。
+         その状態で矢印がさす文字を下から順に読むと「おやこ」になる。
 
-         ▼ 寸法の根拠（変更するとナゾが解けなくなるので注意）
-           手紙側の図形は紙幅の18%、直線 y=0.944x+0.064（43.3°）の上に並ぶ。
-           ここではその比率をそのまま px に換算している。
-             図形の直径 80px ／ 下辺方向の全長 464px（図形1〜図形3）
-           矢印は「スマホ画面の真下」を向く必要があり、
-           パンフレットを43.3°傾けて重ねるため、
-           紙の上では水平から46.7°下向きに描く。
-           3文字は一直線に並ぶので、下から順に読むと「おやこ」になる。
+         ▼ この数値は手で書き換えないこと
+           tools/pamphlet/solve_overlay.py が、手紙を実際に描画して
+           測った文字座標とモチーフPNGのインク範囲から計算している。
+           配置を変えるときはあのスクリプトを直して実行し、
+           出力を js/letter-decor.js とここの両方に貼り直す。
+
+         ▼ 印刷とサイズ
+           手紙の幅を 65.96mm として刷る想定（uv 1.0 = 426.4px）。
+           魔法陣のインク直径 19.8mm、鍵のインク 21.1 x 13.6mm。
+           図形の中心は切り取り線の上なので、印刷されるのは上半分。
+           切り取り線を紙の下辺そのものにすると、フチなし印刷でない
+           プリンタでは下半分がまるごと印刷されず重ねられなくなるため、
+           6.5mm 内側に入れて「ハサミで切る」方式にしている。
+
+         ▼ img の top は canvas の左上。絵は canvas いっぱいには
+           描かれていないので、インクの中心が切り取り線に乗るよう
+           オフセットしてある（鍵は canvas 中心より下寄り）。
          ═══════════════════════════════════════════════════════════ -->
     <div class="decorations">
       <!-- 装飾（謎には使わない） -->
       <div style="top:-120px;left:-130px;width:400px;height:400px"><img src="../../images/motifs/quill-bold.png" style="display:block;width:400px;height:400px;opacity:.5" alt="羽ペン"></div>
 
-      <!-- 謎用：下辺にまたがる図形3つ（パネルのoverflow:hiddenで下半分が切れる） -->
-      <div style="left:48px;bottom:-40px;width:80px;height:80px"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:80px;height:80px;opacity:.85" alt="魔法陣"></div>
-      <div style="left:267.8px;bottom:-40px;width:80px;height:80px"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:80px;height:80px;opacity:.85" alt="鍵"></div>
-      <div style="left:512px;bottom:-16.7px;width:80px;height:33.5px"><img src="../../images/motifs/grimoire-bold.png" style="display:block;width:80px;height:33.5px;opacity:.85" alt="魔導書"></div>
+      <!-- 謎用：切り取り線(y=1315)にまたがる図形2つ -->
+      <div style="left:47.7px;top:1254.1px;width:121.8px;height:121.8px"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:121.8px;height:121.8px;opacity:.9" alt="魔法陣"></div>
+      <div style="left:404.2px;top:1210.6px;width:198.7px;height:198.7px"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:198.7px;height:198.7px;opacity:.9" alt="鍵"></div>
 
-      <!-- 謎用：矢印3本（先端が下辺、水平から46.7°下向き） -->
-      <svg style="left:0;bottom:0;width:640px;height:220px" viewBox="0 0 640 220" fill="none">
+      <!-- 謎用：矢印3本（切り取り線に垂直＝紙の上では真下、先端が切り取り線上）
+           垂直にしているのは、手紙の文字が斜め45°の格子に並んでいるため。
+           画面の真下に向けると、真ん中の矢印が上の行の「ず」に先に当たる。 -->
+      <svg style="left:0;top:1200px;width:640px;height:157px" viewBox="0 0 640 157" fill="none">
         <defs>
           <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
             <path d="M0,0 L7,3.5 L0,7 z" fill="#1d2a5e"/>
           </marker>
         </defs>
-        <!-- 各矢印: 先端(tipX,220) から 水平から46.7°上流へ 110px 戻った点が始点
-             （始点 = tipX-75.5, 220-80.1） -->
+        <!-- 先端の y=115 は切り取り線 1315px（svg の原点が 1200px なので 115） -->
         <g stroke="#1d2a5e" stroke-width="3.4" marker-end="url(#ah)">
-          <line x1="89.4"  y1="139.9" x2="164.9" y2="220"/>
-          <line x1="166.9" y1="139.9" x2="242.4" y2="220"/>
-          <line x1="296.4" y1="139.9" x2="371.9" y2="220"/>
+          <line x1="189.7" y1="25" x2="189.7" y2="115"/>
+          <line x1="267.6" y1="25" x2="267.6" y2="115"/>
+          <line x1="391.0" y1="25" x2="391.0" y2="115"/>
         </g>
       </svg>
     </div>
@@ -227,7 +238,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <div style="margin-top:14px;border:3px dashed var(--navy);border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.55)">
         <div style="font-family:var(--font-display);font-size:23px;color:var(--navy);letter-spacing:1px">✦ Xからの挑戦 ✦</div>
         <div style="font-size:20px;line-height:1.65;margin-top:6px;color:var(--text-sub)">
-          この紙のふちで切れた3つの<b>紋章</b>を、スマホに映したXの手紙の同じ紋章に<b>ぴったり重ねよ</b>。<br>
+          点線で切りはなした<b>ふち</b>にある2つの<b>紋章</b>を、スマホに映したXの手紙の同じ紋章に<b>ぴったり重ねよ</b>。<br>
           重なったとき、矢印がさす文字を <b>下から順に</b> 読め。
         </div>
       </div>
@@ -261,8 +272,8 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <div style="bottom:236px;left:96px;font-size:24px;color:var(--gold);opacity:.6">✦</div>
     </div>
 
-    <!-- A3: コンテンツレイヤー -->
-    <div class="content" style="padding:40px 40px">
+    <!-- A3: コンテンツレイヤー（下は切り取り線 y=1315 より上に収める） -->
+    <div class="content" style="padding:40px 40px 58px">
       <div style="display:inline-flex;transform:rotate(-2deg)">
         <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:28px;padding:8px 22px;border-radius:999px;letter-spacing:4px;box-shadow:4px 4px 0 rgba(0,0,0,.3)">たいけん授業 ＋ 謎解き脱出ゲーム</span>
       </div>
@@ -284,6 +295,18 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       </div>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════
+       切り取り線（3面ぶち抜き・y=1315px＝下辺から6.5mm上）
+
+       謎の紋章は、この線でちょうど半分に切れるように置いてある。
+       線を紙の下辺そのものにするとフチなし印刷できないプリンタで
+       紋章の印刷が欠けてしまうので、内側に入れてハサミで切る方式。
+       この線より下には何も置かないこと。
+       ═══════════════════════════════════════════ -->
+  <div style="position:absolute;left:0;right:0;top:1315px;border-top:2px dashed #9a9486;z-index:5"></div>
+  <div style="position:absolute;left:20px;top:1315px;transform:translateY(-50%);z-index:5;background:var(--cream);padding:0 10px;font-size:22px;color:#8a8578;letter-spacing:2px;white-space:nowrap">✂ ここで切る</div>
+  <div style="position:absolute;left:1700px;top:1315px;transform:translateY(-50%);z-index:5;background:var(--cream);padding:0 10px;font-size:22px;color:#8a8578;letter-spacing:2px;white-space:nowrap">✂ ここで切る</div>
 </div>
 
 <!-- ╔══════════════════════════════════════════════════════════╗
