@@ -207,14 +207,30 @@ def main():
           % (right - left, (right - left) / PX_PER_MM, margin / PX_PER_MM))
     print("切り取り線 y = %dpx（紙の下辺から %.1fmm 上）" % (cut_y, CUT_INSET_PX / PX_PER_MM))
 
-    print("\n図形（div の left/top と表示サイズ）")
+    # ▼ 紙は重ねるとき切り取り線の角度だけ回るので、紙に刷る絵は
+    #   あらかじめ逆に回しておかないと、画面の絵と向きが合わない。
+    #   （魔法陣は同心円なので回っても気づきにくいが、鍵は明らかにずれる）
+    #   transform-origin をインクの中心に置けば、回しても中心は動かないので
+    #   left/top はそのままでよい。
+    print("\n図形（div の left/top・表示サイズ・回転）")
+    print("  transform: rotate(%.2fdeg) を必ずかけること" % -math.degrees(theta))
     for name, t, ink_w in (("magicCircle", T_CIRCLE, CIRCLE_INK),
                            ("keyWatermark", T_KEY, KEY_INK_W)):
-        fx, fy, iw, _ = INK[name]
+        fx, fy, iw, ih = INK[name]
         canvas = ink_w / iw * uv_px
         cx = x0 + t * uv_px
-        print("  %-13s left:%.1fpx top:%.1fpx size:%.1fpx"
-              % (name, cx - canvas * fx, cut_y - canvas * fy, canvas))
+        print("  %-13s left:%.1fpx top:%.1fpx size:%.1fpx  transform-origin:%.2f%% %.2f%%"
+              % (name, cx - canvas * fx, cut_y - canvas * fy, canvas, fx * 100, fy * 100))
+        # 回した後の外接矩形が面からはみ出さないか
+        w, h = ink_w * uv_px, ink_w * ih / iw * uv_px
+        ca, sa = abs(math.cos(theta)), abs(math.sin(theta))
+        bw2, bh2 = (w * ca + h * sa) / 2, (w * sa + h * ca) / 2
+        if cx - bw2 < 0 or cx + bw2 > PANEL_W_PX:
+            print("     !! 回転後に面(%dpx)からはみ出す: x %.1f〜%.1f"
+                  % (PANEL_W_PX, cx - bw2, cx + bw2))
+        else:
+            print("     回転後 x %.1f〜%.1f ／ 切り取り線から上へ %.1fmm 出る"
+                  % (cx - bw2, cx + bw2, bh2 / PX_PER_MM))
 
     # 矢印：紙の上での向き（切り取り線を +x、画面に残る側を +y とするローカル系）
     la = math.atan2(adx * nx + ady * ny, adx * ux + ady * uy)   # +x からの角度

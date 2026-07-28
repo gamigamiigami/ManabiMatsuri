@@ -184,9 +184,16 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <!-- 装飾（謎には使わない） -->
       <div style="top:-120px;left:-130px;width:400px;height:400px"><img src="../../images/motifs/quill-bold.png" style="display:block;width:400px;height:400px;opacity:.5" alt="羽ペン"></div>
 
-      <!-- 謎用：切り取り線(y=1315)にまたがる図形2つ -->
-      <div style="left:47.7px;top:1254.1px;width:121.8px;height:121.8px"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:121.8px;height:121.8px;opacity:.9" alt="魔法陣"></div>
-      <div style="left:404.2px;top:1210.6px;width:198.7px;height:198.7px"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:198.7px;height:198.7px;opacity:.9" alt="鍵"></div>
+      <!-- 謎用：切り取り線(y=1315)にまたがる図形2つ
+           ▼ rotate(-44.27deg) は必須。
+             参加者は紙を切り取り線の角度（+44.27°）だけ回して画面に置くので、
+             紙に刷った絵も一緒に回ってしまう。あらかじめ逆に回しておかないと
+             画面の絵と向きが合わない。魔法陣は同心円なので回っても気づき
+             にくいが、鍵は明らかにずれる（実際にこれで一度失敗している）。
+           ▼ transform-origin は canvas の中心ではなく「絵の中心」。
+             ここを回転の軸にすると、回しても絵の中心が切り取り線から動かない。 -->
+      <div style="left:47.7px;top:1254.1px;width:121.8px;height:121.8px;transform:rotate(-44.27deg);transform-origin:49.98% 49.98%"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:121.8px;height:121.8px;opacity:.9" alt="魔法陣"></div>
+      <div style="left:404.2px;top:1210.6px;width:198.7px;height:198.7px;transform:rotate(-44.27deg);transform-origin:52.98% 52.56%"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:198.7px;height:198.7px;opacity:.9" alt="鍵"></div>
 
       <!-- 謎用：矢印3本（切り取り線に垂直＝紙の上では真下、先端が切り取り線上）
            垂直にしているのは、手紙の文字が斜め45°の格子に並んでいるため。
