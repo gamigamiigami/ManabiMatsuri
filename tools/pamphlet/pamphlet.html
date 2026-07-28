@@ -95,7 +95,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 <!-- ╔══════════════════════════════════════════════════════════╗
      ║  A面（おもて）— 三つ折り 3等分                          ║
      ╚══════════════════════════════════════════════════════════╝ -->
-<div id="side-a" style="position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
+<div id="side-a" style="display:grid;grid-template-columns:1fr 1fr 1fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
 
   <!-- ═══════════════════════════════════════════
        PANEL: A1 — 運営からのメッセージ
@@ -104,13 +104,62 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
     <!-- A1: 装飾レイヤー -->
     <div class="decorations">
-      <!-- 折り線(y=1290)より上に置く。下辺いっぱいだと折り込まれて見えなくなる -->
-      <div style="bottom:81px;left:0;right:0;height:42px;background:linear-gradient(90deg,var(--gold) 0%,var(--orange) 50%,var(--gold) 100%)"></div>
+      <div style="bottom:0;left:0;right:0;height:42px;background:linear-gradient(90deg,var(--gold) 0%,var(--orange) 50%,var(--gold) 100%)"></div>
       <div style="top:170px;right:16px;font-size:56px;transform:rotate(15deg);opacity:.15">📐</div>
       <div style="top:320px;left:16px;font-size:52px;transform:rotate(-12deg);opacity:.15">🔬</div>
-      <div style="bottom:96px;right:26px;font-size:46px;transform:rotate(8deg);opacity:.15">🗝️</div>
+      <!-- 謎の紋章と重ならないよう左側へ -->
+      <div style="bottom:96px;left:26px;font-size:46px;transform:rotate(8deg);opacity:.15">🗝️</div>
       <div style="top:256px;right:64px;width:14px;height:14px;border-radius:50%;background:var(--gold);opacity:.4"></div>
       <div style="top:454px;left:42px;width:12px;height:12px;border-radius:50%;background:var(--orange);opacity:.4"></div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+           謎解きギミック（スマホのXの手紙に重ねる）
+
+           この面の「右辺」＝三つ折りの折り目にまたがるように紋章を置く。
+           面は overflow:hidden なので、紋章は折り目でちょうど半分に
+           切り取られて印刷される。折り目は紙の中央なので、フチなし印刷が
+           できないプリンタでも確実に印刷できる（紙の端は使わない）。
+
+           参加者は A2・A3 をうしろに折り返してこの面だけを表にし、
+           折り目を手紙の紋章に合わせて画面に置く。紋章2つが
+           それぞれ「1つの完全な図形」に見えれば、位置・角度・拡大率が
+           一意に決まる。その状態で矢印がさす文字を下から順に読むと
+           「おやこ」になる。
+
+           ▼ この数値は手で書き換えないこと
+             tools/pamphlet/solve_overlay.py が、手紙を実際に描画して
+             測った文字座標とモチーフPNGのインク範囲から計算している。
+             配置を変えるときはあのスクリプトを直して実行し、
+             出力を js/letter-decor.js とここの両方に貼り直す。
+
+           ▼ rotate(45.73deg) は必須。
+             参加者は紙を -45.73° 傾けて置くので、紙に刷った絵も一緒に
+             回ってしまう。あらかじめ逆に回しておかないと向きが合わない。
+             魔法陣は同心円なので気づきにくいが、鍵は明らかにずれる。
+           ▼ transform-origin は canvas の中心ではなく「絵の中心」。
+             ここを軸にすると、回しても絵の中心が折り目から動かない。
+
+           ▼ サイズ：手紙の幅を 65.96mm として刷る想定（uv 1.0 = 426.4px）。
+             魔法陣のインク直径 17.8mm、鍵のインク 21.1 x 13.6mm、
+             2つの中心間 62.0mm。印刷後に定規で確認できる。
+           ═══════════════════════════════════════════════════════ -->
+      <div style="left:579.1px;top:708.1px;width:121.8px;height:121.8px;transform:rotate(45.73deg);transform-origin:49.98% 49.98%"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:121.8px;height:121.8px;opacity:.9" alt="魔法陣"></div>
+      <div style="left:534.7px;top:1065.4px;width:198.7px;height:198.7px;transform:rotate(45.73deg);transform-origin:52.98% 52.56%"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:198.7px;height:198.7px;opacity:.9" alt="鍵"></div>
+
+      <!-- 矢印3本（折り目に垂直＝右向き、先端が折り目 x=640 の上） -->
+      <svg style="left:520px;top:800px;width:120px;height:300px" viewBox="0 0 120 300" fill="none">
+        <defs>
+          <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 z" fill="#1d2a5e"/>
+          </marker>
+        </defs>
+        <!-- x=120 が折り目 640px、y は 800px 起点 -->
+        <g stroke="#1d2a5e" stroke-width="3.4" marker-end="url(#ah)">
+          <line x1="25" y1="50.0"  x2="120" y2="50.0"/>
+          <line x1="25" y1="128.0" x2="120" y2="128.0"/>
+          <line x1="25" y1="251.3" x2="120" y2="251.3"/>
+        </g>
+      </svg>
     </div>
 
     <!-- A1: コンテンツレイヤー -->
@@ -153,65 +202,8 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
        ═══════════════════════════════════════════ -->
   <div id="panel-a2" class="panel" style="border-right:2px dashed var(--border-fold);background:repeating-linear-gradient(135deg,var(--cream-dark) 0,var(--cream-dark) 26px,var(--cream-stripe) 26px,var(--cream-stripe) 52px)">
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         A2: 謎解きギミック（スマホのXの手紙に重ねる）
-
-         折り線（下辺から10.4mm上）にまたがるように図形2つを置く。
-         参加者は紙の下のはしを点線でうしろに折り、45.6°傾けて画面に置き、
-         2つの図形がそれぞれ「1つの完全な図形」に見えるように合わせる。
-         2点そろえばパンフレットの位置・角度・拡大率が一意に決まる。
-         その状態で矢印がさす文字を下から順に読むと「おやこ」になる。
-
-         ▼ この数値は手で書き換えないこと
-           tools/pamphlet/solve_overlay.py が、手紙を実際に描画して
-           測った文字座標とモチーフPNGのインク範囲から計算している。
-           配置を変えるときはあのスクリプトを直して実行し、
-           出力を js/letter-decor.js とここの両方に貼り直す。
-
-         ▼ 印刷とサイズ
-           手紙の幅を 65.96mm として刷る想定（uv 1.0 = 426.4px）。
-           魔法陣のインク直径 19.8mm、鍵のインク 21.1 x 13.6mm。
-           図形の中心は折り線の上なので、折ると上半分だけが残る。
-           紙の下辺そのものを使うと、フチなし印刷でないプリンタでは
-           下辺ぎりぎりが印刷されず紋章の下半分が出ないため、10.4mm
-           内側に線を入れてある。切らずに折るのは、裏面を切り落とさずに
-           済ませるため（折るだけなので元に戻せる）。
-
-         ▼ img の top は canvas の左上。絵は canvas いっぱいには
-           描かれていないので、インクの中心が折り線に乗るよう
-           オフセットしてある（鍵は canvas 中心より右下寄り）。
-         ═══════════════════════════════════════════════════════════ -->
     <div class="decorations">
-      <!-- 装飾（謎には使わない） -->
       <div style="top:-120px;left:-130px;width:400px;height:400px"><img src="../../images/motifs/quill-bold.png" style="display:block;width:400px;height:400px;opacity:.5" alt="羽ペン"></div>
-
-      <!-- 謎用：折り線(y=1290)にまたがる図形2つ
-           ▼ rotate(-44.27deg) は必須。
-             参加者は紙を折り線の角度（+44.27°）だけ回して画面に置くので、
-             紙に刷った絵も一緒に回ってしまう。あらかじめ逆に回しておかないと
-             画面の絵と向きが合わない。魔法陣は同心円なので回っても気づき
-             にくいが、鍵は明らかにずれる（実際にこれで一度失敗している）。
-           ▼ transform-origin は canvas の中心ではなく「絵の中心」。
-             ここを回転の軸にすると、回しても絵の中心が折り線から動かない。 -->
-      <div style="left:47.7px;top:1229.1px;width:121.8px;height:121.8px;transform:rotate(-44.27deg);transform-origin:49.98% 49.98%"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:121.8px;height:121.8px;opacity:.9" alt="魔法陣"></div>
-      <div style="left:404.2px;top:1185.6px;width:198.7px;height:198.7px;transform:rotate(-44.27deg);transform-origin:52.98% 52.56%"><img src="../../images/motifs/keyWatermark-bold.png" style="display:block;width:198.7px;height:198.7px;opacity:.9" alt="鍵"></div>
-
-      <!-- 謎用：矢印3本（折り線に垂直＝紙の上では真下、先端が折り線上）
-           垂直にしているのは、手紙の文字が斜め45°の格子に並んでいるため。
-           画面の真下に向けると、真ん中の矢印が上の行の「ず」に先に当たる。 -->
-      <svg style="left:0;top:1175px;width:640px;height:182px" viewBox="0 0 640 182" fill="none">
-        <defs>
-          <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-            <path d="M0,0 L7,3.5 L0,7 z" fill="#1d2a5e"/>
-          </marker>
-        </defs>
-        <!-- 先端の y=115 は折り線 1290px（svg の原点が 1175px なので 115） -->
-        <g stroke="#1d2a5e" stroke-width="3.4" marker-end="url(#ah)">
-          <line x1="189.7" y1="25" x2="189.7" y2="115"/>
-          <line x1="267.6" y1="25" x2="267.6" y2="115"/>
-          <line x1="391.0" y1="25" x2="391.0" y2="115"/>
-        </g>
-      </svg>
     </div>
 
     <!-- A2: コンテンツレイヤー -->
@@ -246,7 +238,8 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <div style="margin-top:14px;border:3px dashed var(--navy);border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.55)">
         <div style="font-family:var(--font-display);font-size:23px;color:var(--navy);letter-spacing:1px">✦ Xからの挑戦 ✦</div>
         <div style="font-size:20px;line-height:1.65;margin-top:6px;color:var(--text-sub)">
-          点線で下のはしをうしろに折り、その<b>ふち</b>にある2つの<b>紋章</b>を、スマホに映したXの手紙の同じ紋章に<b>ぴったり重ねよ</b>。<br>
+          このパンフレットを<b>「運営からのメッセージ」の面だけ</b>が見えるように折り返せ。<br>
+          その<b>折り目</b>にある2つの<b>紋章</b>を、スマホに映したXの手紙の同じ紋章に<b>ぴったり重ねよ</b>。<br>
           重なったとき、矢印がさす文字を <b>下から順に</b> 読め。
         </div>
       </div>
@@ -280,8 +273,8 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <div style="bottom:236px;left:96px;font-size:24px;color:var(--gold);opacity:.6">✦</div>
     </div>
 
-    <!-- A3: コンテンツレイヤー（下は折り線 y=1290 より上に収める） -->
-    <div class="content" style="padding:40px 40px 83px">
+    <!-- A3: コンテンツレイヤー -->
+    <div class="content" style="padding:40px 40px">
       <div style="display:inline-flex;transform:rotate(-2deg)">
         <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:28px;padding:8px 22px;border-radius:999px;letter-spacing:4px;box-shadow:4px 4px 0 rgba(0,0,0,.3)">たいけん授業 ＋ 謎解き脱出ゲーム</span>
       </div>
@@ -304,22 +297,6 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       折り線（3面ぶち抜き・y=1290px＝下辺から10.4mm上）
-
-       謎の紋章は、この線でちょうど半分になるように置いてある。
-       線より下（10.4mmの帯）をうしろに折ると、折ったあとの紙のはしが
-       紋章を半分に切った線になる。
-
-       ・紙の下辺そのものを使わないのは、フチなし印刷できないプリンタだと
-         下辺ぎりぎりが印刷されず、紋章の下半分が出ないため。
-       ・切るのではなく折るのは、裏面を切り落とさずに済ませるため。
-         折るだけなので元に戻せる。
-       この線より下には何も置かないこと（表・裏とも）。
-       ═══════════════════════════════════════════ -->
-  <div style="position:absolute;left:0;right:0;top:1290px;border-top:2px dashed #9a9486;z-index:5"></div>
-  <div style="position:absolute;left:20px;top:1290px;transform:translateY(-50%);z-index:5;background:var(--cream);padding:0 10px;font-size:22px;color:#8a8578;letter-spacing:2px;white-space:nowrap">⤵ ここでうしろに折る</div>
-  <div style="position:absolute;left:1620px;top:1290px;transform:translateY(-50%);z-index:5;background:var(--cream);padding:0 10px;font-size:22px;color:#8a8578;letter-spacing:2px;white-space:nowrap">⤵ ここでうしろに折る</div>
 </div>
 
 <!-- ╔══════════════════════════════════════════════════════════╗
@@ -341,7 +318,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     </div>
 
     <!-- B1: コンテンツレイヤー -->
-    <div class="content" style="padding:54px 44px 80px;gap:18px">
+    <div class="content" style="padding:54px 44px;gap:18px">
       <span class="badge" style="font-size:34px;letter-spacing:4px;background:var(--orange);color:#fff;box-shadow:4px 4px 0 var(--orange-shadow);align-self:flex-start">タイムスケジュール</span>
 
       <!-- タイムライン -->
@@ -417,7 +394,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     </div>
 
     <!-- B2-B3: コンテンツレイヤー -->
-    <div class="content" style="padding:54px 64px 80px;gap:26px">
+    <div class="content" style="padding:54px 64px;gap:26px">
       <span class="badge" style="font-size:44px;letter-spacing:6px;background:var(--navy);color:var(--gold);box-shadow:6px 6px 0 rgba(0,0,0,.2);align-self:flex-start">📍 かいじょうマップ</span>
 
       <div style="font-size:28px;color:var(--text-sub);line-height:1.6">イベントは2フロア・4部屋で行います。受付・各教室の場所を確認してね！</div>

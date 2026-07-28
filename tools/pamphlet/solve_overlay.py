@@ -68,9 +68,18 @@ KEY_INK_W = 0.32      # 鍵の「インクの幅」（同上）
 T_CIRCLE = -0.19      # 線に沿った魔法陣の位置（1文字目を 0 とする）
 T_KEY = 0.75          # 線に沿った鍵の位置
 SPAN_MM = 62.0        # 印刷したとき、2つの図形の中心間を何mmにするか
-CUT_INSET_PX = 67     # 紙の下辺から折り線までの距離（px）
 ARROW_LEN_PX = 95     # 矢印の長さ
 GLYPH_BOX = 0.80      # 当たり判定に使う文字の箱（字送り幅に対する比）
+
+# 紙をどちら側に置くか。-1 は「紙が左下、文字が右上」。
+# 三つ折りの折り目（A1面の右辺）を使うと、こちらのほうが紙の傾きが
+# -45.7°（軽く左に傾けるだけ）で自然になる。+1 だと 134°＝ほぼ逆さま。
+PAPER_SIDE = -1
+
+# 折り目は A1面（運営からのメッセージ）の右辺＝三つ折りの折り目そのもの。
+# 紙の中央なので、フチなし印刷でなくても確実に印刷できる。
+EDGE_X_PX = 640       # A1面の右辺（面の幅と同じ＝折り目）
+T0_Y_PX = 850         # 折り目上で t=0（1文字目の矢印）が来る y
 
 
 def find(sub, off):
@@ -108,7 +117,7 @@ def main():
     dx, dy = c["u"] - a["u"], c["v"] - a["v"]
     ln = math.hypot(dx, dy)
     ux, uy = dx / ln, dy / ln              # 線に沿った単位ベクトル
-    nx, ny = -uy, ux                        # 法線（画面に残る側 ＝ 左下向き）
+    nx, ny = PAPER_SIDE * -uy, PAPER_SIDE * ux   # 法線（文字が見える側を向く）
     theta = math.atan2(dy, dx)
     print("\n折り線の角度: %.2f°" % math.degrees(theta))
     dev = (tg[1]["u"] - a["u"]) * nx + (tg[1]["v"] - a["v"]) * ny
@@ -192,6 +201,9 @@ def main():
         print('    "%s|%.2f%% auto|%.3f%% %.3f%%",' % (name, s * 100, p_x * 100, p_y * 100))
 
     # ── 6. パンフレット側（px） ──────────────────────────
+    # 折り目は A1面の右辺（縦線）。面は overflow:hidden なので、
+    # 図形は折り目でちょうど半分に切り取られて印刷される。
+    # 参加者は A2・A3 をうしろに折り返し、A1面を表にして画面に置く。
     span = T_KEY - T_CIRCLE
     w_mm = SPAN_MM / span                     # 手紙の幅を何mmとして刷るか
     uv_px = w_mm * PX_PER_MM                  # uv の 1.0 が何px か
@@ -199,57 +211,54 @@ def main():
     print("手紙の幅を %.2fmm として印刷（uv 1.0 = %.1fpx）" % (w_mm, uv_px))
     print("魔法陣のインク直径 %.1fmm ／ 鍵のインク %.1f x %.1fmm"
           % (CIRCLE_INK * w_mm, KEY_INK_W * w_mm, key_h * w_mm))
+    print("折り目 x = %dpx（A1面の右辺＝三つ折りの折り目）" % EDGE_X_PX)
 
-    left = (T_CIRCLE - r) * uv_px
-    right = (T_KEY + key_half_line) * uv_px
-    margin = (PANEL_W_PX - (right - left)) / 2
-    if margin < 0:
-        print("  !! 図形が1面(%dpx)に収まらない: %.1fpx 必要" % (PANEL_W_PX, right - left))
-    x0 = margin - left                        # t=0 が来るパネル内 x 座標
-    cut_y = PAGE_H_PX - CUT_INSET_PX
-    print("全体の幅 %.1fpx (%.1fmm) ／ 左右の余白 %.1fmm"
-          % (right - left, (right - left) / PX_PER_MM, margin / PX_PER_MM))
-    print("折り線 y = %dpx（紙の下辺から %.1fmm 上）" % (cut_y, CUT_INSET_PX / PX_PER_MM))
+    # 紙をどれだけ回して置くか。紙のローカル系で「文字が見える側」は +x。
+    # それが手紙側の法線 (nx, ny) に一致するように回す。
+    phi = math.atan2(ny, nx)
+    print("紙の傾き %.2f°（図形にはこの逆 rotate(%.2fdeg) をかける）"
+          % (math.degrees(phi), -math.degrees(phi)))
+    # 紙のローカル +y が手紙の u 方向に対応するか検算
+    chk = (-math.sin(phi) * ux + math.cos(phi) * uy)
+    if chk < 0:
+        print("  !! 向きが反転している。along の符号を見直すこと")
 
-    # ▼ 紙は重ねるとき折り線の角度だけ回るので、紙に刷る絵は
-    #   あらかじめ逆に回しておかないと、画面の絵と向きが合わない。
-    #   （魔法陣は同心円なので回っても気づきにくいが、鍵は明らかにずれる）
-    #   transform-origin をインクの中心に置けば、回しても中心は動かないので
-    #   left/top はそのままでよい。
+    # 折り目に沿った位置（t が大きいほど紙の下）
+    def edge_y(t):
+        return T0_Y_PX + t * uv_px
+
+    lo = edge_y(T_CIRCLE) - (CIRCLE_INK * uv_px) * (abs(math.cos(phi)) + abs(math.sin(phi))) / 2
+    hi = edge_y(T_KEY) + key_half_line * uv_px
+    print("図形の占める範囲 y %.1f〜%.1f（%.1fmm）" % (lo, hi, (hi - lo) / PX_PER_MM))
+    if lo < 0 or hi > PAGE_H_PX:
+        print("  !! 面(高さ%dpx)からはみ出す" % PAGE_H_PX)
+
     print("\n図形（div の left/top・表示サイズ・回転）")
-    print("  transform: rotate(%.2fdeg) を必ずかけること" % -math.degrees(theta))
+    print("  transform: rotate(%.2fdeg) を必ずかけること" % -math.degrees(phi))
     for name, t, ink_w in (("magicCircle", T_CIRCLE, CIRCLE_INK),
                            ("keyWatermark", T_KEY, KEY_INK_W)):
         fx, fy, iw, ih = INK[name]
         canvas = ink_w / iw * uv_px
-        cx = x0 + t * uv_px
+        cy = edge_y(t)
         print("  %-13s left:%.1fpx top:%.1fpx size:%.1fpx  transform-origin:%.2f%% %.2f%%"
-              % (name, cx - canvas * fx, cut_y - canvas * fy, canvas, fx * 100, fy * 100))
-        # 回した後の外接矩形が面からはみ出さないか
+              % (name, EDGE_X_PX - canvas * fx, cy - canvas * fy, canvas, fx * 100, fy * 100))
         w, h = ink_w * uv_px, ink_w * ih / iw * uv_px
-        ca, sa = abs(math.cos(theta)), abs(math.sin(theta))
+        ca, sa = abs(math.cos(phi)), abs(math.sin(phi))
         bw2, bh2 = (w * ca + h * sa) / 2, (w * sa + h * ca) / 2
-        if cx - bw2 < 0 or cx + bw2 > PANEL_W_PX:
-            print("     !! 回転後に面(%dpx)からはみ出す: x %.1f〜%.1f"
-                  % (PANEL_W_PX, cx - bw2, cx + bw2))
-        else:
-            print("     回転後 x %.1f〜%.1f ／ 折り線から上へ %.1fmm 出る"
-                  % (cx - bw2, cx + bw2, bh2 / PX_PER_MM))
+        print("     回転後 x %.1f〜%.1f ／ y %.1f〜%.1f（折り目から左へ %.1fmm）"
+              % (EDGE_X_PX - bw2, EDGE_X_PX + bw2, cy - bh2, cy + bh2, bw2 / PX_PER_MM))
+        if EDGE_X_PX - bw2 < 0:
+            print("     !! 面の左端をはみ出す")
 
-    # 矢印：紙の上での向き（折り線を +x、画面に残る側を +y とするローカル系）
-    la = math.atan2(adx * nx + ady * ny, adx * ux + ady * uy)   # +x からの角度
-    print("\n矢印（先端が折り線上・紙の上では水平から %.2f° 下向き）"
-          % math.degrees(la))
+    print("\n矢印（折り目に垂直＝紙の上では右向き、先端が折り目上）")
     for ch, tx, ty, k, _f, _d, _s, _g in rows:
         t_along = ((tx - px) * ux + (ty - py) * uy)
-        ax = x0 + t_along * uv_px
-        bx = ax - ARROW_LEN_PX * math.cos(la)
-        by = cut_y - ARROW_LEN_PX * math.sin(la)
-        print("  %s  x1=%.1f y1=%.1f → x2=%.1f y2=%d   （文字までの残り %.1fmm）"
-              % (ch, bx, by, ax, cut_y, k * uv_px / PX_PER_MM))
+        ay = edge_y(t_along)
+        print("  %s  x1=%.1f y1=%.1f → x2=%d y2=%.1f   （文字までの残り %.1fmm）"
+              % (ch, EDGE_X_PX - ARROW_LEN_PX, ay, EDGE_X_PX, ay, k * uv_px / PX_PER_MM))
 
     order = sorted(tg, key=lambda t: -along(t))
-    print("\n読む順: 折り線に沿って下(右)から → %s" % "".join(t["ch"] for t in order))
+    print("\n読む順: 折り目に沿って下(右)から → %s" % "".join(t["ch"] for t in order))
 
 
 if __name__ == "__main__":
