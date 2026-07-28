@@ -977,10 +977,54 @@
       "magicCircle|28.57% auto|-8.291% 8.953%",
       "keyWatermark|46.60% auto|95.469% 74.689%",
     ],
+    // ------------------------------------------------------------------
+    // 一通目以外の手紙用
+    //
+    // ▼ 魔法陣と鍵の2つがそろって描かれるのは一通目（letter.html）だけにする。
+    //   この2つはパンフレットを重ねる目印なので、他の手紙にも出てくると
+    //   参加者が「ここでも重ねるのか？」と迷ってしまう。
+    //   だから以下のプリセットでは magicCircle と keyWatermark を使わない。
+    // ------------------------------------------------------------------
+
+    // 2通目（start.html・スタートQRを読んだあと）— 旅の始まり
+    letterStart: [
+      "constellation|64% auto|50% 14%",
+      "quill|22% auto|90% 88%",
+      "hourglass|16% auto|10% 84%",
+    ],
+
+    // 3通目（final.html・扉の前）— 到着と静けさ
+    letterArrival: [
+      "moonPhases|72% auto|50% 8%",
+      "astrolabe|46% auto|50% 88%",
+      "vines|100% 100%|center",
+    ],
+
+    // 4通目（final.html・扉を開けたあと）— 告白と挑戦状
+    letterFinale: [
+      "worldTree|54% auto|50% 92%",
+      "ouroboros|28% auto|12% 10%",
+      "candelabra|22% auto|90% 12%",
+    ],
+
+    // 小僧の挑戦（index.html）— 研究ノートの気配
+    letterKozo: [
+      "grimoire|56% auto|50% 12%",
+      "sigilMark|20% auto|88% 86%",
+      "stardust|120px 120px|center|repeat",
+    ],
+
+    // 最後の謎（secret.html）— 答えを知る者がいない大謎
+    letterSecret: [
+      "compass|48% auto|50% 86%",
+      "alchemy|70% auto|50% 10%",
+      "stardust|120px 120px|center|repeat",
+    ],
   };
 
   // 既定の組み合わせ（手前 → 奥）
-  var DEFAULT_DECOR = PRESETS.pamphletAlign;
+  // ※ 魔法陣＋鍵の組み合わせは一通目専用なので、既定には入れない。
+  var DEFAULT_DECOR = PRESETS.letterStart;
 
   function toDataUri(svgText) {
     return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText) + '")';

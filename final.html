@@ -159,7 +159,7 @@
   <!-- 到着演出：3通目の手紙（ARRIVAL_MESSAGE）を読んでから挑戦へ -->
   <section class="card" id="arrivalCard" hidden>
     <h2>✉ Xからの手紙・参</h2>
-    <div class="letter" id="arrivalLetter"></div>
+    <div class="letter" id="arrivalLetter" data-decor="preset:letterArrival"></div>
     <button class="btn gold" id="beginFinalBtn" style="margin-top:16px;">→ 扉の謎に挑戦する</button>
   </section>
 
@@ -220,7 +220,10 @@
   <!-- 4通目の手紙（扉を開けたあとに表示） -->
   <section class="card" id="letterCard" hidden>
     <h2>✉ Xからの手紙・四</h2>
-    <div class="letter" id="letterFour"></div>
+    <div class="letter" id="letterFour" data-decor="preset:letterFinale"></div>
+    <!-- 5つの鍵がそろうと扉謎のボタンが出るのと同じで、
+         扉が開いたら最後の謎（大謎）への入口が現れる -->
+    <a class="btn gold" href="secret.html" id="toSecretBtn" style="margin-top:16px;">→ 「学校の秘密」を探しに行く</a>
   </section>
 
   <div id="backHome" hidden>
