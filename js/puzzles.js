@@ -291,34 +291,72 @@ const SECRET_CHALLENGE_MESSAGE =
   "ぼくらを大きくしてくれるっていう、\n" +
   "「学校の秘密」。\n" +
   "\n" +
-  "見つけて、ここに置いていけ。\n" +
+  "ふたつの言葉を見つけて、ここに置いていけ。\n" +
   "\n" +
   "── X";
 
-// 合言葉（ひらがな）。
 // ▼ ここが最後の謎の答え。
-//   いまはパンフレットを重ねる謎の答え「おやこ」を仮に置いてある。
-//   最終的な答えが決まったら、この1行だけ書き換えれば全体に反映される。
-//   判定は checkSecretAnswer() が行い、スペース・全角半角のゆれは吸収する。
-const SECRET_ANSWER = "おやこ";
-const SECRET_HINT = "今日、となりで一緒に悩んでくれたのは、だれ？";
+//   合言葉はふたつ。「親子」と「学校」が手を取り合うことが何より大事、
+//   というのがこのイベント全体のテーマなので、片方だけでは開かない。
+//   ・ひとつめ … パンフレットを手紙に重ねる謎の答え
+//   ・ふたつめ … （もうひとつの謎の答え）
+//   answers に書いた表記はどれでも正解になる（ひらがな・漢字・カタカナ）。
+//   入力する順番は問わない。どちらの欄にどちらを入れても通る。
+const SECRET_WORDS = [
+  { label: "ひとつめの合言葉", answers: ["おやこ", "親子"] },
+  { label: "ふたつめの合言葉", answers: ["がっこう", "学校"] },
+];
+const SECRET_HINT =
+  "ひとつめ … 今日、となりで一緒に悩んでくれたのは、だれ？\n" +
+  "ふたつめ … その二人が、今日ずっと一緒にいた場所は？";
 
-// 合言葉が合っているか。表記ゆれ（空白・カタカナ・全角英数）を吸収する。
-function checkSecretAnswer(input) {
-  function normalize(t) {
-    return String(t || "")
-      .replace(/[\s\u3000]/g, "")
-      // カタカナ → ひらがな
-      .replace(/[\u30a1-\u30f6]/g, function (c) {
-        return String.fromCharCode(c.charCodeAt(0) - 0x60);
-      })
-      // 全角英数 → 半角
-      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (c) {
-        return String.fromCharCode(c.charCodeAt(0) - 0xfee0);
-      })
-      .toLowerCase();
+// 合言葉クリア時に、最後の手紙の前に出すことば。
+const SECRET_SUCCESS_MESSAGE =
+  "ふたつの言葉が、ひとつに重なる――\n" +
+  "\n" +
+  "「親子」と「学校」。\n" +
+  "そのふたつが手を取り合ったとき、\n" +
+  "人はいちばん大きくなれる。\n" +
+  "\n" +
+  "それが、Xの探していた「学校の秘密」だった。";
+
+// 表記ゆれ（空白・カタカナ・全角英数）を吸収して比べるための正規化。
+function normalizeWord(t) {
+  return String(t || "")
+    .replace(/[\s\u3000]/g, "")
+    // カタカナ → ひらがな
+    .replace(/[\u30a1-\u30f6]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) - 0x60);
+    })
+    // 全角英数 → 半角
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) - 0xfee0);
+    })
+    .toLowerCase();
+}
+
+// 入力した合言葉が1つでも SECRET_WORDS のどれかに合っていれば、その番号を返す。
+// どれにも合わなければ -1。
+function matchSecretWord(input) {
+  const v = normalizeWord(input);
+  if (!v) return -1;
+  for (let i = 0; i < SECRET_WORDS.length; i++) {
+    const hit = SECRET_WORDS[i].answers.some(function (a) { return normalizeWord(a) === v; });
+    if (hit) return i;
   }
-  return normalize(input) === normalize(SECRET_ANSWER);
+  return -1;
+}
+
+// ふたつの合言葉がそろっているか。入力の順番は問わない。
+function checkSecretAnswers(inputs) {
+  const found = [];
+  for (const v of inputs) {
+    const i = matchSecretWord(v);
+    if (i < 0) return false;
+    if (found.indexOf(i) >= 0) return false; // 同じ言葉を2回入れてもダメ
+    found.push(i);
+  }
+  return found.length === SECRET_WORDS.length;
 }
 
 // エンディング（Xからの最後の手紙）。
