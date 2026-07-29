@@ -398,6 +398,17 @@
     overflow: hidden;
   }
 
+  /* ── パンフレット合わせの謎の「目印」──────────────────
+     スマホの画面は小さく、重ねた矢印がどの文字をさしているか
+     分かりづらい。そこで文字にいくつか色をつけ、うまく重なったときに
+     「矢印の先が色つきの文字」になるようにして手応えを出す。
+     色だけで答えが分かってしまわないよう、答えの3文字のほかにも
+     同じ藍色をばらまき、さらに別の朱色も混ぜてある。
+     ※ 色を変えるだけなので、文字の位置は1pxも動かない
+       （重ね合わせの座標計算はそのまま使える）。 */
+  .letter-body .mk-ai  { color: #1d2a5e; }   /* パンフレットの矢印と同じ藍 */
+  .letter-body .mk-shu { color: #8c2f3b; }   /* かく乱用の朱 */
+
   .letter-paper.opened .letter-content {
     opacity: 1;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(120, 90, 40, 0.15), inset 0 0 3px rgba(60, 40, 20, 0.4), 0 0 60px rgba(212, 175, 106, 0.35);
@@ -593,6 +604,54 @@
   }
   document.getElementById("letterBody").textContent = bodyText;
   document.getElementById("letterSign").textContent = signText;
+
+  // ── 目印の色をつける ────────────────────────────────
+  // 答えの3文字（こ・や・お）は、パンフレットの矢印と同じ藍色にする。
+  // 重ねたとき「矢印の先が藍色の文字」になるので、小さい画面でも
+  // 合っているかどうかが分かる。
+  // ただし藍色の文字はほかにもばらまいてあり、色をたどっても
+  // 「学こみや笑お勉思ろ」としか読めない。順番を決めるのは矢印だけ。
+  //
+  // 文字は「前後の並び」で指定する（改行はまたいでも大丈夫）。
+  // 文面を書き換えたときは、ここの並びも合っているか確かめること。
+  var MARKS = [
+    ["この学校", 0, "mk-ai"],        // ← 答え（こ）
+    ["でなやんで", 2, "mk-ai"],      // ← 答え（や）
+    ["ずっとおもって", 3, "mk-ai"],  // ← 答え（お）
+    ["中学生", 1, "mk-ai"],
+    ["みんなのこと", 0, "mk-ai"],
+    ["笑って", 0, "mk-ai"],
+    ["勉強", 0, "mk-ai"],
+    ["思って", 0, "mk-ai"],
+    ["みろ。", 1, "mk-ai"],
+    ["もうすぐ", 0, "mk-shu"],
+    ["たんだ。", 1, "mk-shu"],
+    ["ぼくはしょうじき", 3, "mk-shu"],
+    ["がない」", 1, "mk-shu"],
+    ["出られない", 2, "mk-shu"],
+    ["ものなら", 1, "mk-shu"],
+  ];
+  (function markLetter() {
+    var body = document.getElementById("letterBody");
+    var text = body.textContent;
+    // 改行を除いた並びで位置を決める（改行の入り方に左右されないように）
+    var flat = text.replace(/\n/g, "");
+    var color = {};
+    MARKS.forEach(function (m) {
+      var at = flat.indexOf(m[0]);
+      if (at < 0) return;             // 文面を変えて見つからなくなっても、色がつかないだけ
+      color[at + m[1]] = m[2];
+    });
+    var html = "", k = 0;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === "\n") { html += "\n"; continue; }
+      var esc = ch === "&" ? "&amp;" : ch === "<" ? "&lt;" : ch === ">" ? "&gt;" : ch;
+      html += color[k] ? '<span class="' + color[k] + '">' + esc + "</span>" : esc;
+      k++;
+    }
+    body.innerHTML = html;
+  })();
 
   // ---------------------------------------------------------------
   // 手紙をスクロールなしで箱に収める。
