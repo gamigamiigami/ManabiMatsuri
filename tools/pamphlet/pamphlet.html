@@ -33,6 +33,28 @@
   --page-w: 1920px;
   --page-h: 1357px;
 
+  /* === 三つ折りの折り目の位置 ===
+     紙の左端からの距離（1920px = 297mm）。ぴったり三等分なら 640 / 1280。
+
+     ▼ --fold-1（640px = 99mm）は絶対に動かさないこと。
+       ここが「パンフレットを手紙に重ねる謎」の折り目で、
+       tools/pamphlet/solve_overlay.py の EDGE_X_PX と同じ値。
+       変えるならスクリプトも直して座標を出し直す必要がある。
+
+     ▼ --fold-2 は見た目だけ。真ん中の面の右端＝2本目の折り目。
+       プリンタが「印刷可能な範囲に縮小」して刷ると、紙の上では
+       版面全体がわずかに小さくなる。左端は合っていても右へ行くほど
+       ズレが積もるので、2本目だけここで右へ寄せて帳尻を合わせられる。
+       目安：右端にできた余白の幅の 2/3 だけ足す
+       （例 余白6mm → 4mm ＝ 26px を足して 1306px）。
+       1mm = 6.4646px。
+
+     裏面（side-b）の折り目は、この値から自動で計算している。
+     紙をめくると左右が反転するので、表の折り目1が裏では右から、
+     折り目2が裏では左から数えた位置になる。 */
+  --fold-1: 640px;
+  --fold-2: 1306px;   /* 三等分の 1280px ＋ 26px（＝4mm 右へ） */
+
   /* === フォント === */
   --font-body: 'Zen Maru Gothic', sans-serif;
   --font-display: 'RocknRoll One', sans-serif;
@@ -95,7 +117,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 <!-- ╔══════════════════════════════════════════════════════════╗
      ║  A面（おもて）— 三つ折り 3等分                          ║
      ╚══════════════════════════════════════════════════════════╝ -->
-<div id="side-a" style="display:grid;grid-template-columns:1fr 1fr 1fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
+<div id="side-a" style="display:grid;grid-template-columns:var(--fold-1) calc(var(--fold-2) - var(--fold-1)) calc(var(--page-w) - var(--fold-2));width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
 
   <!-- ═══════════════════════════════════════════
        PANEL: A1 — 運営からのメッセージ
@@ -276,7 +298,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     <!-- A3: コンテンツレイヤー -->
     <div class="content" style="padding:40px 40px">
       <div style="display:inline-flex;transform:rotate(-2deg)">
-        <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:28px;padding:8px 22px;border-radius:999px;letter-spacing:4px;box-shadow:4px 4px 0 rgba(0,0,0,.3)">たいけん授業 ＋ 謎解き脱出ゲーム</span>
+        <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:26px;padding:8px 18px;border-radius:999px;letter-spacing:2px;white-space:nowrap;box-shadow:4px 4px 0 rgba(0,0,0,.3)">たいけん授業 ＋ 謎解き脱出ゲーム</span>
       </div>
       <div style="margin-top:44px">
         <div style="font-family:var(--font-display);font-size:108px;line-height:1.15;color:var(--navy);text-shadow:6px 6px 0 var(--gold)">親子<br>学び祭</div>
@@ -302,7 +324,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 <!-- ╔══════════════════════════════════════════════════════════╗
      ║  B面（うら）— 1:2 分割                                  ║
      ╚══════════════════════════════════════════════════════════╝ -->
-<div id="side-b" style="display:grid;grid-template-columns:1fr 2fr;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
+<div id="side-b" style="display:grid;grid-template-columns:calc(var(--page-w) - var(--fold-2)) auto;width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
 
   <!-- ═══════════════════════════════════════════
        PANEL: B1 — タイムスケジュール
