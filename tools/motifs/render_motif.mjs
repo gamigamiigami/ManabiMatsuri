@@ -40,10 +40,13 @@ for (const name of NAMES) {
     .replace(/rgba\(60,40,20,0\.26\)/g, "rgba(60,40,20,0.95)")
     .replace(/rgba\(60,40,20,0\.16\)/g, "rgba(60,40,20,0.55)")
     .replace(/stroke-width="2\.2"/g, 'stroke-width="3.6"')
-    .replace(/stroke-width="1\.4"/g, 'stroke-width="2.2"');
-  // ※ stroke-width="1"（magicCircle の外周）はあえて触らない。
-  //   太らせると既存の magicCircle-bold.png のインク範囲が変わり、
-  //   solve_overlay.py の INK_PNG を測り直すまで謎がズレる。
+    .replace(/stroke-width="1\.4"/g, 'stroke-width="2.2"')
+    // magicCircle の外周は stroke-width="1"。viewBox 200 のうち 1 は、
+    // 刷ると 0.09mm しかなく、家庭用プリンタではかすれて消えかねない。
+    // 五芒星（2.2→3.6）と同じ太さにそろえて 0.3mm 前後にする。
+    .replace(/stroke-width="1"/g, 'stroke-width="3.6"');
+  // ※ 太さを変えるとインクの外周が広がる。焼き直したら必ず
+  //   python3 tools/pamphlet/measure_ink.py で INK_PNG を測り直すこと。
 
   for (const [out, src] of [[name, svgSrc], [name + "-bold", bold]]) {
     // viewBox が正方形なので、正方形の枠にそのまま収まる（余白なしで1:1）。

@@ -65,7 +65,7 @@ INK = {
 #   python3 tools/pamphlet/measure_ink.py
 # で測り直すこと。
 INK_PNG = {
-    "magicCircle":  (0.5000, 0.5000, 0.9450, 0.9450),
+    "magicCircle":  (0.5000, 0.5000, 0.9583, 0.9583),
     "magicCircle2": (0.5000, 0.5000, 0.9583, 0.9583),
 }
 

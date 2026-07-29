@@ -14,6 +14,7 @@
 //    この比較で確かめられる。
 import { chromium } from "playwright";
 import { chromeLaunchOptions } from "../chrome-path.mjs";
+import { openLetter } from "./open_letter.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,10 +56,7 @@ const browser = await chromium.launch(chromeLaunchOptions());
 const runs = [];
 for (const width of WIDTHS) {
   const page = await browser.newPage({ viewport: { width, height: 844 } });
-  await page.goto("file://" + path.join(ROOT, "letter.html"), { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(1200);
-  await page.locator(".letter-stage").click({ position: { x: width / 2, y: 400 } });
-  await page.waitForTimeout(2600);   // 封筒が開いて行間が決まりきるのを待つ
+  await openLetter(page, "file://" + path.join(ROOT, "letter.html"));
   runs.push(await page.evaluate(measureInPage));
   await page.close();
 }
