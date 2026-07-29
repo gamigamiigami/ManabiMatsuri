@@ -129,6 +129,10 @@
       <h2>📜 次に向かう場所</h2>
       <div class="question" id="nextPlaceImage"></div>
       <p class="note center" id="nextPlaceNote"></p>
+      <div class="hint-box" id="nextPlaceHintBox" hidden>
+        <div id="nextPlaceHintText"></div>
+      </div>
+      <button class="btn ghost small" id="nextPlaceHintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
     </div>
 
     <!-- 全クリア表示 -->
@@ -167,6 +171,16 @@
     </div>
   </section>
 
+  <!-- （デバッグ）好きなところまで飛ばす。?debug=1 かつ CONFIG.DEBUG_ENABLED のときだけ出る -->
+  <div class="card debug-banner" id="debugJump" hidden style="max-width:480px; margin:20px auto 0;">
+    <p style="margin-bottom:10px;">🔧 好きなところまで飛ばす（デバッグ）</p>
+    <button class="btn ghost small" data-stage="0" style="margin:4px;">最初から</button>
+    <button class="btn ghost small" data-stage="1" style="margin:4px;">扉謎の前（鍵5つ）</button>
+    <button class="btn ghost small" data-stage="2" style="margin:4px;">扉謎のあと</button>
+    <button class="btn ghost small" data-stage="3" style="margin:4px;">最後の謎のあと</button>
+    <p class="note" style="margin-top:8px;">記録は端末の中だけで書き換わる（送信はしない）。</p>
+  </div>
+
   <div id="debugLinks" hidden style="margin:20px auto 0; max-width:480px; text-align:center;">
     <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:8px;">（デバッグ）小謎フローテスト：</p>
     <a class="btn ghost small" href="index.html?skip=1&route=A&debug=1" style="margin:4px;">ルートA（鍵1方面）</a>
@@ -178,6 +192,7 @@
 
 <script src="js/config.js"></script>
 <script src="js/puzzles.js"></script>
+<script src="js/arika.js"></script>
 <script src="js/letter-decor.js"></script>
 <script src="js/letter-fixed.js"></script>
 <script src="js/store.js"></script>
@@ -209,9 +224,83 @@
       try { localStorage.removeItem("fuin_letter_seen"); } catch (e) {}
       location.href = "index.html?debug=1";
     });
+
+    // ── 好きなところまで飛ばす ────────────────────────
+    //   0 最初から      … 記録を消す（小謎・登録からやり直し）
+    //   1 扉謎の前      … 5つの鍵をそろえた状態でホームへ
+    //   2 扉謎のあと    … 扉が開いた状態で final.html へ
+    //   3 最後の謎のあと … 大謎まで解いた状態で secret.html へ
+    // 端末の localStorage を書き換えるだけで、GASには何も送らない。
+    document.getElementById("debugJump").hidden = false;
+    document.getElementById("debugJump").addEventListener("click", function (e) {
+      var btn = e.target.closest("button[data-stage]");
+      if (!btn) return;
+      var stage = Number(btn.getAttribute("data-stage"));
+      if (stage === 0) {
+        localStorage.removeItem(Store.KEY);
+        try { localStorage.removeItem("fuin_letter_seen"); } catch (err) {}
+        location.href = "index.html?debug=1";
+        return;
+      }
+      var now = new Date().toISOString();
+      var t = Store.load() || {
+        teamId: "T-debug",
+        teamName: "デバッグ班",
+        playerName: "",
+        registeredAt: now,
+        points: {},
+      };
+      // いったん全部まっさらにしてから、指定の段階まで積み直す
+      t.points = {};
+      t.finalGate = null;
+      t.secretGate = null;
+      if (!t.startRoute) t.startRoute = POINT_ORDER[0];
+      POINT_ORDER.forEach(function (q) {
+        t.points[q] = { firstViewedAt: now, solvedAt: now, wrong: 0, hintClicked: false, hintAutoShown: false };
+      });
+      if (stage >= 2) {
+        t.finalGate = { solvedAt: now, wrong: 0, hintClicked: false };
+      }
+      if (stage >= 3) {
+        t.secretGate = {
+          solvedAt: now, wrong: 0, hintClicked: false,
+          foundMoon: true, foundKey: true,
+        };
+      }
+      Store.save(t);
+      try { localStorage.setItem("fuin_letter_seen", "1"); } catch (err) {}
+      location.href =
+        stage === 1 ? "index.html?debug=1" :
+        stage === 2 ? "final.html?debug=1" : "secret.html?debug=1";
+    });
   }
 
   function show(el) { el.hidden = false; }
+
+  // ── 「次に向かう場所」に在り処謎を出す ──────────────────
+  // ヒントは必ずボタンの内側に隠す。在り処謎の中には画像の下半分に
+  // 五十音表が埋め込まれているものがあり、そのまま貼るとヒントまで
+  // 見えてしまう（point.html と同じ切り出しを js/arika.js で共有）。
+  var nextPlacePuzzle = null;
+  function showNextPlace(pointKey, note) {
+    var puzzle = PUZZLES[pointKey];
+    if (!puzzle) return;
+    if (!Arika.showPuzzle(document.getElementById("nextPlaceImage"), puzzle)) return;
+    nextPlacePuzzle = puzzle;
+    document.getElementById("nextPlaceNote").textContent = note;
+    document.getElementById("nextPlaceCard").hidden = false;
+    // 画像ファイルがまだ無いときは、カードごと引っこめる
+    var img = document.getElementById("nextPlaceImage").querySelector("img");
+    if (img) {
+      img.onerror = function () { document.getElementById("nextPlaceCard").hidden = true; };
+    }
+  }
+  document.getElementById("nextPlaceHintBtn").addEventListener("click", function () {
+    if (!nextPlacePuzzle) return;
+    Arika.showHint(document.getElementById("nextPlaceHintText"), nextPlacePuzzle);
+    document.getElementById("nextPlaceHintBox").hidden = false;
+    this.hidden = true;
+  });
 
   function renderHome() {
     document.getElementById("register").hidden = true;
@@ -255,35 +344,15 @@
           lastSolved = q;
         }
       });
-      if (lastSolved && PUZZLES[lastSolved].arikaImage) {
-        var npCard = document.getElementById("nextPlaceCard");
-        var npImg = document.createElement("img");
-        npImg.src = PUZZLES[lastSolved].arikaImage;
-        npImg.alt = "在り処謎";
-        npImg.onerror = function () { npCard.hidden = true; };
-        document.getElementById("nextPlaceImage").innerHTML = "";
-        document.getElementById("nextPlaceImage").appendChild(npImg);
-        document.getElementById("nextPlaceNote").textContent =
-          "この在り処謎が、次の鍵の隠し場所を示している。";
-        npCard.hidden = false;
+      if (lastSolved) {
+        showNextPlace(lastSolved, "この在り処謎が、次の鍵の隠し場所を示している。");
       }
     } else if (solvedCount === 0 && team.startRoute) {
       // まだ1つも解いていないが、スタートルートがある場合
       var startPoint = team.startRoute;
       var prevIdx = POINT_ORDER.indexOf(startPoint);
       var prevPoint = POINT_ORDER[(prevIdx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
-      if (PUZZLES[prevPoint] && PUZZLES[prevPoint].arikaImage) {
-        var npCard = document.getElementById("nextPlaceCard");
-        var npImg = document.createElement("img");
-        npImg.src = PUZZLES[prevPoint].arikaImage;
-        npImg.alt = "在り処謎";
-        npImg.onerror = function () { npCard.hidden = true; };
-        document.getElementById("nextPlaceImage").innerHTML = "";
-        document.getElementById("nextPlaceImage").appendChild(npImg);
-        document.getElementById("nextPlaceNote").textContent =
-          "この在り処謎が、最初の鍵の隠し場所を示している。";
-        npCard.hidden = false;
-      }
+      showNextPlace(prevPoint, "この在り処謎が、最初の鍵の隠し場所を示している。");
     }
 
     if (solvedCount === POINT_ORDER.length) {
@@ -416,7 +485,9 @@
     // 手紙をまだ読んでいなければ、まず letter.html へ（QRのパラメータを引き継ぐ）
     let letterSeen = false;
     try { letterSeen = localStorage.getItem("fuin_letter_seen") === "1"; } catch (e) {}
-    if (!letterSeen) {
+    // デバッグ中は手紙へ飛ばさない。飛ばしてしまうと、記録を消した直後に
+    // 「好きなところまで飛ばす」ボタンへ戻れなくなる。
+    if (!letterSeen && !isDebug) {
       location.replace("letter.html" + location.search);
       return;
     }
