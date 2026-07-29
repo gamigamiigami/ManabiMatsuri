@@ -65,9 +65,14 @@
     <div class="table-scroll">
       <table class="teams">
         <thead>
+          <!-- クリア状況は段階ごとに列を分ける。「いまどこ」は現在地しか
+               出ないので、通り過ぎた段階（扉の謎など）が見えなくなっていた。 -->
           <tr>
             <th>チーム</th>
             <th>鍵あつめ</th>
+            <th>扉の謎</th>
+            <th>月・鍵</th>
+            <th>最後の謎</th>
             <th>いまどこ</th>
             <th>ヒント</th>
             <th>誤答</th>
@@ -83,9 +88,15 @@
     <p class="note">
       🔴 赤い行＝まだ解けていない謎でヒントを見ているチーム（経過が長いほど困っている可能性大）。
       優先的に様子を見に行ってください。緑＝最後の謎まで解いた完全クリア。<br>
-      「いまどこ」は 鍵あつめ → 扉の謎 → 最後の謎 → 完全クリア の順に進みます。
-      最後の謎の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
-      ホームの2つの仕掛けを見つけたかどうかです（薄い印はまだ見つけていない）。
+      <strong>クリア状況</strong>は段階ごとに4つの列で見られます。
+      <strong>鍵あつめ</strong>（★の数）→ <strong>扉の謎</strong> →
+      <strong>月・鍵</strong> → <strong>最後の謎</strong>。
+      <span class="badge clear">✔ 時刻</span> が解けた時刻、「挑戦中」はその段階に来ているがまだ、
+      「─」はそこまで来ていないという意味です。<br>
+      <strong>月・鍵</strong> の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
+      最後の謎の2つの仕掛けをホームで見つけたかどうか（薄い印はまだ見つけていない）。
+      片方だけで止まっているチームがここで分かります。<br>
+      <strong>いまどこ</strong>は、そのチームが<em>いま</em>取り組んでいる段階です。
     </p>
   </section>
 
@@ -225,9 +236,16 @@
           minutesAgo(r.hint.at) + "分経過"
         : "─"; // クリアの表示は「いまどこ」の列にまとめる
 
+      const door = doorOf(t);
+      const sc = secretOf(t);
+      const keysDone = r.solvedCount === POINT_ORDER.length;
+
       tr.innerHTML =
         "<td>" + escapeHtml(t.teamName || t.teamId) + "</td>" +
         '<td class="stars-cell">' + starsHtml(t) + " " + r.solvedCount + "/5</td>" +
+        "<td>" + clearCell(door.solvedAt, keysDone) + "</td>" +
+        "<td>" + marksCell(sc, !!door.solvedAt) + "</td>" +
+        "<td>" + clearCell(sc.solvedAt, !!door.solvedAt) + "</td>" +
         "<td>" + stageCell(r) + "</td>" +
         "<td>" + hintCell + "</td>" +
         "<td>" + (wrongTotal || "0") + "回</td>" +
@@ -241,7 +259,7 @@
 
     if (!rows.length) {
       tbody.innerHTML =
-        '<tr><td colspan="8" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
+        '<tr><td colspan="11" class="center" style="color:var(--text-dim);">まだチームの記録がありません</td></tr>';
     }
 
     tbody.querySelectorAll(".delete-team").forEach(function (btn) {
@@ -254,16 +272,29 @@
     });
   }
 
+  // 段階ごとのクリア状況。
+  //   solvedAt がある → 解けた時刻を出す
+  //   まだだが挑戦できる段階に来ている → 「挑戦中」
+  //   そこまで来ていない → ─
+  function clearCell(solvedAt, reached) {
+    if (solvedAt) return '<span class="badge clear">✔ ' + fmtTime(solvedAt) + "</span>";
+    return reached ? '<span class="dim">挑戦中</span>' : '<span class="dim">─</span>';
+  }
+
+  // 最後の謎の2つの仕掛け。扉の謎を解いたチームだけ印が出る。
+  // 薄い印＝まだ見つけていない（片方だけで止まっているチームが分かる）。
+  function marksCell(sc, reached) {
+    if (!reached) return '<span class="dim">─</span>';
+    return '<span class="stage-mark' + (sc.moonAt ? "" : " off") + '" title="月の謎">🌙</span>' +
+           '<span class="stage-mark' + (sc.keyAt ? "" : " off") + '" title="鍵の謎">🔑</span>';
+  }
+
   // 「いまどこ」の中身。段階が進むほど強調される。
   function stageCell(r) {
     const t = r.t;
     if (r.stage === "done") return '<span class="badge clear">完全クリア</span>';
-    if (r.stage === "secret") {
-      const sc = secretOf(t);
-      return '<span class="badge stage-secret">最後の謎</span> ' +
-        '<span class="stage-mark' + (sc.moonAt ? "" : " off") + '" title="月の謎">🌙</span>' +
-        '<span class="stage-mark' + (sc.keyAt ? "" : " off") + '" title="鍵の謎">🔑</span>';
-    }
+    // 🌙🔑 は「月・鍵」の列に出すので、ここでは段階だけ
+    if (r.stage === "secret") return '<span class="badge stage-secret">最後の謎</span>';
     if (r.stage === "door") return '<span class="badge stage-door">扉の謎</span>';
     if (!t.lastPoint) return '<span class="dim">未スタート</span>';
     return pointLabel(t.lastPoint);

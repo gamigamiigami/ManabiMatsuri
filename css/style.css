@@ -579,6 +579,19 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
 .stage-mark.off { opacity: 0.28; filter: grayscale(1); }
 table.teams .dim { color: var(--text-dim); }
 
+/* 段階ごとのクリア状況の列。「✔ 22:59」や「🌙🔑」が2行に割れると
+   丸バッジが崩れて読みにくいので、この4列だけ折り返さない。
+   はみ出す分は .table-scroll が横スクロールで受ける。 */
+table.teams th:nth-child(1), table.teams td:nth-child(1),
+table.teams th:nth-child(2), table.teams td:nth-child(2),
+table.teams th:nth-child(3), table.teams td:nth-child(3),
+table.teams th:nth-child(4), table.teams td:nth-child(4),
+table.teams th:nth-child(5), table.teams td:nth-child(5),
+table.teams th:nth-child(6), table.teams td:nth-child(6) {
+  white-space: nowrap;
+}
+table.teams .badge { white-space: nowrap; }
+
 .table-scroll { overflow-x: auto; border-radius: var(--radius); }
 
 /* ========================================
