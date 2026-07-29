@@ -1317,13 +1317,20 @@ header.site h1 {
 }
 .spell-line {
   font-family: "Yuji Syuku", serif;
-  /* 1行が折り返さない大きさに収める（18文字＋丸数字） */
-  font-size: clamp(0.78rem, 3.7vw, 1rem);
-  line-height: 2.3;
+  font-size: clamp(0.82rem, 4vw, 1.02rem);
+  line-height: 1.95;
   text-align: center;
-  white-space: nowrap;
+  /* 文中の「\n」で改行しつつ、幅が足りなければ自動でも折り返す。
+     指示文が長くなっても枠からはみ出さない */
+  white-space: pre-line;
+  overflow-wrap: anywhere;
   color: #f4ead6;
   text-shadow: 0 0 14px rgba(245, 196, 81, 0.4);
+}
+.spell-line + .spell-line {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(245, 196, 81, 0.22);
 }
 .spell-line.done { color: #7bd6ae; text-shadow: 0 0 14px rgba(75, 191, 156, 0.45); }
 .spell-line.done::after { content: " ✔"; }
