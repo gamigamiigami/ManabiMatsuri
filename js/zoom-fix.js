@@ -1,16 +1,60 @@
-// スマホ（主にiOS Safari）で、前のページの拡大率がページ切り替え後も
-// 残ってしまう問題への対策。viewportのcontentを一瞬だけ書き換えて
-// 強制的にズームをリセットする。
+// ========================================
+// ページ切り替え後に前の拡大率が残る問題への対策
+// ========================================
+// ただし最優先は「拡大できないまま固まらないこと」。
+// 最後の謎は letter.html の手紙にパンフレットを重ねて解くので、
+// 画面を指で広げて紙の大きさを合わせられないと詰んでしまう。
+//
+// もともとの実装は全端末で viewport に user-scalable=no を差し込み、
+// 200ms後に戻していた。iOS Safari ではこれで拡大率が戻るが、
+// Android Chrome や WebView（LINE・Instagram などの内蔵ブラウザ）では
+// 元に戻してもピンチズームが復活しないことがあり、
+// さらに pageshow（戻る操作・bfcache復帰）で何度も掛かるため、
+// 一度ロックされると解除できなくなっていた。
+//
+// そこで、
+//   ・Android系では最初から何もしない（そもそも遷移で拡大率が戻る）
+//   ・iOSでも「実際に拡大されているとき」だけ、ごく短時間だけ掛ける
+//   ・画面に触れた時点で即座に元へ戻す＋保険のタイマーでも戻す
+//   ・data-keep-zoom を付けた読み込みでは一切動かさない（letter.html）
+// という形にした。
 (function () {
-  function resetZoom() {
-    var meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) return;
-    var original = meta.getAttribute("content");
-    meta.setAttribute("content", original + ", maximum-scale=1.0, user-scalable=no");
-    setTimeout(function () {
+  var self = document.currentScript;
+  if (self && self.hasAttribute("data-keep-zoom")) return;
+
+  var ua = navigator.userAgent || "";
+  var isIOS =
+    /iP(hone|ad|od)/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+
+  var meta = document.querySelector('meta[name="viewport"]');
+  if (!meta) return;
+  var original = meta.getAttribute("content");
+  var timer = null;
+
+  // どんな経路で呼ばれても、必ず元の viewport（拡大できる状態）へ戻す
+  function restore() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (meta.getAttribute("content") !== original) {
       meta.setAttribute("content", original);
-    }, 200);
+    }
   }
+
+  function resetZoom() {
+    // すでに等倍なら触らない。触らなければ固まりようがない。
+    var vv = window.visualViewport;
+    if (vv && Math.abs(vv.scale - 1) < 0.01) return;
+
+    meta.setAttribute("content", original + ", maximum-scale=1.0, user-scalable=no");
+    timer = setTimeout(restore, 200);
+    // 保険①：指が触れたらその場で解除（拡大しようとする操作を邪魔しない）
+    window.addEventListener("touchstart", restore, { once: true, passive: true });
+    // 保険②：万一タイマーが飛んでも、必ず戻す
+    setTimeout(restore, 1500);
+  }
+
   document.addEventListener("DOMContentLoaded", resetZoom);
   window.addEventListener("pageshow", resetZoom);
+  document.addEventListener("visibilitychange", restore);
 })();
