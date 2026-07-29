@@ -44,15 +44,24 @@ CHARS = json.load(open(os.path.join(HERE, "letter_chars.json"), encoding="utf-8"
 TEXT = "".join(c["ch"] for c in CHARS)
 
 # 対象の3文字を、前後の文字列で一意に指定する
-TARGET_KEYS = [("この学校", 0), ("でなやんで", 2), ("ずっとおもって", 3)]
+TARGET_CHARS = [("この学校", 0), ("でなやんで", 2), ("ずっとおもって", 3)]
 
 # モチーフPNGの「実際にインクがある範囲」。画像は 2400x2400 だが絵が
 # canvas いっぱいに描かれているとは限らない。ここを無視して canvas の
 # 中心を線に合わせると図形が線からずれる（旧版で鍵だけ合わなかった原因）。
+# 画面（手紙）側＝CSS背景に敷く細線SVGの実測値。
 INK = {
-    # 名前:         (中心x, 中心y, 幅, 高さ)  ※すべて canvas に対する比
-    "magicCircle":  (0.4998, 0.4998, 0.9450, 0.9450),
-    "keyWatermark": (0.5298, 0.5256, 0.6867, 0.4417),
+    # 名前:        (中心x, 中心y, 幅, 高さ)  ※すべて canvas に対する比
+    "magicCircle": (0.4998, 0.4998, 0.9450, 0.9450),
+    "tome":        (0.5000, 0.5023, 0.8717, 0.4471),
+}
+# パンフレット側＝印刷用の -bold PNG の実測値。線を太くしてある分だけ
+# インクの範囲がわずかに広い（中心は同じ）。書き出し直したら
+#   python3 -c "…（tools/motifs/render_tome.mjs のコメント参照）"
+# で測り直すこと。
+INK_PNG = {
+    "magicCircle": (0.4998, 0.4998, 0.9450, 0.9450),
+    "tome":        (0.5000, 0.5023, 0.8783, 0.4537),
 }
 
 PAPER_ASPECT = 0.75          # 手紙の 幅 / 高さ
@@ -64,9 +73,9 @@ PAGE_H_PX = 1357
 # ── 設計パラメータ ────────────────────────────────────────
 EDGE_OFFSET = 0.038   # 折り線を対象文字からどれだけ離すか（uv単位）
 CIRCLE_INK = 0.27     # 魔法陣の「インクの直径」（手紙の幅に対する比）
-KEY_INK_W = 0.32      # 鍵の「インクの幅」（同上）
+BOOK_INK_W = 0.42     # 本の「インクの幅」（同上）
 T_CIRCLE = -0.19      # 線に沿った魔法陣の位置（1文字目を 0 とする）
-T_KEY = 0.75          # 線に沿った鍵の位置
+T_BOOK = 0.75         # 線に沿った本の位置
 SPAN_MM = 62.0        # 印刷したとき、2つの図形の中心間を何mmにするか
 ARROW_LEN_PX = 95     # 矢印の長さ
 GLYPH_BOX = 0.80      # 当たり判定に使う文字の箱（字送り幅に対する比）
@@ -107,7 +116,7 @@ def ray_hit(px, py, dx, dy, ch):
 
 
 def main():
-    tg = [find(*k) for k in TARGET_KEYS]
+    tg = [find(*k) for k in TARGET_CHARS]
     print("対象の文字:", "".join(t["ch"] for t in tg))
     for t in tg:
         print("  「%s」 u=%.4f v=%.4f  大きさ %.4f x %.4f" % (t["ch"], t["u"], t["v"], t["w"], t["h"]))
@@ -163,27 +172,27 @@ def main():
 
     # ── 4. 図形を線の上に置く ────────────────────────────
     at = lambda t: (px + t * ux, py + t * uy)
-    c_circle, c_key = at(T_CIRCLE), at(T_KEY)
+    c_circle, c_book = at(T_CIRCLE), at(T_BOOK)
     r = CIRCLE_INK / 2
-    key_h = KEY_INK_W * INK["keyWatermark"][3] / INK["keyWatermark"][2]
-    key_half_line = (KEY_INK_W * abs(ux) + key_h * abs(uy)) / 2
+    book_h = BOOK_INK_W * INK["tome"][3] / INK["tome"][2]
+    book_half_line = (BOOK_INK_W * abs(ux) + book_h * abs(uy)) / 2
 
     print("\n図形の中心（インクの中心）")
     print("  魔法陣 t=%+.2f (%.5f, %.5f) インク直径 %.3f" % (T_CIRCLE, *c_circle, CIRCLE_INK))
-    print("  鍵     t=%+.2f (%.5f, %.5f) インク %.3f x %.3f" % (T_KEY, *c_key, KEY_INK_W, key_h))
+    print("  本     t=%+.2f (%.5f, %.5f) インク %.3f x %.3f" % (T_BOOK, *c_book, BOOK_INK_W, book_h))
 
     ok = True
     if not (r <= c_circle[0] <= 1 - r and r <= c_circle[1] <= 1 / PAPER_ASPECT - r):
         print("  !! 魔法陣が紙からはみ出す"); ok = False
-    if not (KEY_INK_W / 2 <= c_key[0] <= 1 - KEY_INK_W / 2
-            and key_h / 2 <= c_key[1] <= 1 / PAPER_ASPECT - key_h / 2):
-        print("  !! 鍵が紙からはみ出す"); ok = False
+    if not (BOOK_INK_W / 2 <= c_book[0] <= 1 - BOOK_INK_W / 2
+            and book_h / 2 <= c_book[1] <= 1 / PAPER_ASPECT - book_h / 2):
+        print("  !! 本が紙からはみ出す"); ok = False
     for t in tg:
         half = math.hypot(t["w"], t["h"]) / 2
         if math.hypot(t["u"] - c_circle[0], t["v"] - c_circle[1]) < r + half:
             print("  !! 魔法陣が「%s」に重なる" % t["ch"]); ok = False
-        if abs(along(t) - T_KEY) < key_half_line + half and abs(perp(t)) < key_h / 2 + half:
-            print("  !! 鍵が「%s」に重なる" % t["ch"]); ok = False
+        if abs(along(t) - T_BOOK) < book_half_line + half and abs(perp(t)) < book_h / 2 + half:
+            print("  !! 本が「%s」に重なる" % t["ch"]); ok = False
     print("  はみ出し・衝突チェック:", "OK" if ok else "NG")
 
     # ── 5. CSS の background-size / position に変換 ───────
@@ -192,7 +201,7 @@ def main():
     #   ⇒ p = (c - s*f) / (1 - s)
     print("\n── js/letter-decor.js の puzzleLine に貼る ──")
     for name, centre, ink_w in (("magicCircle", c_circle, CIRCLE_INK),
-                                ("keyWatermark", c_key, KEY_INK_W)):
+                                ("tome", c_book, BOOK_INK_W)):
         fx, fy, iw, _ = INK[name]
         s = ink_w / iw
         hcf = s * PAPER_ASPECT
@@ -204,13 +213,13 @@ def main():
     # 折り目は A1面の右辺（縦線）。面は overflow:hidden なので、
     # 図形は折り目でちょうど半分に切り取られて印刷される。
     # 参加者は A2・A3 をうしろに折り返し、A1面を表にして画面に置く。
-    span = T_KEY - T_CIRCLE
+    span = T_BOOK - T_CIRCLE
     w_mm = SPAN_MM / span                     # 手紙の幅を何mmとして刷るか
     uv_px = w_mm * PX_PER_MM                  # uv の 1.0 が何px か
     print("\n── tools/pamphlet/pamphlet.html に貼る ──")
     print("手紙の幅を %.2fmm として印刷（uv 1.0 = %.1fpx）" % (w_mm, uv_px))
-    print("魔法陣のインク直径 %.1fmm ／ 鍵のインク %.1f x %.1fmm"
-          % (CIRCLE_INK * w_mm, KEY_INK_W * w_mm, key_h * w_mm))
+    print("魔法陣のインク直径 %.1fmm ／ 本のインク %.1f x %.1fmm"
+          % (CIRCLE_INK * w_mm, BOOK_INK_W * w_mm, book_h * w_mm))
     print("折り目 x = %dpx（A1面の右辺＝三つ折りの折り目）" % EDGE_X_PX)
 
     # 紙をどれだけ回して置くか。紙のローカル系で「文字が見える側」は +x。
@@ -228,7 +237,7 @@ def main():
         return T0_Y_PX + t * uv_px
 
     lo = edge_y(T_CIRCLE) - (CIRCLE_INK * uv_px) * (abs(math.cos(phi)) + abs(math.sin(phi))) / 2
-    hi = edge_y(T_KEY) + key_half_line * uv_px
+    hi = edge_y(T_BOOK) + book_half_line * uv_px
     print("図形の占める範囲 y %.1f〜%.1f（%.1fmm）" % (lo, hi, (hi - lo) / PX_PER_MM))
     if lo < 0 or hi > PAGE_H_PX:
         print("  !! 面(高さ%dpx)からはみ出す" % PAGE_H_PX)
@@ -236,8 +245,9 @@ def main():
     print("\n図形（div の left/top・表示サイズ・回転）")
     print("  transform: rotate(%.2fdeg) を必ずかけること" % -math.degrees(phi))
     for name, t, ink_w in (("magicCircle", T_CIRCLE, CIRCLE_INK),
-                           ("keyWatermark", T_KEY, KEY_INK_W)):
-        fx, fy, iw, ih = INK[name]
+                           ("tome", T_BOOK, BOOK_INK_W)):
+        # ここはパンフレットに刷る PNG の話なので、太線版の実測値を使う
+        fx, fy, iw, ih = INK_PNG[name]
         canvas = ink_w / iw * uv_px
         cy = edge_y(t)
         print("  %-13s left:%.1fpx top:%.1fpx size:%.1fpx  transform-origin:%.2f%% %.2f%%"
