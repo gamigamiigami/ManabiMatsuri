@@ -38,7 +38,6 @@
   <!-- 鍵謎 -->
   <section class="card" id="puzzleCard" hidden>
     <h2 id="puzzleTitle"></h2>
-    <p class="note center" id="placeName"></p>
     <div class="question" id="question"></div>
     <div class="choices" id="choices"></div>
     <div class="feedback" id="feedback"></div>
@@ -221,7 +220,6 @@
   // ---------- 鍵謎の表示 ----------
   document.getElementById("puzzleCard").hidden = false;
   document.getElementById("puzzleTitle").textContent = puzzle.title + " 〜鍵謎〜";
-  document.getElementById("placeName").textContent = "場所：" + puzzle.place;
 
   const qEl = document.getElementById("question");
   qEl.textContent = puzzle.question;

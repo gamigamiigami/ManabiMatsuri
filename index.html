@@ -120,7 +120,6 @@
       <h2 id="welcome"></h2>
       <div class="stars" id="stars"></div>
       <p class="center note" id="progressText"></p>
-      <ul class="point-list" id="pointList"></ul>
       <p class="center note" id="dummyText" style="margin-top:14px;"></p>
     </div>
 
@@ -351,19 +350,6 @@
       "🃏 見つけて解いたダミー謎：" + Store.dummySolvedCount(team) + " / " + DUMMY_TOTAL +
       "（封印には関係ない、腕試しのおまけ）";
 
-    const list = document.getElementById("pointList");
-    list.innerHTML = "";
-    POINT_ORDER.forEach(function (p) {
-      const solved = team.points[p] && team.points[p].solvedAt;
-      const li = document.createElement("li");
-      if (solved) li.className = "done";
-      li.innerHTML =
-        '<span class="num">' + p + "</span>" +
-        "<span>" + (solved ? PUZZLES[p].place : "？？？（QRを探して読み取ろう）") + "</span>" +
-        '<span class="st">' + (solved ? "★" : "☆") + "</span>";
-      list.appendChild(li);
-    });
-
     // 次に向かう場所（在り処謎の再表示）
     if (solvedCount > 0 && solvedCount < POINT_ORDER.length) {
       // 最後に解いたポイントを探す（solvedAtの時刻が一番新しいもの）
@@ -387,10 +373,9 @@
     }
 
     // 扉の謎を解いたあとは「最後の謎」だけの画面にする。
-    // 中謎の5問に戻る必要はもうないので、場所の一覧・5つの鍵の答え・
-    // 扉へのボタン・冒険の手順は出さない（記録は上の★5つで十分）。
+    // 中謎の5問に戻る必要はもうないので、5つの鍵の答え・扉へのボタン・
+    // 冒険の手順は出さない（記録は上の★5つで十分）。
     if (doorCleared) {
-      document.getElementById("pointList").hidden = true;
       document.getElementById("dummyText").hidden = true;
       document.getElementById("manualCard").hidden = true;
       document.getElementById("howtoCard").hidden = true;

@@ -271,46 +271,6 @@ header.site h1 {
 
 .stars .off { color: #453a5e; text-shadow: none; }
 
-.point-list { list-style: none; margin-top: 12px; border-top: 1px dashed rgba(212, 175, 106, 0.3); }
-
-.point-list li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 4px;
-  border-bottom: 1px dashed rgba(212, 175, 106, 0.2);
-  font-size: 0.92rem;
-}
-
-.point-list .num {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid #3a2d54;
-  background: #1c1230;
-  color: #6f5f8c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.point-list li.done .num {
-  background: radial-gradient(circle at 35% 30%, #f4d99a, var(--gold-deep));
-  border-color: var(--gold);
-  color: #3a2306;
-  box-shadow: 0 0 12px var(--gold-glow);
-}
-
-.point-list li:not(.done) span:nth-child(2) { color: #6f5f8c; }
-
-.point-list .st { margin-left: auto; font-size: 1.1rem; }
-.point-list li.done .st { color: var(--gold); text-shadow: 0 0 10px var(--gold-glow); }
-.point-list li:not(.done) .st { color: #453a5e; }
-
 /* ---------- ボタン ---------- */
 .btn {
   display: block;
@@ -872,9 +832,6 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
 
 /* ---------- 獲得済みの星がゆらめく ---------- */
 .stars span.on,
-.point-list li.done .st {
-  animation: starFlicker 2.8s ease-in-out infinite alternate;
-}
 
 @keyframes starFlicker {
   from { text-shadow: 0 0 8px var(--gold-glow); opacity: 0.85; }
@@ -1293,7 +1250,6 @@ header.site h1 {
   100% { opacity: 0; transform: translate(-50%, -50%) scale(4.4);
          text-shadow: 0 0 90px rgba(245, 196, 81, 0); }
 }
-
 
 /* 月を落とす先＝ホームの見出しの後ろにある「鍵のかかった魔法陣」 */
 .magic-circle.mc-hot { filter: drop-shadow(0 0 26px rgba(245, 196, 81, 0.85)); }

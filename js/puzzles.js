@@ -30,6 +30,8 @@ const PLACE_IMAGES = {
   5: "images/PlaceE.png",
 };
 
+// place … QR印刷ツールと運営の進行画面でだけ使う覚え書き。
+//         参加者の画面には出さない（在り処謎の画像が場所を示すため）。
 const PUZZLES = {
   1: {
     place: "3-5 時間割表",
@@ -38,12 +40,10 @@ const PUZZLES = {
     image: KEY_IMAGES[1],
     arikaImage: PLACE_IMAGES[2],
     choices: ["1", "2", "3", "4"],
-    // ⚠ 謎が「雑巾使って穴埋め」に差し替わったが、正解の番号は未確認。
-    //    現地で解いて確かめ、この数字を直すこと（0が「1」、3が「4」）。
-    answerIndex: 2,
+    answerIndex: 2, // 「3」
     smallHint: "使えるものが、どこかにあるはずだ",
     arikaHint: "どこかで見たような…",
-    status: "画像あり・正解番号を要確認",
+    status: "完成",
   },
   2: {
     place: "3-6 時計",
@@ -64,12 +64,10 @@ const PUZZLES = {
     image: KEY_IMAGES[3],
     arikaImage: PLACE_IMAGES[4],
     choices: ["1", "2", "3", "4"],
-    // ⚠ 謎が「応時中の校章は？」の4択画像に差し替わったが、正解の番号は未確認。
-    //    本物の校章と見くらべて、この数字を直すこと（0が「①」、3が「④」）。
-    answerIndex: 0,
+    answerIndex: 0, // 「①」
     smallHint: "本物をどこかで見ているはずだ",
     arikaHint: "どこかで見たような…",
-    status: "画像あり・正解番号を要確認",
+    status: "完成",
   },
   4: {
     place: "3-5 うしろの黒板",
