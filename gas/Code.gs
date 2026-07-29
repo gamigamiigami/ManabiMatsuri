@@ -133,10 +133,14 @@ function aggregate_() {
         solved: {},        // {ポイント番号: 正解時刻}
         wrong: {},         // {ポイント番号: 誤答回数}
         hints: [],         // [{point, at, kind}]
-        // 扉の謎（5つの鍵を集めたあとの3桁）
-        door: { hintAt: null, wrong: 0, solvedAt: null },
-        // 最後の謎（大謎）。moonAt/keyAt は2つの仕掛けを見つけた時刻
-        secret: { moonAt: null, keyAt: null, hintAt: null, wrong: 0, solvedAt: null },
+        // イベントの種類ごとの回数と時刻。
+        // {final_correct: {n, firstAt, lastAt}, secret_moon: {...}, ...}
+        //
+        // ここが要点：種類を決め打ちせず、来たものをそのまま数える。
+        // こうしておけば、今後 謎や仕掛けを足して新しい種類のイベントを
+        // 送るようになっても、このGASを貼り替え直す必要がない。
+        // 意味づけ（どれが扉の謎か等）は dashboard.html 側で行う。
+        types: {},
       };
     }
     const t = teams[id];
@@ -151,17 +155,12 @@ function aggregate_() {
       t.hints.push({ point: point, at: ts, kind: type });
     }
 
-    // 扉の謎。point 列には数字ではなく "final" が入っているので別扱いにする
-    if (type === "final_hint") t.door.hintAt = ts;
-    if (type === "final_wrong") t.door.wrong += 1;
-    if (type === "final_correct") t.door.solvedAt = ts;
-
-    // 最後の謎（大謎）
-    if (type === "secret_moon") t.secret.moonAt = ts;
-    if (type === "secret_key") t.secret.keyAt = ts;
-    if (type === "secret_hint") t.secret.hintAt = ts;
-    if (type === "secret_wrong") t.secret.wrong += 1;
-    if (type === "secret_correct") t.secret.solvedAt = ts;
+    // 種類ごとの集計。扉の謎（final_*）や最後の謎（secret_*）は
+    // point 列に数字ではなく "final" / "secret" が入っているので、
+    // ポイント番号の集計とは別に、この表で数えている。
+    if (!t.types[type]) t.types[type] = { n: 0, firstAt: ts, lastAt: ts };
+    t.types[type].n += 1;
+    t.types[type].lastAt = ts;
     // ダミー謎のクリア（ダミー番号は detail 列のJSONに入っている）
     if (type === "dummy_correct") {
       try {

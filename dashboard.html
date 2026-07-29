@@ -130,9 +130,30 @@
     }).join("");
   }
 
-  // 古い集計（扉の謎・最後の謎に未対応のGAS）でも落ちないように既定値を補う
-  function doorOf(team) { return team.door || {}; }
-  function secretOf(team) { return team.secret || {}; }
+  // GASは「イベントの種類ごとの回数と時刻」をそのまま返してくる（team.types）。
+  // どの種類が何を意味するかは、ここで決める。
+  // 謎や仕掛けを増やしてイベントの種類が増えても、直すのはこの部分だけで、
+  // GASの貼り替えは要らない。
+  function at(team, type) {
+    const e = (team.types || {})[type];
+    return e ? e.lastAt : null;
+  }
+  function count(team, type) {
+    const e = (team.types || {})[type];
+    return e ? e.n : 0;
+  }
+
+  // 扉の謎（5つの鍵を集めたあとの3桁）
+  function doorOf(team) {
+    return { hintAt: at(team, "final_hint"), wrong: count(team, "final_wrong"),
+             solvedAt: at(team, "final_correct") };
+  }
+  // 最後の謎（大謎）。moonAt/keyAt はホームの2つの仕掛けを見つけた時刻
+  function secretOf(team) {
+    return { moonAt: at(team, "secret_moon"), keyAt: at(team, "secret_key"),
+             hintAt: at(team, "secret_hint"), wrong: count(team, "secret_wrong"),
+             solvedAt: at(team, "secret_correct") };
+  }
 
   // チームがいまどの段階にいるか
   //   keys（鍵あつめ）→ door（扉の謎）→ secret（最後の謎）→ done（完全クリア）
