@@ -28,6 +28,9 @@
   --text-sub: #55503f;
   --border-fold: #c9c2ae;
   --border-dot: #ddd5bd;
+  /* 謎の色。矢印と、手紙の中の目印の文字に使う。
+     手紙側（letter.html の --mark）と必ず同じ値にすること。 */
+  --mark: #d1341f;
 
   /* === サイズ === */
   --page-w: 1920px;
@@ -172,11 +175,11 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
       <svg style="left:520px;top:800px;width:120px;height:300px" viewBox="0 0 120 300" fill="none">
         <defs>
           <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-            <path d="M0,0 L7,3.5 L0,7 z" fill="#1d2a5e"/>
+            <path d="M0,0 L7,3.5 L0,7 z" fill="var(--mark)"/>
           </marker>
         </defs>
         <!-- x=120 が折り目 640px、y は 800px 起点 -->
-        <g stroke="#1d2a5e" stroke-width="3.4" marker-end="url(#ah)">
+        <g stroke="var(--mark)" stroke-width="3.8" marker-end="url(#ah)">
           <line x1="25" y1="50.0"  x2="120" y2="50.0"/>
           <line x1="25" y1="128.0" x2="120" y2="128.0"/>
           <line x1="25" y1="251.3" x2="120" y2="251.3"/>
