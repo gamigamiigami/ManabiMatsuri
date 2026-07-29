@@ -13,6 +13,7 @@
 //    そのまま測れる。色を変えても位置は動かないはずで、それを
 //    この比較で確かめられる。
 import { chromium } from "playwright";
+import { chromeLaunchOptions } from "../chrome-path.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,7 +51,7 @@ const measureInPage = () => {
   return out;
 };
 
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const browser = await chromium.launch(chromeLaunchOptions());
 const runs = [];
 for (const width of WIDTHS) {
   const page = await browser.newPage({ viewport: { width, height: 844 } });

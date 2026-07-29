@@ -3,9 +3,12 @@
 //
 //   node tools/test_home_hint.mjs <スクショの出力先ディレクトリ>
 import { chromium } from "playwright";
-const OUT = process.argv[2];
+import { chromeLaunchOptions } from "./chrome-path.mjs";
+// 書き出し先。指定しないと "undefined/" というゴミが出来ていたので、
+// 未指定なら実行した場所に out/ を作る。
+const OUT = process.argv[2] || "out";
 const ROOT = "file://" + process.cwd();
-const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const b = await chromium.launch(chromeLaunchOptions());
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 const errs = [];
 p.on("pageerror", (e) => errs.push(String(e)));

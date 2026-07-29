@@ -8,10 +8,13 @@
 //   secret.html で合言葉ふたつ → クリア
 // までを実際に操作して確かめる。
 import { chromium } from "playwright";
+import { chromeLaunchOptions } from "./chrome-path.mjs";
 
-const OUT = process.argv[2];
+// 書き出し先。指定しないと "undefined/" というゴミが出来ていたので、
+// 未指定なら実行した場所に out/ を作る。
+const OUT = process.argv[2] || "out";
 const ROOT = "file://" + process.cwd();
-const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const b = await chromium.launch(chromeLaunchOptions());
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 const errs = [];
 p.on("pageerror", (e) => errs.push(String(e)));

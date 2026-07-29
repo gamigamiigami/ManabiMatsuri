@@ -159,6 +159,7 @@
     <!-- 仕掛けが成立した瞬間に、その場で謎を出す -->
     <div class="card" id="homePuzzleCard1" hidden>
       <h2 id="homePuzzleTitle1"></h2>
+      <div class="spell-box"><div class="spell-line done" id="homePuzzleInstruction1"></div></div>
       <div class="puzzle-lead" id="homePuzzleLead1"></div>
       <img class="puzzle-img" id="homePuzzleImg1" hidden alt="">
       <div class="puzzle-body" id="homePuzzleBody1"></div>
@@ -166,10 +167,28 @@
     </div>
     <div class="card" id="homePuzzleCard2" hidden>
       <h2 id="homePuzzleTitle2"></h2>
+      <div class="spell-box"><div class="spell-line done" id="homePuzzleInstruction2"></div></div>
       <div class="puzzle-lead" id="homePuzzleLead2"></div>
       <img class="puzzle-img" id="homePuzzleImg2" hidden alt="">
       <div class="puzzle-body" id="homePuzzleBody2"></div>
       <a class="btn ghost small" id="homePuzzleLink2" hidden style="margin-top:14px;"></a>
+    </div>
+
+    <!-- 全部解き終わった人だけが押せる「もう一度」。
+         おうちで家族ともう一度遊べるようにするためのもので、
+         デバッグ用ボタンとは別物。封印を解くまでは現れない。 -->
+    <div class="card" id="replayCard" hidden>
+      <h2>もう一度、はじめから</h2>
+      <p class="note center">
+        おうちでもう一度遊びたいときは、この端末の記録を消して
+        最初からやり直せます。<br>
+        冒険の記録（チーム名・★・合言葉）はすべて消えます。
+      </p>
+      <button class="btn ghost small" id="replayBtn" style="margin-top:14px;">🔄 はじめから遊びなおす</button>
+      <button class="btn gold" id="replayConfirmBtn" hidden style="margin-top:10px;">本当に消していい？（もう一度おして実行）</button>
+      <p class="note center" id="replayNote" hidden style="margin-top:10px;">
+        運営に送った記録は消えません。消えるのはこの端末の中だけです。
+      </p>
     </div>
 
     <!-- プロローグの読みかえし（手紙演出をもう一度見られる） -->
@@ -432,9 +451,13 @@
           : "この手順は、この画面（冒険記録）で試すこと。";
       if (st.foundMoon) fillHomePuzzle(1, SECRET_PUZZLES.moon);
       if (st.foundKey) fillHomePuzzle(2, SECRET_PUZZLES.key);
+      // 「はじめから遊びなおす」は封印を解いたあとにだけ現れる
+      document.getElementById("replayCard").hidden = !st.solvedAt;
     }
     function fillHomePuzzle(n, def) {
       document.getElementById("homePuzzleTitle" + n).textContent = def.title;
+      // どの指示文から現れた謎なのかを、カードの中にも残しておく
+      document.getElementById("homePuzzleInstruction" + n).textContent = def.instruction || "";
       document.getElementById("homePuzzleLead" + n).textContent = def.lead;
       document.getElementById("homePuzzleBody" + n).textContent = def.body;
       if (def.image) {
@@ -478,6 +501,26 @@
       });
     }
   }
+
+  // ── クリア後の「はじめから遊びなおす」──────────────────
+  // 押せるのは封印を解いたあとだけ（replayCard は paint() でしか出ない）。
+  // 消すのは端末の中の記録だけで、運営に送った記録には触らない。
+  // 誤爆が痛いので、2度押しをはさむ。
+  (function setUpReplay() {
+    var btn = document.getElementById("replayBtn");
+    var confirmBtn = document.getElementById("replayConfirmBtn");
+    btn.addEventListener("click", function () {
+      btn.hidden = true;
+      confirmBtn.hidden = false;
+      document.getElementById("replayNote").hidden = false;
+    });
+    confirmBtn.addEventListener("click", function () {
+      try { localStorage.removeItem(Store.KEY); } catch (e) {}
+      try { localStorage.removeItem("fuin_letter_seen"); } catch (e) {}
+      // 手紙の演出からもう一度見せたいので、index ではなく letter へ送る
+      location.href = "letter.html";
+    });
+  })();
 
   // --- 小謎の答え合わせ ---
   function normalizeAnswer(s) {

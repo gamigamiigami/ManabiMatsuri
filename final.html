@@ -391,6 +391,9 @@
     document.getElementById("successCard").hidden = false;
     document.getElementById("successMsg").textContent = FINAL_SUCCESS_MESSAGE;
     document.getElementById("letterFour").textContent = FINALE_MESSAGE;
+    // 入力欄のカードを消したぶん画面が縮み、手紙が下から現れたように
+    // 見えてしまう。切り替わりは必ずページの先頭からにする。
+    window.scrollTo(0, 0);
     setTimeout(function () {
       document.getElementById("doorScene").classList.add("open");
     }, 250);
