@@ -41,8 +41,8 @@
         <thead>
           <tr>
             <th>チーム</th>
-            <th>進捗</th>
-            <th>現在地</th>
+            <th>鍵あつめ</th>
+            <th>いまどこ</th>
             <th>ヒント</th>
             <th>誤答</th>
             <th>ダミー</th>
@@ -55,8 +55,11 @@
     </div>
 
     <p class="note">
-      🔴 赤い行＝未クリアの謎でヒントを見ているチーム（経過が長いほど困っている可能性大）。
-      優先的に様子を見に行ってください。緑＝全クリア。
+      🔴 赤い行＝まだ解けていない謎でヒントを見ているチーム（経過が長いほど困っている可能性大）。
+      優先的に様子を見に行ってください。緑＝最後の謎まで解いた完全クリア。<br>
+      「いまどこ」は 鍵あつめ → 扉の謎 → 最後の謎 → 完全クリア の順に進みます。
+      最後の謎の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
+      ホームの2つの仕掛けを見つけたかどうかです（薄い印はまだ見つけていない）。
     </p>
   </section>
 
@@ -106,13 +109,33 @@
     }).join("");
   }
 
-  // 「未クリアの謎に対する最新のヒント」を返す（＝助けが要るかもしれない状態）
-  function activeHint(team) {
+  // 古い集計（扉の謎・最後の謎に未対応のGAS）でも落ちないように既定値を補う
+  function doorOf(team) { return team.door || {}; }
+  function secretOf(team) { return team.secret || {}; }
+
+  // チームがいまどの段階にいるか
+  //   keys（鍵あつめ）→ door（扉の謎）→ secret（最後の謎）→ done（完全クリア）
+  function stageOf(team, solvedCount) {
+    if (secretOf(team).solvedAt) return "done";
+    if (doorOf(team).solvedAt) return "secret";
+    if (solvedCount === POINT_ORDER.length) return "door";
+    return "keys";
+  }
+
+  // 「まだ解けていない謎に対する最新のヒント」を返す（＝助けが要るかもしれない状態）
+  // 中謎の5問だけでなく、扉の謎と最後の謎のヒントも拾う。
+  function activeHint(team, stage) {
     let latest = null;
+    function offer(at, kind, where) {
+      if (!at) return;
+      if (!latest || new Date(at) > new Date(latest.at)) latest = { at: at, kind: kind, where: where };
+    }
     team.hints.forEach(function (h) {
       if (team.solved[h.point]) return; // その謎はもう解けている
-      if (!latest || new Date(h.at) > new Date(latest.at)) latest = h;
+      offer(h.at, h.kind, pointLabel(h.point) + "で");
     });
+    if (stage === "door") offer(doorOf(team).hintAt, "hint_click", "扉の謎で");
+    if (stage === "secret") offer(secretOf(team).hintAt, "hint_click", "最後の謎で");
     return latest;
   }
 
@@ -121,11 +144,13 @@
     // 並び順：ヒント中（困っていそう）→進行中→クリア済み。同グループ内は最終更新が新しい順
     const rows = teams.map(function (t) {
       const solvedCount = POINT_ORDER.filter(function (p) { return t.solved[p]; }).length;
+      const stage = stageOf(t, solvedCount);
       return {
         t: t,
         solvedCount: solvedCount,
-        cleared: solvedCount === POINT_ORDER.length,
-        hint: activeHint(t),
+        stage: stage,
+        cleared: stage === "done",
+        hint: activeHint(t, stage),
       };
     });
     rows.sort(function (a, b) {
@@ -142,20 +167,21 @@
       if (r.hint) tr.className = "needs-help";
       else if (r.cleared) tr.className = "cleared";
 
-      const wrongTotal = Object.keys(t.wrong).reduce(function (s, k) { return s + t.wrong[k]; }, 0);
+      // 誤答は中謎5問＋扉の謎＋最後の謎の合計
+      const wrongTotal =
+        Object.keys(t.wrong).reduce(function (s, k) { return s + t.wrong[k]; }, 0) +
+        (doorOf(t).wrong || 0) + (secretOf(t).wrong || 0);
       const hintCell = r.hint
         ? '<span class="badge hint">' +
           (r.hint.kind === "hint_auto" ? "自動表示" : "ヒント押下") +
-          "</span> " + PUZZLES[r.hint.point].place + "で " +
+          "</span> " + escapeHtml(r.hint.where) + " " +
           minutesAgo(r.hint.at) + "分経過"
-        : r.cleared
-          ? '<span class="badge clear">クリア</span>'
-          : "─";
+        : "─"; // クリアの表示は「いまどこ」の列にまとめる
 
       tr.innerHTML =
         "<td>" + escapeHtml(t.teamName || t.teamId) + "</td>" +
         '<td class="stars-cell">' + starsHtml(t) + " " + r.solvedCount + "/5</td>" +
-        "<td>" + (t.lastPoint ? pointLabel(t.lastPoint) : "未スタート") + "</td>" +
+        "<td>" + stageCell(r) + "</td>" +
         "<td>" + hintCell + "</td>" +
         "<td>" + (wrongTotal || "0") + "回</td>" +
         "<td>🃏 " + (t.dummySolved || 0) + "</td>" +
@@ -181,8 +207,25 @@
     });
   }
 
+  // 「いまどこ」の中身。段階が進むほど強調される。
+  function stageCell(r) {
+    const t = r.t;
+    if (r.stage === "done") return '<span class="badge clear">完全クリア</span>';
+    if (r.stage === "secret") {
+      const sc = secretOf(t);
+      return '<span class="badge stage-secret">最後の謎</span> ' +
+        '<span class="stage-mark' + (sc.moonAt ? "" : " off") + '" title="月の謎">🌙</span>' +
+        '<span class="stage-mark' + (sc.keyAt ? "" : " off") + '" title="鍵の謎">🔑</span>';
+    }
+    if (r.stage === "door") return '<span class="badge stage-door">扉の謎</span>';
+    if (!t.lastPoint) return '<span class="dim">未スタート</span>';
+    return pointLabel(t.lastPoint);
+  }
+
   function pointLabel(p) {
-    return "①②③④⑤".charAt(p - 1) + " " + (PUZZLES[p] ? PUZZLES[p].place : "");
+    const label = "①②③④⑤".charAt(p - 1);
+    const place = PUZZLES[p] ? PUZZLES[p].place : "";
+    return place ? label + " " + escapeHtml(place) : label;
   }
 
   function escapeHtml(s) {
