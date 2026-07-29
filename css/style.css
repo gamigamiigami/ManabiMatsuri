@@ -1176,7 +1176,7 @@ header.site h1 {
   width: 100%;
 }
 
-/* PlaceA.png（1414×2000）の上半分（謎部分、y:0〜830px）だけを表示 */
+/* PlaceE.png（1414×2000）の上半分（謎部分、y:0〜830px）だけを表示 */
 .arika-crop-wrap.arika-crop-top {
   aspect-ratio: 1414 / 830;
 }
@@ -1184,7 +1184,7 @@ header.site h1 {
   transform: translateY(0%);
 }
 
-/* PlaceA.png の五十音表部分（y:1270〜1830px）だけを切り出して表示 */
+/* PlaceE.png の五十音表部分（y:1270〜1830px）だけを切り出して表示 */
 .arika-crop-wrap.arika-crop-hint {
   aspect-ratio: 1414 / 560;
   margin-top: 4px;
