@@ -38,7 +38,7 @@ def main(d):
     phi = math.atan2(ny, nx)
 
     W = letter.width                      # uv 1.0 にあたる画素数（手紙側）
-    uv_px = (S.SPAN_MM / (S.T_BOOK - S.T_CIRCLE)) * S.PX_PER_MM   # パンフレット側
+    uv_px = (S.SPAN_MM / (S.T_CIRCLE2 - S.T_CIRCLE)) * S.PX_PER_MM   # パンフレット側
     s = W / uv_px                         # パンフレット1px → 手紙の何px
 
     # パンフレットの (X, Y) → 手紙の (x, y)
@@ -67,8 +67,8 @@ def main(d):
 
     print("手紙 %dx%d ／ パンフレット1px = 手紙 %.3fpx ／ 紙の傾き %.2f°"
           % (letter.width, letter.height, s, math.degrees(phi)))
-    for name, X, Y in (("魔法陣", S.EDGE_X_PX, S.T0_Y_PX + S.T_CIRCLE * uv_px),
-                       ("本",     S.EDGE_X_PX, S.T0_Y_PX + S.T_BOOK * uv_px)):
+    for name, X, Y in (("魔法陣",    S.EDGE_X_PX, S.T0_Y_PX + S.T_CIRCLE * uv_px),
+                       ("魔法陣その2", S.EDGE_X_PX, S.T0_Y_PX + S.T_CIRCLE2 * uv_px)):
         x, y = to_letter(X, Y)
         print("  %s の中心 → 手紙上 (%.1f, %.1f) px = uv (%.4f, %.4f)"
               % (name, x, y, x / W, y / W))

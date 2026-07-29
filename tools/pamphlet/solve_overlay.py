@@ -10,7 +10,8 @@ tools/pamphlet/pamphlet.html の謎ブロックに書き写す。
 ────────────────────────────────────────────────────────────
 仕組み
   ・スマホには「Xからの一通目の手紙」が出ている。手紙の中に
-    魔法陣と鍵の透かしが2つ置いてある。
+    2種類の魔法陣（六芒星の magicCircle と五芒星の magicCircle2）が
+    透かしとして置いてある。
   ・パンフレットの折り線にも同じ2つの図形が、ちょうど半分だけ
     印刷されている。線より下は うしろに折りたたむので、
     折ったあとの紙のはしが、ちょうど図形を半分に切った線になる。
@@ -52,18 +53,20 @@ TARGET_CHARS = [("この学校", 0), ("でなやんで", 2), ("ずっとおも�
 # canvas いっぱいに描かれているとは限らない。ここを無視して canvas の
 # 中心を線に合わせると図形が線からずれる（旧版で鍵だけ合わなかった原因）。
 # 画面（手紙）側＝CSS背景に敷く細線SVGの実測値。
+# 値は tools/pamphlet/measure_ink.py で測る（手で書かない）。
 INK = {
-    # 名前:        (中心x, 中心y, 幅, 高さ)  ※すべて canvas に対する比
-    "magicCircle": (0.4998, 0.4998, 0.9450, 0.9450),
-    "tome":        (0.5000, 0.5023, 0.8717, 0.4471),
+    # 名前:         (中心x, 中心y, 幅, 高さ)  ※すべて canvas に対する比
+    "magicCircle":  (0.5000, 0.5000, 0.9450, 0.9450),
+    "magicCircle2": (0.5000, 0.5000, 0.9517, 0.9517),
 }
 # パンフレット側＝印刷用の -bold PNG の実測値。線を太くしてある分だけ
-# インクの範囲がわずかに広い（中心は同じ）。書き出し直したら
-#   python3 -c "…（tools/motifs/render_tome.mjs のコメント参照）"
+# インクの範囲がわずかに広い（中心は同じ）。PNG を焼き直したら
+#   node tools/motifs/render_motif.mjs
+#   python3 tools/pamphlet/measure_ink.py
 # で測り直すこと。
 INK_PNG = {
-    "magicCircle": (0.4998, 0.4998, 0.9450, 0.9450),
-    "tome":        (0.5000, 0.5023, 0.8783, 0.4537),
+    "magicCircle":  (0.5000, 0.5000, 0.9450, 0.9450),
+    "magicCircle2": (0.5000, 0.5000, 0.9583, 0.9583),
 }
 
 PAPER_ASPECT = 0.75          # 手紙の 幅 / 高さ
@@ -78,10 +81,12 @@ PAGE_H_PX = 1357
 # 小さくなったとたん矢印が長すぎて隣の文字を先に刺してしまう。
 # 文字の大きさに追従させておけば、文面を書き換えても比率は保たれる。
 EDGE_OFFSET_RATIO = 0.62   # 0.62 x 文字の高さ（旧 0.038 / 0.0614 と同じ比）
+# 2つの魔法陣は同じ大きさにする。骨格（六芒星／五芒星）で区別できるので、
+# 大きさまで変える必要はなく、そろっていたほうが刷ったときに自然。
 CIRCLE_INK = 0.20     # 魔法陣の「インクの直径」（手紙の幅に対する比）
-BOOK_INK_W = 0.30     # 本の「インクの幅」（同上）
+CIRCLE2_INK = 0.20    # 魔法陣その2の「インクの直径」（同上）
 T_CIRCLE = -0.13      # 線に沿った魔法陣の位置（1文字目を 0 とする）
-T_BOOK = 0.60         # 線に沿った本の位置
+T_CIRCLE2 = 0.60      # 線に沿った魔法陣その2の位置
 SPAN_MM = 62.0        # 印刷したとき、2つの図形の中心間を何mmにするか
 ARROW_LEN_PX = 95     # 矢印の長さ
 GLYPH_BOX = 0.80      # 当たり判定に使う文字の箱（字送り幅に対する比）
@@ -186,27 +191,27 @@ def main():
 
     # ── 4. 図形を線の上に置く ────────────────────────────
     at = lambda t: (px + t * ux, py + t * uy)
-    c_circle, c_book = at(T_CIRCLE), at(T_BOOK)
-    r = CIRCLE_INK / 2
-    book_h = BOOK_INK_W * INK["tome"][3] / INK["tome"][2]
-    book_half_line = (BOOK_INK_W * abs(ux) + book_h * abs(uy)) / 2
+    SHAPES = (("魔法陣",    "magicCircle",  T_CIRCLE,  CIRCLE_INK),
+              ("魔法陣その2", "magicCircle2", T_CIRCLE2, CIRCLE2_INK))
 
     print("\n図形の中心（インクの中心）")
-    print("  魔法陣 t=%+.2f (%.5f, %.5f) インク直径 %.3f" % (T_CIRCLE, *c_circle, CIRCLE_INK))
-    print("  本     t=%+.2f (%.5f, %.5f) インク %.3f x %.3f" % (T_BOOK, *c_book, BOOK_INK_W, book_h))
+    for label, _n, t0, ink in SHAPES:
+        c = at(t0)
+        print("  %-7s t=%+.2f (%.5f, %.5f) インク直径 %.3f" % (label, t0, *c, ink))
 
+    # どちらも円なので、はみ出しも文字との衝突も「中心からの距離」だけで見る。
     ok = True
-    if not (r <= c_circle[0] <= 1 - r and r <= c_circle[1] <= 1 / PAPER_ASPECT - r):
-        print("  !! 魔法陣が紙からはみ出す"); ok = False
-    if not (BOOK_INK_W / 2 <= c_book[0] <= 1 - BOOK_INK_W / 2
-            and book_h / 2 <= c_book[1] <= 1 / PAPER_ASPECT - book_h / 2):
-        print("  !! 本が紙からはみ出す"); ok = False
-    for t in tg:
-        half = math.hypot(t["w"], t["h"]) / 2
-        if math.hypot(t["u"] - c_circle[0], t["v"] - c_circle[1]) < r + half:
-            print("  !! 魔法陣が「%s」に重なる" % t["ch"]); ok = False
-        if abs(along(t) - T_BOOK) < book_half_line + half and abs(perp(t)) < book_h / 2 + half:
-            print("  !! 本が「%s」に重なる" % t["ch"]); ok = False
+    for label, _n, t0, ink in SHAPES:
+        c, r = at(t0), ink / 2
+        if not (r <= c[0] <= 1 - r and r <= c[1] <= 1 / PAPER_ASPECT - r):
+            print("  !! %sが紙からはみ出す" % label); ok = False
+        for t in tg:
+            half = math.hypot(t["w"], t["h"]) / 2
+            if math.hypot(t["u"] - c[0], t["v"] - c[1]) < r + half:
+                print("  !! %sが「%s」に重なる" % (label, t["ch"])); ok = False
+    # 2つの陣どうしが重なっていないか（線の上に並ぶので中心間距離で足りる）
+    if abs(T_CIRCLE2 - T_CIRCLE) < (CIRCLE_INK + CIRCLE2_INK) / 2:
+        print("  !! 2つの魔法陣が重なる"); ok = False
     print("  はみ出し・衝突チェック:", "OK" if ok else "NG")
 
     # ── 5. CSS の background-size / position に変換 ───────
@@ -214,8 +219,8 @@ def main():
     #   インク中心 c = p*(1-s) + s*f   （f は canvas 内のインク中心比）
     #   ⇒ p = (c - s*f) / (1 - s)
     print("\n── js/letter-decor.js の puzzleLine に貼る ──")
-    for name, centre, ink_w in (("magicCircle", c_circle, CIRCLE_INK),
-                                ("tome", c_book, BOOK_INK_W)):
+    for _label, name, t0, ink_w in SHAPES:
+        centre = at(t0)
         fx, fy, iw, _ = INK[name]
         s = ink_w / iw
         hcf = s * PAPER_ASPECT
@@ -227,13 +232,13 @@ def main():
     # 折り目は A1面の右辺（縦線）。面は overflow:hidden なので、
     # 図形は折り目でちょうど半分に切り取られて印刷される。
     # 参加者は A2・A3 をうしろに折り返し、A1面を表にして画面に置く。
-    span = T_BOOK - T_CIRCLE
+    span = T_CIRCLE2 - T_CIRCLE
     w_mm = SPAN_MM / span                     # 手紙の幅を何mmとして刷るか
     uv_px = w_mm * PX_PER_MM                  # uv の 1.0 が何px か
     print("\n── tools/pamphlet/pamphlet.html に貼る ──")
     print("手紙の幅を %.2fmm として印刷（uv 1.0 = %.1fpx）" % (w_mm, uv_px))
-    print("魔法陣のインク直径 %.1fmm ／ 本のインク %.1f x %.1fmm"
-          % (CIRCLE_INK * w_mm, BOOK_INK_W * w_mm, book_h * w_mm))
+    print("魔法陣のインク直径 %.1fmm ／ 魔法陣その2 %.1fmm"
+          % (CIRCLE_INK * w_mm, CIRCLE2_INK * w_mm))
     print("折り目 x = %dpx（A1面の右辺＝三つ折りの折り目）" % EDGE_X_PX)
 
     # 紙をどれだけ回して置くか。紙のローカル系で「文字が見える側」は +x。
@@ -250,16 +255,16 @@ def main():
     def edge_y(t):
         return T0_Y_PX + t * uv_px
 
-    lo = edge_y(T_CIRCLE) - (CIRCLE_INK * uv_px) * (abs(math.cos(phi)) + abs(math.sin(phi))) / 2
-    hi = edge_y(T_BOOK) + book_half_line * uv_px
+    # 円は回しても大きさが変わらないので、半径をそのまま足せばよい
+    lo = edge_y(T_CIRCLE) - CIRCLE_INK * uv_px / 2
+    hi = edge_y(T_CIRCLE2) + CIRCLE2_INK * uv_px / 2
     print("図形の占める範囲 y %.1f〜%.1f（%.1fmm）" % (lo, hi, (hi - lo) / PX_PER_MM))
     if lo < 0 or hi > PAGE_H_PX:
         print("  !! 面(高さ%dpx)からはみ出す" % PAGE_H_PX)
 
     print("\n図形（div の left/top・表示サイズ・回転）")
     print("  transform: rotate(%.2fdeg) を必ずかけること" % -math.degrees(phi))
-    for name, t, ink_w in (("magicCircle", T_CIRCLE, CIRCLE_INK),
-                           ("tome", T_BOOK, BOOK_INK_W)):
+    for _label, name, t, ink_w in SHAPES:
         # ここはパンフレットに刷る PNG の話なので、太線版の実測値を使う
         fx, fy, iw, ih = INK_PNG[name]
         canvas = ink_w / iw * uv_px
