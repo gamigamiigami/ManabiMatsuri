@@ -36,6 +36,27 @@
       <button class="btn ghost small" id="deleteAllBtn" style="width:auto; padding:8px 18px; margin:0; border-color:var(--ng); color:var(--ng);">記録を全削除</button>
     </div>
 
+    <!-- GASを貼り替えていないと、扉の謎と最後の謎の列が動かないので知らせる -->
+    <div class="card stale-warn" id="staleBackend" hidden>
+      <p><strong>⚠ 記録の集計プログラム（GAS）が古いままです。</strong></p>
+      <p class="note" style="margin-top:6px;">
+        このままでも鍵あつめの5問はふつうに動きますが、
+        <strong>「扉の謎」と「最後の謎」の段階が出ません</strong>（そこにいるチームも「扉の謎」まででしか表示されません）。
+        本番までに、下の手順で貼り替えてください。
+      </p>
+      <ol class="note" style="margin:10px 0 0 1.4em; text-align:left;">
+        <li>スプレッドシートを開き、<strong>拡張機能 → Apps Script</strong></li>
+        <li>中身を全部消して、<code>gas/Code.gs</code> を丸ごと貼り付けて保存</li>
+        <li>冒頭の <code>ADMIN_KEY</code> が、いま使っている合言葉のままか確認</li>
+        <li><strong>デプロイを管理 → 鉛筆マーク → バージョン：新バージョン → デプロイ</strong></li>
+      </ol>
+      <p class="note" style="margin-top:8px;">
+        4番は「新しいデプロイ」ではなく<strong>「デプロイを管理」</strong>を選んでください。
+        こちらならURLが変わらないので、<code>js/config.js</code> を直す必要がありません。<br>
+        貼り替えが済むと、この枠は自動で消えます。
+      </p>
+    </div>
+
     <div class="table-scroll">
       <table class="teams">
         <thead>
@@ -252,6 +273,8 @@
         alert(data.error || "認証エラー");
         return;
       }
+      // 扉の謎・最後の謎の集計が入ったGASかどうか（古いと version が無い）
+      document.getElementById("staleBackend").hidden = Number(data.version || 0) >= 2;
       status.textContent = "接続中（" + data.teams.length + "チーム）";
       document.getElementById("lastUpdated").textContent =
         "最終取得 " + fmtTime(new Date().toISOString());

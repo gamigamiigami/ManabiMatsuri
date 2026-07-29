@@ -8,6 +8,11 @@
 //            「events」シートに1行ずつ追記する
 // ・doGet  : 運営ダッシュボード用に、チームごとの集計JSONを返す
 
+// このコードの版。ダッシュボードはこの数字を見て、
+// 貼り替えと再デプロイが済んでいるかを判定する。
+// gas/Code.gs に集計を足したときは、この数字を1つ増やすこと。
+const BACKEND_VERSION = 2;
+
 // ダッシュボード閲覧用の合言葉。デプロイ前に必ず好きな文字列に変えること！
 const ADMIN_KEY = "oyakomanabi";
 
@@ -96,12 +101,12 @@ function deleteAllRows_() {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.mode !== "dashboard") {
-    return json_({ ok: true, message: "O中の封印を解け！ backend is running." });
+    return json_({ ok: true, version: BACKEND_VERSION, message: "O中の封印を解け！ backend is running." });
   }
   if (p.key !== ADMIN_KEY) {
     return json_({ ok: false, error: "認証エラー：合言葉（key）が違います" });
   }
-  return json_({ ok: true, serverTime: new Date(), teams: aggregate_() });
+  return json_({ ok: true, version: BACKEND_VERSION, serverTime: new Date(), teams: aggregate_() });
 }
 
 // events シートの全行からチームごとの状態を組み立てる

@@ -558,6 +558,20 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; }
 .badge.hint { background: var(--ng); color: #fff; }
 .badge.clear { background: var(--emerald); color: #0d2a22; }
+/* 運営ダッシュボード：GASが古いときの注意書き */
+.card.stale-warn {
+  border-color: var(--ng);
+  background: rgba(207, 79, 104, 0.12);
+  margin: 0 0 18px;
+  padding: 20px 22px;
+}
+.card.stale-warn strong { color: #ffb9c6; }
+.card.stale-warn code {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
 /* 運営ダッシュボード：中謎のあとの段階 */
 .badge.stage-door { background: var(--gold); color: #241703; }
 .badge.stage-secret { background: var(--violet); color: #120a26; }
