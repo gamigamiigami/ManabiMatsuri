@@ -145,20 +145,48 @@
       </div>
     </div>
 
+    <!-- ここから最後の謎（大謎）用。扉の謎を解いた人にだけ出る。
+         封印を解く手順は secret.html に書いてあるが、仕掛けはこのホームにある。 -->
+    <div class="card" id="secretGuideCard" hidden>
+      <h2>最後の謎</h2>
+      <p class="center note" id="secretGuideNote"></p>
+      <div class="spell-box" style="margin-top:12px;">
+        <div class="spell-line" id="homeSpell1"></div>
+        <div class="spell-line" id="homeSpell2"></div>
+      </div>
+      <a class="btn gold" href="secret.html" style="margin-top:16px;">→ 「学校の秘密」の画面へ</a>
+    </div>
+
+    <!-- 仕掛けが成立した瞬間に、その場で謎を出す -->
+    <div class="card" id="homePuzzleCard1" hidden>
+      <h2 id="homePuzzleTitle1"></h2>
+      <div class="puzzle-lead" id="homePuzzleLead1"></div>
+      <img class="puzzle-img" id="homePuzzleImg1" hidden alt="">
+      <div class="puzzle-body" id="homePuzzleBody1"></div>
+      <a class="btn ghost small" id="homePuzzleLink1" hidden style="margin-top:14px;"></a>
+    </div>
+    <div class="card" id="homePuzzleCard2" hidden>
+      <h2 id="homePuzzleTitle2"></h2>
+      <div class="puzzle-lead" id="homePuzzleLead2"></div>
+      <img class="puzzle-img" id="homePuzzleImg2" hidden alt="">
+      <div class="puzzle-body" id="homePuzzleBody2"></div>
+      <a class="btn ghost small" id="homePuzzleLink2" hidden style="margin-top:14px;"></a>
+    </div>
+
     <!-- プロローグの読みかえし（手紙演出をもう一度見られる） -->
     <div class="card">
       <h2>✉ Xからの手紙</h2>
       <a class="btn ghost small" href="letter.html?replay=1">手紙を読みかえす</a>
     </div>
 
-    <div class="card">
+    <div class="card" id="manualCard">
       <h2>⚠ QRが読み取れないときは</h2>
       <p style="font-size:0.92rem;">謎はその場所のQRコードを読み取ると現れる。読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入力。</p>
       <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
       <button class="btn ghost small" id="manualBtn">この番号の謎をひらく</button>
     </div>
 
-    <div class="card">
+    <div class="card" id="howtoCard">
       <h2>冒険の手順</h2>
       <ol class="howto">
         <li>プリントに書いてある<strong>スタート地点</strong>へ向かう</li>
@@ -197,6 +225,7 @@
 <script src="js/letter-fixed.js"></script>
 <script src="js/store.js"></script>
 <script src="js/fx.js"></script>
+<script src="js/gimmicks.js"></script>
 <script>
 (function () {
   const params = new URLSearchParams(location.search);
@@ -305,6 +334,8 @@
   function renderHome() {
     document.getElementById("register").hidden = true;
     show(document.getElementById("home"));
+    // 扉の謎を解いたか＝最後の謎の段階に入っているか
+    var doorCleared = !!(team.finalGate && team.finalGate.solvedAt);
     document.getElementById("welcome").textContent = team.teamName + " の冒険記録";
 
     const starsEl = document.getElementById("stars");
@@ -355,6 +386,18 @@
       showNextPlace(prevPoint, "この在り処謎が、最初の鍵の隠し場所を示している。");
     }
 
+    // 扉の謎を解いたあとは「最後の謎」だけの画面にする。
+    // 中謎の5問に戻る必要はもうないので、場所の一覧・5つの鍵の答え・
+    // 扉へのボタン・冒険の手順は出さない（記録は上の★5つで十分）。
+    if (doorCleared) {
+      document.getElementById("pointList").hidden = true;
+      document.getElementById("dummyText").hidden = true;
+      document.getElementById("manualCard").hidden = true;
+      document.getElementById("howtoCard").hidden = true;
+      setUpSecretStage();
+      return;
+    }
+
     if (solvedCount === POINT_ORDER.length) {
       show(document.getElementById("clearCard"));
       const row = document.getElementById("keysRow");
@@ -365,6 +408,89 @@
         );
       }).join("");
       document.getElementById("clearMsg").textContent = CLEAR_MESSAGE;
+    }
+  }
+
+  // ============================================================
+  // 最後の謎（大謎）の仕掛け ―― ホームにしかない
+  //
+  //   ① 動かぬ月を、題名の後ろの「鍵のかかった魔法陣」の中心へ運ぶ
+  //   ② 漂う「鍵」の文字を三度たたく
+  //
+  // 手順は secret.html に書いてあるが、鍵穴の描かれた魔法陣も、
+  // 漂う「鍵」も、この画面にしかない。仕掛けの中身は js/gimmicks.js。
+  // ============================================================
+  function setUpSecretStage() {
+    var st = (function () {
+      if (!team.secretGate) team.secretGate = {};
+      var g = team.secretGate;
+      if (g.solvedAt === undefined) g.solvedAt = null;
+      if (g.wrong === undefined) g.wrong = 0;
+      if (g.hintClicked === undefined) g.hintClicked = false;
+      if (g.foundMoon === undefined) g.foundMoon = false;
+      if (g.foundKey === undefined) g.foundKey = false;
+      return g;
+    })();
+    function persist() { if (!isDebug) Store.save(team); }
+
+    var card = document.getElementById("secretGuideCard");
+    document.getElementById("homeSpell1").textContent = SECRET_INSTRUCTIONS[0];
+    document.getElementById("homeSpell2").textContent = SECRET_INSTRUCTIONS[1];
+    card.hidden = false;
+
+    function paint() {
+      document.getElementById("homeSpell1").classList.toggle("done", !!st.foundMoon);
+      document.getElementById("homeSpell2").classList.toggle("done", !!st.foundKey);
+      document.getElementById("secretGuideNote").textContent =
+        st.solvedAt ? "封印は解けた。"
+          : (st.foundMoon && st.foundKey) ? "ふたつの謎がそろった。合言葉を刻みに行こう。"
+          : "この手順は、この画面（冒険記録）で試すこと。";
+      if (st.foundMoon) fillHomePuzzle(1, SECRET_PUZZLES.moon);
+      if (st.foundKey) fillHomePuzzle(2, SECRET_PUZZLES.key);
+    }
+    function fillHomePuzzle(n, def) {
+      document.getElementById("homePuzzleTitle" + n).textContent = def.title;
+      document.getElementById("homePuzzleLead" + n).textContent = def.lead;
+      document.getElementById("homePuzzleBody" + n).textContent = def.body;
+      if (def.image) {
+        var img = document.getElementById("homePuzzleImg" + n);
+        img.src = def.image; img.hidden = false;
+      }
+      if (def.link) {
+        var a = document.getElementById("homePuzzleLink" + n);
+        a.href = def.link.href; a.textContent = def.link.label; a.hidden = false;
+      }
+      document.getElementById("homePuzzleCard" + n).hidden = false;
+    }
+    paint();
+
+    if (st.solvedAt) return;   // すでに解き終わっていれば仕掛けは出さない
+
+    if (!st.foundMoon) {
+      Gimmicks.armMoon(document.querySelector(".magic-circle"), function () {
+        st.foundMoon = true;
+        persist();
+        if (!isDebug) Store.send(team, "secret_moon", "secret", {});
+        setTimeout(function () {
+          paint();
+          document.getElementById("homePuzzleCard1").scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 1900);
+      });
+    }
+
+    if (!st.foundKey) {
+      var note = document.getElementById("secretGuideNote");
+      Gimmicks.armKey(function (taps) {
+        note.textContent = "鍵に触れた … " + taps + " / 3";
+      }, function () {
+        st.foundKey = true;
+        persist();
+        if (!isDebug) Store.send(team, "secret_key", "secret", {});
+        setTimeout(function () {
+          paint();
+          document.getElementById("homePuzzleCard2").scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 1200);
+      });
     }
   }
 

@@ -1192,3 +1192,144 @@ header.site h1 {
 .arika-crop-wrap.arika-crop-hint img {
   transform: translateY(-63.5%);
 }
+
+/* ========================================
+ 最後の謎（大謎）のギミック
+ ホーム（index.html）で使う。js/gimmicks.js が組み立てる。
+
+ ・月を「鍵のかかった魔法陣」の中心へドラッグする
+ ・漂う「鍵」の文字を三度たたく
+
+ どちらの対象も .scene の中にあるが、.scene は pointer-events:none で
+ z-index も 0 のため、そのままでは触れないしカードの裏に隠れてしまう。
+ かといって .scene 全体を前面に出すと霧やビネットがカードを覆うので、
+ 対象だけを #gimmickLayer（前面・当たり判定あり）へ移し替える。
+ ======================================== */
+#gimmickLayer { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+
+/* 動かせるようになった月（見た目は css/style.css の .scene .moon に合わせてある） */
+#gimmickLayer .moon-free {
+  position: fixed;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #f3ead6, #d9c497 55%, #a98f66 100%);
+  filter: saturate(0.85);
+  opacity: 0.92;
+  box-shadow:
+    0 0 44px 14px rgba(210, 190, 150, 0.30),
+    0 0 130px 55px rgba(155, 127, 232, 0.16);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  animation: moonBeckon 2.4s ease-in-out infinite;
+}
+#gimmickLayer .moon-free.dragging { cursor: grabbing; animation: none; transition: none; }
+#gimmickLayer .moon-free.settled { animation: none; cursor: default; pointer-events: none; }
+@keyframes moonBeckon {
+  0%, 100% { box-shadow: 0 0 44px 14px rgba(210, 190, 150, 0.30), 0 0 130px 55px rgba(155, 127, 232, 0.16); }
+  50%      { box-shadow: 0 0 58px 20px rgba(245, 196, 81, 0.45), 0 0 150px 60px rgba(155, 127, 232, 0.22); }
+}
+
+/* 魔法陣に溶けて消える月（一度消えたら、もう二度と出さない） */
+#gimmickLayer .moon-free.vanishing {
+  animation: moonVanish 2.2s ease-in forwards;
+  pointer-events: none;
+}
+@keyframes moonVanish {
+  0%   { opacity: 0.92; transform: scale(1);    filter: saturate(0.85); }
+  22%  { opacity: 1;    transform: scale(1.18); filter: saturate(1.2) brightness(1.7); }
+  100% { opacity: 0;    transform: scale(0.22); filter: brightness(2.2) blur(7px); }
+}
+
+/* 消滅・破裂のときに飛び散る光の粒 */
+#gimmickLayer .spark {
+  position: fixed;
+  width: 6px; height: 6px; border-radius: 50%;
+  pointer-events: none; opacity: 0;
+  animation: sparkFly var(--dur, 1.6s) ease-out forwards;
+}
+@keyframes sparkFly {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
+  18%  { opacity: 1; }
+  100% { opacity: 0;   transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.9); }
+}
+
+/* たたける「鍵」。runeRise は css/style.css で定義済み */
+#gimmickLayer .key-rune {
+  position: absolute;
+  left: 46%; bottom: -60px;
+  font-family: var(--brush);
+  font-size: 2.4rem;
+  color: rgba(212, 175, 106, 0.75);
+  text-shadow: 0 0 18px rgba(212, 175, 106, 0.8);
+  animation: runeRise 26s linear infinite;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none; -webkit-user-select: none;
+  padding: 10px;   /* 指で当てやすいように、見た目より広く取る */
+}
+#gimmickLayer .key-rune.hit { animation: runeRise 26s linear infinite, keyPulse 0.45s ease-out; }
+@keyframes keyPulse {
+  0%   { text-shadow: 0 0 18px rgba(212, 175, 106, 0.8); }
+  40%  { text-shadow: 0 0 40px rgba(255, 235, 180, 1), 0 0 70px rgba(245, 196, 81, 0.8); }
+  100% { text-shadow: 0 0 18px rgba(212, 175, 106, 0.8); }
+}
+#gimmickLayer .key-rune.spent { pointer-events: none; opacity: 0; }
+
+/* 三度目に触れたとき、「鍵」がふくらんで弾ける */
+#gimmickLayer .key-burst {
+  position: fixed;
+  font-family: var(--brush);
+  font-size: 2.4rem;
+  color: #fff7e2;
+  pointer-events: none;
+  animation: keyBurst 1.5s ease-out forwards;
+}
+@keyframes keyBurst {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1);
+         text-shadow: 0 0 20px rgba(245, 196, 81, 0.9); }
+  28%  { opacity: 1; transform: translate(-50%, -50%) scale(1.7);
+         text-shadow: 0 0 60px #fff, 0 0 110px rgba(245, 196, 81, 1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(4.4);
+         text-shadow: 0 0 90px rgba(245, 196, 81, 0); }
+}
+
+
+/* 月を落とす先＝ホームの見出しの後ろにある「鍵のかかった魔法陣」 */
+.magic-circle.mc-hot { filter: drop-shadow(0 0 26px rgba(245, 196, 81, 0.85)); }
+.magic-circle.mc-lit { animation: mcBreathe 3.6s ease-in-out infinite; }
+@keyframes mcBreathe {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(245, 196, 81, 0.35)); }
+  50%      { filter: drop-shadow(0 0 26px rgba(245, 196, 81, 0.7)); }
+}
+
+/* ========================================
+   最後の謎（大謎）の指示文と、現れた謎の見た目
+   secret.html とホーム（index.html）の両方で使う
+   ======================================== */
+/* ===== 封印を解く手順（2つの指示文） ===== */
+.spell-box {
+  margin: 4px 0 6px;
+  padding: 18px 12px;
+  border: 1px solid rgba(245, 196, 81, 0.4);
+  border-radius: 10px;
+  background: rgba(245, 196, 81, 0.05);
+}
+.spell-line {
+  font-family: "Yuji Syuku", serif;
+  /* 1行が折り返さない大きさに収める（18文字＋丸数字） */
+  font-size: clamp(0.78rem, 3.7vw, 1rem);
+  line-height: 2.3;
+  text-align: center;
+  white-space: nowrap;
+  color: #f4ead6;
+  text-shadow: 0 0 14px rgba(245, 196, 81, 0.4);
+}
+.spell-line.done { color: #7bd6ae; text-shadow: 0 0 14px rgba(75, 191, 156, 0.45); }
+.spell-line.done::after { content: " ✔"; }
+
+/* ===== 現れた謎 ===== */
+.puzzle-lead { text-align: center; font-family: "Yuji Syuku", serif; color: var(--gold); font-size: 0.98rem; margin-bottom: 12px; }
+.puzzle-body { white-space: pre-wrap; line-height: 1.95; font-size: 0.95rem; }
+.puzzle-img { display: block; width: 100%; border-radius: 8px; margin: 14px 0 4px; }
+
