@@ -1326,6 +1326,51 @@ header.site h1 {
 
 /* ===== 現れた謎 ===== */
 .puzzle-lead { text-align: center; font-family: "Yuji Syuku", serif; color: var(--gold); font-size: 0.98rem; margin-bottom: 12px; }
-.puzzle-body { white-space: pre-wrap; line-height: 1.95; font-size: 0.95rem; }
+
+/* 謎の本文そのもの。ふつうの地の文で出していたら「説明」に見えて
+   しまったので、手紙と同じ筆文字で、光る呪文の一節として見せる。
+   ここが最後の謎の核心なので、カードの中でいちばん目を引かせる。 */
+.puzzle-body {
+  position: relative;
+  margin: 18px 0 8px;
+  padding: 24px 16px;
+  text-align: center;
+  font-family: "Yuji Syuku", serif;
+  font-size: clamp(1rem, 4.9vw, 1.22rem);
+  line-height: 2.15;
+  letter-spacing: 0.06em;
+  /* 文中の「\n」で改行しつつ、狭い画面では自動でも折り返す */
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: #ffeec2;
+  text-shadow: 0 0 10px rgba(245, 196, 81, 0.55), 0 0 26px rgba(155, 127, 232, 0.35);
+  border-top: 1px solid rgba(245, 196, 81, 0.45);
+  border-bottom: 1px solid rgba(245, 196, 81, 0.45);
+  background: radial-gradient(ellipse at 50% 50%, rgba(245, 196, 81, 0.1), transparent 72%);
+  animation: spellGlow 3.6s ease-in-out infinite;
+}
+/* 上下の枠線の中央に小さな印を置いて、封印の一節らしく見せる */
+.puzzle-body::before,
+.puzzle-body::after {
+  content: "✦";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  line-height: 1;
+  color: rgba(245, 196, 81, 0.8);
+  /* 枠線をまたぐので、カードと同じ色で線を隠してから印を置く */
+  background: var(--panel);
+  padding: 0 6px;
+}
+.puzzle-body::before { top: -0.34em; }
+.puzzle-body::after { bottom: -0.34em; }
+@keyframes spellGlow {
+  0%, 100% { text-shadow: 0 0 10px rgba(245, 196, 81, 0.55), 0 0 26px rgba(155, 127, 232, 0.35); }
+  50%      { text-shadow: 0 0 16px rgba(245, 196, 81, 0.8), 0 0 38px rgba(155, 127, 232, 0.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .puzzle-body { animation: none; }
+}
 .puzzle-img { display: block; width: 100%; border-radius: 8px; margin: 14px 0 4px; }
 

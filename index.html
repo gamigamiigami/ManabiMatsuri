@@ -153,7 +153,6 @@
         <div class="spell-line" id="homeSpell1"></div>
         <div class="spell-line" id="homeSpell2"></div>
       </div>
-      <a class="btn gold" href="secret.html" style="margin-top:16px;">→ 「学校の秘密」の画面へ</a>
     </div>
 
     <!-- 仕掛けが成立した瞬間に、その場で謎を出す -->
@@ -172,6 +171,14 @@
       <img class="puzzle-img" id="homePuzzleImg2" hidden alt="">
       <div class="puzzle-body" id="homePuzzleBody2"></div>
       <a class="btn ghost small" id="homePuzzleLink2" hidden style="margin-top:14px;"></a>
+    </div>
+
+    <!-- 「学校の秘密」へ進むボタン。
+         参加者は 月の謎・鍵の謎の問題文を読んでからでないと先へ行かないので、
+         案内のカードではなく、問題文のカードより下に置く。 -->
+    <div class="card" id="secretGoCard" hidden>
+      <a class="btn gold" href="secret.html">→ 「学校の秘密」の画面へ</a>
+      <p class="note center" style="margin-top:10px;">ふたつの合言葉は、この先で刻む。</p>
     </div>
 
     <!-- 全部解き終わった人だけが押せる「もう一度」。
@@ -441,6 +448,8 @@
     document.getElementById("homeSpell1").textContent = SECRET_INSTRUCTIONS[0];
     document.getElementById("homeSpell2").textContent = SECRET_INSTRUCTIONS[1];
     card.hidden = false;
+    // 「学校の秘密」へのボタンは、謎のカードより下に出す（DOM上ですでに下）
+    document.getElementById("secretGoCard").hidden = false;
 
     function paint() {
       document.getElementById("homeSpell1").classList.toggle("done", !!st.foundMoon);
