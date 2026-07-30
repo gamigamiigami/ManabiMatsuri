@@ -39,24 +39,25 @@
   /* === 三つ折りの折り目の位置 ===
      紙の左端からの距離（1920px = 297mm）。ぴったり三等分なら 640 / 1280。
 
-     ▼ --fold-1（640px = 99mm）は絶対に動かさないこと。
-       ここが「パンフレットを手紙に重ねる謎」の折り目で、
-       tools/pamphlet/solve_overlay.py の EDGE_X_PX と同じ値。
-       変えるならスクリプトも直して座標を出し直す必要がある。
+     ▼ --fold-1 は「パンフレットを手紙に重ねる謎」の折り目そのもの。
+       tools/pamphlet/solve_overlay.py の EDGE_X_PX と必ず同じ値にすること。
+       ここを動かしたら、あのスクリプトを流して座標を出し直し、
+       js/letter-decor.js と下の紋章・矢印の px を貼り替える
+       （やらないと謎が成立しない）。
 
      ▼ --fold-2 は見た目だけ。真ん中の面の右端＝2本目の折り目。
        プリンタが「印刷可能な範囲に縮小」して刷ると、紙の上では
        版面全体がわずかに小さくなる。左端は合っていても右へ行くほど
        ズレが積もるので、2本目だけここで右へ寄せて帳尻を合わせられる。
-       目安：右端にできた余白の幅の 2/3 だけ足す
-       （例 余白6mm → 4mm ＝ 26px を足して 1306px）。
-       1mm = 6.4646px。
+       目安：右端にできた余白の幅の 2/3 だけ足す。
+
+     1mm = 6.4646px（1920px ÷ 297mm）。
 
      裏面（side-b）の折り目は、この値から自動で計算している。
      紙をめくると左右が反転するので、表の折り目1が裏では右から、
      折り目2が裏では左から数えた位置になる。 */
-  --fold-1: 640px;
-  --fold-2: 1306px;   /* 三等分の 1280px ＋ 26px（＝4mm 右へ） */
+  --fold-1: 633.5px;    /* 640px から 1mm 左へ（真ん中の面を左に1mm広げた） */
+  --fold-2: 1318.9px;   /* 1306px から 2mm 右へ（真ん中の面を右に2mm広げた） */
 
   /* === フォント === */
   --font-body: 'Zen Maru Gothic', sans-serif;
@@ -123,7 +124,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 <div id="side-a" style="display:grid;grid-template-columns:var(--fold-1) calc(var(--fold-2) - var(--fold-1)) calc(var(--page-w) - var(--fold-2));width:var(--page-w);height:var(--page-h);background:var(--cream);margin:20px auto">
 
   <!-- ═══════════════════════════════════════════
-       PANEL: A1 — 運営からのメッセージ
+       PANEL: A1 — 実行委員からのメッセージ
        ═══════════════════════════════════════════ -->
   <div id="panel-a1" class="panel" style="border-right:2px dashed var(--border-fold);background:var(--cream)">
 
@@ -172,17 +173,17 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
              下が五芒星（magicCircle2）。骨格が違うので、半分に切れていても
              どちらの半分かがひと目で分かる。
            ═══════════════════════════════════════════════════════ -->
-      <div style="left:582.7px;top:721.3px;width:114.6px;height:114.6px;transform:rotate(51.98deg);transform-origin:50.00% 50.00%"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:114.6px;height:114.6px;opacity:.9" alt="魔法陣（六芒星）"></div>
-      <div style="left:582.7px;top:1122.1px;width:114.6px;height:114.6px;transform:rotate(51.98deg);transform-origin:50.00% 50.00%"><img src="../../images/motifs/magicCircle2-bold.png" style="display:block;width:114.6px;height:114.6px;opacity:.9" alt="魔法陣（五芒星）"></div>
+      <div style="left:576.2px;top:721.3px;width:114.6px;height:114.6px;transform:rotate(51.98deg);transform-origin:50.00% 50.00%"><img src="../../images/motifs/magicCircle-bold.png" style="display:block;width:114.6px;height:114.6px;opacity:.9" alt="魔法陣（六芒星）"></div>
+      <div style="left:576.2px;top:1122.1px;width:114.6px;height:114.6px;transform:rotate(51.98deg);transform-origin:50.00% 50.00%"><img src="../../images/motifs/magicCircle2-bold.png" style="display:block;width:114.6px;height:114.6px;opacity:.9" alt="魔法陣（五芒星）"></div>
 
       <!-- 矢印3本（折り目に垂直＝右向き、先端が折り目 x=640 の上） -->
-      <svg style="left:520px;top:800px;width:120px;height:300px" viewBox="0 0 120 300" fill="none">
+      <svg style="left:513.5px;top:800px;width:120px;height:300px" viewBox="0 0 120 300" fill="none">
         <defs>
           <marker id="ah" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
             <path d="M0,0 L7,3.5 L0,7 z" fill="var(--mark)"/>
           </marker>
         </defs>
-        <!-- x=120 が折り目 640px、y は 800px 起点 -->
+        <!-- x=120 が折り目（--fold-1 = 633.5px）、y は 800px 起点 -->
         <g stroke="var(--mark)" stroke-width="3.8" marker-end="url(#ah)">
           <line x1="25" y1="50.0"  x2="120" y2="50.0"/>
           <line x1="25" y1="133.5" x2="120" y2="133.5"/>
@@ -193,32 +194,34 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
     <!-- A1: コンテンツレイヤー -->
     <div class="content" style="padding:40px 36px;gap:16px">
-      <div style="font-family:var(--font-display);font-size:32px;color:var(--gold);letter-spacing:5px;text-shadow:2px 2px 0 var(--navy)">運営からのメッセージ</div>
+      <div style="font-family:var(--font-display);font-size:32px;color:var(--gold);letter-spacing:5px;text-shadow:2px 2px 0 var(--navy)">実行委員からのメッセージ</div>
 
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:10px">
-        <!-- メッセージA：数学 -->
-        <div class="message-card" style="border-left:14px solid var(--red)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px">A</div>
-            <div style="font-weight:900;font-size:24px;color:var(--red)">数学担当</div>
-          </div>
-          <div style="font-size:22px;line-height:1.65">「見方・考え方」を楽しく学べる授業をします！みんなお楽しみに！</div>
-        </div>
-
-        <!-- メッセージB：理科 -->
+        <!-- メッセージA：理科（おかだ とうま）
+             ※ 教科の色は据え置き（理科＝緑・数学＝赤）。A/B の順だけ入れ替えて、
+                本文はそれぞれの教科のまま動かしている。 -->
         <div class="message-card" style="border-left:14px solid var(--green)">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px">B</div>
-            <div style="font-weight:900;font-size:24px;color:var(--green)">理科担当</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px">A</div>
+            <div style="font-weight:900;font-size:24px;color:var(--green)">理科担当（おかだ　とうま）</div>
           </div>
           <div style="font-size:22px;line-height:1.65">親子で「本当に？」「なんでかな？」「どうする？」と話し合いながら、悩み考えることを楽しめる授業を行います！</div>
         </div>
 
-        <!-- メッセージC：脱出ゲーム -->
+        <!-- メッセージB：数学（しばた としひこ） -->
+        <div class="message-card" style="border-left:14px solid var(--red)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px">B</div>
+            <div style="font-weight:900;font-size:24px;color:var(--red)">数学担当（しばた　としひこ）</div>
+          </div>
+          <div style="font-size:22px;line-height:1.65">「見方・考え方」を楽しく学べる授業をします！みんなお楽しみに！</div>
+        </div>
+
+        <!-- メッセージC：脱出ゲーム（いがみ たける） -->
         <div class="message-card" style="border-left:14px solid var(--navy)">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <div style="width:40px;height:40px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px">C</div>
-            <div style="font-weight:900;font-size:24px;color:var(--navy)">脱出ゲーム担当</div>
+            <div style="font-weight:900;font-size:24px;color:var(--navy)">脱出ゲーム担当（いがみ　たける）</div>
           </div>
           <div style="font-size:22px;line-height:1.65">普段では学校でできないようなことをみんなでしちゃいましょう！</div>
         </div>
@@ -237,15 +240,22 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
     <!-- A2: コンテンツレイヤー -->
     <div class="content" style="padding:40px 36px;gap:14px">
-      <span class="badge" style="font-size:30px;letter-spacing:4px;background:var(--orange);color:#fff;box-shadow:3px 3px 0 var(--orange-shadow);align-self:flex-start">かいさい情報</span>
+      <span class="badge" style="font-size:30px;letter-spacing:4px;background:var(--orange);color:#fff;box-shadow:3px 3px 0 var(--orange-shadow);align-self:flex-start">開催情報</span>
 
       <!-- 開催情報テーブル -->
       <div class="info-card" style="font-size:24px">
-        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">日時</div><div><b style="font-family:var(--font-display);font-size:28px;color:var(--red)">8月9日（土）</b><br>12:15〜16:30</div></div>
-        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">会場</div><div>O中学校</div></div>
-        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">対象</div><div>在校生とその保護者</div></div>
-        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">定員</div><div><b>親子20組</b>（約40人）</div></div>
-        <div style="display:flex;gap:14px;padding:9px 0"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">参加費</div><div style="font-weight:900;color:var(--navy)">無料！</div></div>
+        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">日時</div><div><b style="font-family:var(--font-display);font-size:28px;color:var(--red)">8月9日（土）</b><br>12:45〜16:30</div></div>
+        <div style="display:flex;gap:14px;padding:9px 0;border-bottom:2px dotted var(--border-dot)"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">会場</div><div>応時中学校</div></div>
+        <div style="display:flex;gap:14px;padding:9px 0"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">対象</div><div>応時中学校の親子</div></div>
+              </div>
+
+      <!-- 応時中学校の校章。
+           images/school-crest.png を置くと出る。まだ無い場合は
+           onerror で枠だけの案内に差し替わる（刷っても壊れて見えない）。 -->
+      <div style="display:flex;justify-content:center;padding:4px 0">
+        <img src="../../images/school-crest.png" alt="応時中学校 校章"
+             style="display:block;width:190px;height:190px;object-fit:contain"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{style:'width:190px;height:190px;border:4px dashed var(--border-fold);border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:20px;line-height:1.5;color:var(--text-sub)',textContent:'校章画像を images/school-crest.png に置いてください'}))">
       </div>
 
       <span class="badge" style="font-size:30px;letter-spacing:4px;background:var(--navy);color:var(--gold);box-shadow:3px 3px 0 #141d42;align-self:flex-start">もちもの</span>
@@ -255,19 +265,20 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           <span style="background:var(--card-bg);padding:5px 12px;border-radius:8px;font-weight:700">📱 スマートフォン1台</span>
           <span style="background:var(--card-bg);padding:5px 12px;border-radius:8px;font-weight:700">✏️ 筆記用具</span>
+          <span style="background:var(--card-bg);padding:5px 12px;border-radius:8px;font-weight:700">📕 数学の教科書</span>
           <span style="background:var(--card-bg);padding:5px 12px;border-radius:8px;font-weight:700">🥤 飲み物</span>
           <span style="background:var(--card-bg);padding:5px 12px;border-radius:8px;font-weight:700">👟 上ばき</span>
         </div>
         <div style="font-size:19px;margin-top:8px;color:var(--text-sub)">※ スマホは謎解きでQRコードを読み取ります（チームで1台）</div>
       </div>
 
-      <div class="info-card" style="font-size:24px;line-height:1.6;color:var(--text-sub);text-align:center">主催：O中学校 親子学び祭 実行委員会</div>
+      <div class="info-card" style="font-size:24px;line-height:1.6;color:var(--text-sub);text-align:center">主催：応時中学校 親子学び祭 実行委員会</div>
 
       <!-- 謎の手がかり（下辺の図形と矢印の使い方） -->
       <div style="margin-top:14px;border:3px dashed var(--navy);border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.55)">
         <div style="font-family:var(--font-display);font-size:23px;color:var(--navy);letter-spacing:1px">✦ Xからの挑戦 ✦</div>
         <div style="font-size:20px;line-height:1.65;margin-top:6px;color:var(--text-sub)">
-          このパンフレットを<b>「運営からのメッセージ」の面だけ</b>が見えるように折り返せ。<br>
+          このパンフレットを<b>「実行委員からのメッセージ」の面だけ</b>が見えるように折り返せ。<br>
           その<b>折り目</b>にある2つの<b>魔法陣</b>を、スマホに映したXの手紙の同じ魔法陣に<b>ぴったり重ねよ</b>。<br>
           重なったとき、矢印がさす文字を <b>下から順に</b> 読め。
         </div>
@@ -305,23 +316,23 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
     <!-- A3: コンテンツレイヤー -->
     <div class="content" style="padding:40px 40px">
       <div style="display:inline-flex;transform:rotate(-2deg)">
-        <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:26px;padding:8px 18px;border-radius:999px;letter-spacing:2px;white-space:nowrap;box-shadow:4px 4px 0 rgba(0,0,0,.3)">たいけん授業 ＋ 謎解き脱出ゲーム</span>
+        <span style="background:var(--red);color:var(--cream);font-weight:900;font-size:26px;padding:8px 18px;border-radius:999px;letter-spacing:2px;white-space:nowrap;box-shadow:4px 4px 0 rgba(0,0,0,.3)">授業体験 ＋ 謎解き脱出ゲーム</span>
       </div>
       <div style="margin-top:44px">
         <div style="font-family:var(--font-display);font-size:108px;line-height:1.15;color:var(--navy);text-shadow:6px 6px 0 var(--gold)">親子<br>学び祭</div>
       </div>
       <div style="margin-top:22px">
-        <div style="display:inline-block;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-size:36px;letter-spacing:2px;padding:10px 22px;border-radius:12px;transform:rotate(-1.5deg);box-shadow:4px 4px 0 rgba(0,0,0,.2)">「O中の封印を解け！」</div>
+        <div style="display:inline-block;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-size:36px;letter-spacing:2px;padding:10px 22px;border-radius:12px;transform:rotate(-1.5deg);box-shadow:4px 4px 0 rgba(0,0,0,.2)">「応中の封印を解け！」</div>
         <div style="margin-top:12px;font-family:var(--font-display);font-size:28px;color:var(--red);letter-spacing:2px">─ 転校生Xからの挑戦状 ─</div>
       </div>
-      <div style="margin-top:32px;font-size:30px;line-height:2">理科と数学のたいけん授業のあとは、<br>親子で挑む謎解き脱出ゲーム。<br>「学校って楽しい！」を見つけに来てね。</div>
+      <div style="margin-top:32px;font-size:30px;line-height:2">理科と数学の授業体験のあとは、<br>親子で挑む謎解き脱出ゲーム。<br>「学校って楽しい！」を見つけに来てね。</div>
       <div style="margin-top:auto">
         <div style="display:flex;align-items:baseline;gap:16px">
           <span style="font-family:var(--font-display);font-size:80px;color:var(--red);text-shadow:5px 5px 0 var(--gold)">8/9</span>
           <span style="font-weight:900;font-size:40px">（土）</span>
-          <span style="font-size:28px">12:15 start</span>
+          <span style="font-size:28px">12:45 start</span>
         </div>
-        <div style="margin-top:10px;font-size:28px">O中学校 ｜ <span style="background:var(--red);color:#fff;padding:5px 14px;border-radius:999px;font-weight:900;font-size:26px">親子20組限定</span> <span style="background:var(--green);color:#fff;padding:5px 14px;border-radius:999px;font-weight:900;font-size:26px;margin-left:6px">無料</span></div>
+        <div style="margin-top:10px;font-size:28px">応時中学校</div>
       </div>
     </div>
   </div>
@@ -352,15 +363,15 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
       <!-- タイムライン -->
       <div style="display:flex;flex-direction:column;gap:0;padding-left:16px">
-        <!-- 12:15 受付 -->
-        <div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0">
-          <div style="flex-shrink:0;width:82px;font-family:var(--font-display);font-size:26px;color:var(--orange);text-align:right;padding-top:6px">12:15</div>
-          <div class="timeline-dot" style="background:var(--orange);margin-top:6px"></div>
-          <div style="background:var(--card-bg);border-radius:12px;padding:10px 18px;flex:1;font-size:26px;line-height:1.5"><b>受付</b><div style="font-size:22px;color:var(--text-sub)">チーム名を決めてね！</div></div>
-        </div>
-        <!-- 12:45 オープニング -->
+        <!-- 12:45 受付 -->
         <div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0">
           <div style="flex-shrink:0;width:82px;font-family:var(--font-display);font-size:26px;color:var(--orange);text-align:right;padding-top:6px">12:45</div>
+          <div class="timeline-dot" style="background:var(--orange);margin-top:6px"></div>
+          <div style="background:var(--card-bg);border-radius:12px;padding:10px 18px;flex:1;font-size:26px;line-height:1.5"><b>受付</b></div>
+        </div>
+        <!-- 12:55 オープニング -->
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0">
+          <div style="flex-shrink:0;width:82px;font-family:var(--font-display);font-size:26px;color:var(--orange);text-align:right;padding-top:6px">12:55</div>
           <div class="timeline-dot" style="background:var(--orange);margin-top:6px"></div>
           <div style="background:var(--card-bg);border-radius:12px;padding:10px 18px;flex:1;font-size:26px"><b>🎤 オープニング</b></div>
         </div>
@@ -388,11 +399,11 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
           <div class="timeline-dot" style="background:var(--border-dot);margin-top:4px"></div>
           <div style="padding:4px 14px;flex:1;font-size:22px;color:#999">休憩</div>
         </div>
-        <!-- 15:10 脱出ゲーム -->
+        <!-- 15:00 脱出ゲーム -->
         <div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0">
-          <div style="flex-shrink:0;width:82px;font-family:var(--font-display);font-size:26px;color:var(--navy);text-align:right;padding-top:6px">15:10</div>
+          <div style="flex-shrink:0;width:82px;font-family:var(--font-display);font-size:26px;color:var(--navy);text-align:right;padding-top:6px">15:00</div>
           <div class="timeline-dot" style="background:var(--navy);margin-top:6px;box-shadow:0 0 0 4px var(--gold)"></div>
-          <div style="background:var(--navy);color:#fff;border-radius:12px;padding:12px 18px;flex:1;font-size:26px;line-height:1.5;box-shadow:6px 6px 0 var(--gold);transform:rotate(-0.8deg)"><b style="color:var(--gold)">🔒 謎解き脱出ゲーム</b><div style="font-size:22px;opacity:.9">「O中の封印を解け！」</div><div style="font-size:20px;color:var(--gold);margin-top:4px">内容はヒミツ…当日のおたのしみ！</div></div>
+          <div style="background:var(--navy);color:#fff;border-radius:12px;padding:12px 18px;flex:1;font-size:26px;line-height:1.5;box-shadow:6px 6px 0 var(--gold);transform:rotate(-0.8deg)"><b style="color:var(--gold)">🔒 謎解き脱出ゲーム</b><div style="font-size:22px;opacity:.9">「応中の封印を解け！」</div><div style="font-size:20px;color:var(--gold);margin-top:4px">内容はヒミツ…当日のおたのしみ！</div></div>
         </div>
         <!-- 16:30 終了 -->
         <div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0">
@@ -407,7 +418,7 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
   </div>
 
   <!-- ═══════════════════════════════════════════
-       PANEL: B2-B3 — 校内マップ
+       PANEL: B2-B3 — 早口言葉でウォーミングアップ
        ═══════════════════════════════════════════ -->
   <div id="panel-b2b3" class="panel" style="background:repeating-linear-gradient(135deg,var(--cream-dark) 0,var(--cream-dark) 26px,var(--cream-stripe) 26px,var(--cream-stripe) 52px);color:var(--navy)">
 
@@ -424,23 +435,46 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
 
     <!-- B2-B3: コンテンツレイヤー -->
     <div class="content" style="padding:54px 64px;gap:26px">
-      <span class="badge" style="font-size:44px;letter-spacing:6px;background:var(--navy);color:var(--gold);box-shadow:6px 6px 0 rgba(0,0,0,.2);align-self:flex-start">📍 かいじょうマップ</span>
+      <span class="badge" style="font-size:44px;letter-spacing:6px;background:var(--navy);color:var(--gold);box-shadow:6px 6px 0 rgba(0,0,0,.2);align-self:flex-start">🗣 早口言葉でウォーミングアップ</span>
 
-      <div style="font-size:28px;color:var(--text-sub);line-height:1.6">イベントは2フロア・4部屋で行います。受付・各教室の場所を確認してね！</div>
+      <div style="font-size:28px;color:var(--text-sub);line-height:1.6">授業がはじまる前に、親子で口を動かしておこう。<br>3回続けて言えたらクリア！かんだ人は……もう1回！</div>
 
-      <!-- MAP_PLACEHOLDER: ここにマップ画像を配置 -->
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.5);border:4px dashed var(--navy);border-radius:20px;min-height:200px">
-        <div style="text-align:center;color:var(--navy);font-family:var(--font-display);font-size:36px;letter-spacing:4px;opacity:.6">校内マップ画像をここに配置</div>
+      <!-- 早口言葉。文言はここを書き換えるだけで差し替えられる。
+           2列に並べていて、数を増やしても自動で折り返る。 -->
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px;align-content:space-between;margin-top:4px">
+
+        <div style="background:rgba(255,255,255,.72);border:3px solid var(--border-dot);border-left:14px solid var(--orange);border-radius:16px;padding:18px 22px">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--orange);letter-spacing:2px">その1</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.5;margin-top:4px">となりの客は<br>よく柿食う客だ</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.72);border:3px solid var(--border-dot);border-left:14px solid var(--green);border-radius:16px;padding:18px 22px">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--green);letter-spacing:2px">その2</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.5;margin-top:4px">赤巻紙 青巻紙<br>黄巻紙</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.72);border:3px solid var(--border-dot);border-left:14px solid var(--red);border-radius:16px;padding:18px 22px">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--red);letter-spacing:2px">その3</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.5;margin-top:4px">東京特許<br>許可局</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.72);border:3px solid var(--border-dot);border-left:14px solid var(--navy);border-radius:16px;padding:18px 22px">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--navy);letter-spacing:2px">その4</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.5;margin-top:4px">生麦 生米<br>生卵</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.72);border:3px solid var(--border-dot);border-left:14px solid var(--gold);border-radius:16px;padding:18px 22px">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--gold-shadow, #a8761a);letter-spacing:2px">その5</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.5;margin-top:4px">この寿司は<br>すこし酢がききすぎだ</div>
+        </div>
+
+        <div style="background:var(--navy);color:#fff;border-radius:16px;padding:18px 22px;box-shadow:6px 6px 0 var(--gold)">
+          <div style="font-family:var(--font-display);font-size:24px;color:var(--gold);letter-spacing:2px">おまけ（むずかしい）</div>
+          <div style="font-size:30px;font-weight:900;line-height:1.5;margin-top:4px">親子で学ぶ<br>応時中学校 親子学び祭</div>
+        </div>
       </div>
 
-      <!-- 凡例 -->
-      <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center">
-        <div style="background:#fff;color:var(--navy);border:2px solid var(--border-dot);border-radius:12px;padding:10px 20px;font-size:26px;font-weight:700;display:flex;align-items:center;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:var(--orange)"></div> 受付</div>
-        <div style="background:#fff;color:var(--navy);border:2px solid var(--border-dot);border-radius:12px;padding:10px 20px;font-size:26px;font-weight:700;display:flex;align-items:center;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:var(--green)"></div> 理科</div>
-        <div style="background:#fff;color:var(--navy);border:2px solid var(--border-dot);border-radius:12px;padding:10px 20px;font-size:26px;font-weight:700;display:flex;align-items:center;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:var(--red)"></div> 数学</div>
-        <div style="background:#fff;color:var(--navy);border:2px solid var(--border-dot);border-radius:12px;padding:10px 20px;font-size:26px;font-weight:700;display:flex;align-items:center;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:var(--navy)"></div> 脱出ゲーム</div>
-        <div style="background:#fff;color:var(--navy);border:2px solid var(--border-dot);border-radius:12px;padding:10px 20px;font-size:26px;font-weight:700;display:flex;align-items:center;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:#888"></div> トイレ</div>
-      </div>
+      <div style="font-size:24px;color:var(--text-sub);text-align:center">🗣 声に出すと、あたまも口もほぐれます。授業や謎解きの前にどうぞ！</div>
     </div>
   </div>
 </div>

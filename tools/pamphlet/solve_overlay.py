@@ -72,7 +72,7 @@ INK_PNG = {
 PAPER_ASPECT = 0.75          # 手紙の 幅 / 高さ
 PAGE_W_PX, PAGE_W_MM = 1920, 297.0
 PX_PER_MM = PAGE_W_PX / PAGE_W_MM
-PANEL_W_PX = 640             # 三つ折り1面の幅
+PANEL_W_PX = 633.5           # A1面の幅（＝pamphlet.html の --fold-1）
 PAGE_H_PX = 1357
 
 # ── 設計パラメータ ────────────────────────────────────────
@@ -98,7 +98,7 @@ PAPER_SIDE = -1
 
 # 折り目は A1面（運営からのメッセージ）の右辺＝三つ折りの折り目そのもの。
 # 紙の中央なので、フチなし印刷でなくても確実に印刷できる。
-EDGE_X_PX = 640       # A1面の右辺（面の幅と同じ＝折り目）
+EDGE_X_PX = 633.5     # A1面の右辺（＝pamphlet.html の --fold-1 と同じ値）
 T0_Y_PX = 850         # 折り目上で t=0（1文字目の矢印）が来る y
 
 
@@ -239,7 +239,7 @@ def main():
     print("手紙の幅を %.2fmm として印刷（uv 1.0 = %.1fpx）" % (w_mm, uv_px))
     print("魔法陣のインク直径 %.1fmm ／ 魔法陣その2 %.1fmm"
           % (CIRCLE_INK * w_mm, CIRCLE2_INK * w_mm))
-    print("折り目 x = %dpx（A1面の右辺＝三つ折りの折り目）" % EDGE_X_PX)
+    print("折り目 x = %.1fpx（A1面の右辺＝三つ折りの折り目）" % EDGE_X_PX)
 
     # 紙をどれだけ回して置くか。紙のローカル系で「文字が見える側」は +x。
     # それが手紙側の法線 (nx, ny) に一致するように回す。
@@ -283,7 +283,7 @@ def main():
     for ch, tx, ty, k, _f, _d, _s, _g in rows:
         t_along = ((tx - px) * ux + (ty - py) * uy)
         ay = edge_y(t_along)
-        print("  %s  x1=%.1f y1=%.1f → x2=%d y2=%.1f   （文字までの残り %.1fmm）"
+        print("  %s  x1=%.1f y1=%.1f → x2=%.1f y2=%.1f   （文字までの残り %.1fmm）"
               % (ch, EDGE_X_PX - ARROW_LEN_PX, ay, EDGE_X_PX, ay, k * uv_px / PX_PER_MM))
 
     order = sorted(tg, key=lambda t: -along(t))

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QRコード印刷 | O中の封印を解け！（運営用）</title>
+<title>QRコード印刷 | 応中の封印を解け！（運営用）</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -87,7 +87,7 @@
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">O中の封印を解け！【設置用】</div>' +
+        '<div class="head">応中の封印を解け！【設置用】</div>' +
         "<h2>" + "①②③④⑤".charAt(p - 1) + " " + PUZZLES[p].place + "</h2>" +
         '<div class="qr" id="qr' + p + '"></div>' +
         '<div class="fallback">QRが読み取れないときは、サイトの「番号入力」に<br>' +
@@ -107,7 +107,7 @@
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">O中の封印を解け！【ダミー謎・設置用】</div>' +
+        '<div class="head">応中の封印を解け！【ダミー謎・設置用】</div>' +
         "<h2>ダミー " + n + "</h2>" +
         '<div class="qr" id="dqr' + n + '"></div>' +
         '<div class="fallback">クリアには関係ない追加コンテンツです。<br>本物のQRと同じ見た目で、校内の好きな場所へ</div>';
@@ -126,7 +126,7 @@
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">O中の封印を解け！【スタートQR・配布用】</div>' +
+        '<div class="head">応中の封印を解け！【スタートQR・配布用】</div>' +
         "<h2>スタート " + "①②③④⑤".charAt(s - 1) + "</h2>" +
         '<div class="qr" id="sqr' + s + '"></div>' +
         '<div class="fallback">小謎を解いた参加者に、①〜⑤を<br>かたよらないように配ってください<br>' +
