@@ -249,13 +249,16 @@ body { font-family: var(--font-body); color: var(--text-main); background: #e0db
         <div style="display:flex;gap:14px;padding:9px 0"><div style="width:68px;font-weight:900;color:var(--red);flex-shrink:0">対象</div><div>応時中学校の親子</div></div>
               </div>
 
-      <!-- 応時中学校の校章。
-           images/school-crest.png を置くと出る。まだ無い場合は
-           onerror で枠だけの案内に差し替わる（刷っても壊れて見えない）。 -->
-      <div style="display:flex;justify-content:center;padding:4px 0">
+      <!-- 応時中学校の校章。images/school-crest.png（届いた画像。
+           1254x1254・地が白のPNG、透過なし）を .info-card と同じ
+           角丸カードで囲む。カードで囲わずベタ置きすると、画像の白い
+           正方形がストライプ背景に唐突に浮いて見えたため。
+           万一パスが変わって読み込めなくても、onerror で同じ見た目の
+           案内カードに差し替わる（刷っても崩れて見えない）。 -->
+      <div class="info-card" style="display:flex;justify-content:center;padding:16px">
         <img src="../../images/school-crest.png" alt="応時中学校 校章"
-             style="display:block;width:190px;height:190px;object-fit:contain"
-             onerror="this.replaceWith(Object.assign(document.createElement('div'),{style:'width:190px;height:190px;border:4px dashed var(--border-fold);border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:20px;line-height:1.5;color:var(--text-sub)',textContent:'校章画像を images/school-crest.png に置いてください'}))">
+             style="display:block;width:150px;height:150px;object-fit:contain"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{style:'width:150px;height:150px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px;line-height:1.5;color:var(--text-sub)',textContent:'校章画像を images/school-crest.png に置いてください'}))">
       </div>
 
       <span class="badge" style="font-size:30px;letter-spacing:4px;background:var(--navy);color:var(--gold);box-shadow:3px 3px 0 #141d42;align-self:flex-start">もちもの</span>
