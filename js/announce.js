@@ -24,11 +24,20 @@
 //   ・合言葉は不要（中身は運営が書いた文面だけで、進捗などの
 //     個人情報は一切含まない）
 //   ・気づいてほしい伝令なので短い間隔（POLL_MS）でポーリングする
-//   ・「わかった！」で閉じる（Escキーでも閉じられる）と、同じ
-//     お知らせ（同じid）はもう出さない。見た／閉じたことを
+//   ・「わかった！」を押すまで閉じない（Escキーでの取り消しは無効化ずみ）。
+//     押すと、同じお知らせ（同じid）はもう出さない。見た／閉じたことを
 //     localStorage に覚えておくだけ
 //   ・運営が新しいお知らせを配信する（idが変わる）と、
 //     前のを閉じていても改めて出る
+//   ・短い間隔（POLL_MS）でポーリングするのに加えて、画面を触った瞬間
+//     （visibilitychange / focus / pageshow）にも即座に取りに行く。
+//     スマホの画面を消していた・タブを離れていた参加者でも、
+//     画面に戻ってきた瞬間に検知できるようにするため
+//     （※ 画面が消えている・アプリが完全にバックグラウンドの間は
+//     　 ブラウザがJSの実行そのものを止めるので、素のWebページである
+//     　 以上、画面が消えたままの状態で強制表示することはできない。
+//     　 これを本当にやるにはOSのプッシュ通知が必要で、対応ブラウザ・
+//     　 通知許可・別立てのプッシュサーバが要る大掛かりな話になる）
 //   ・GAS_URLが未設定、またはGASが旧版（お知らせ機能なし）でも
 //     エラーにはせず、静かに何も表示しない
 //   ・<dialog>のshowModal()に対応していない古いブラウザ向けに、
@@ -95,11 +104,25 @@
     }
 
     closeBtn.addEventListener("click", hide);
-    // Escキーなど、ボタン以外の方法で閉じられた場合も既読にする
-    banner.addEventListener("close", markSeen);
+    if (canModal) {
+      // Escキーでの取り消し（cancelイベント）を封じ、必ずボタンを
+      // 押させる。とはいえ閉じられてしまった場合に備え、close時にも
+      // 既読を記録しておく（cancelをpreventDefaultすればcloseは
+      // 発火しないはずだが、念のため二重で持たせている）。
+      banner.addEventListener("cancel", function (e) { e.preventDefault(); });
+      banner.addEventListener("close", markSeen);
+    }
 
     poll();
     setInterval(poll, POLL_MS);
+
+    // 画面を閉じていた／タブを離れていた参加者が戻ってきた瞬間に、
+    // 次のポーリングを待たず即座に確認する。
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") poll();
+    });
+    global.addEventListener("focus", poll);
+    global.addEventListener("pageshow", poll);
   }
 
   if (document.readyState === "loading") {
