@@ -204,9 +204,16 @@
       <a class="btn ghost small" href="letter.html?replay=1">手紙を読みかえす</a>
     </div>
 
-    <div class="card" id="manualCard">
-      <h2>⚠ QRが読み取れないときは</h2>
-      <p style="font-size:0.92rem;">謎はその場所のQRコードを読み取ると現れる。読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入力。</p>
+    <!-- QRの読み取りはサイト内のカメラ（scan.html）を使う。
+         OSのカメラアプリで読み取ると、開くたびに新しいタブが増えていって
+         しまう（機種によらずカメラアプリからのリンクは新規タブになる。
+         サイト側からは直せない）。scan.html は同じタブのまま
+         location.href で遷移するので、何度読み取ってもタブは増えない。 -->
+    <div class="card" id="scanCard">
+      <h2>謎はここから探す</h2>
+      <p style="font-size:0.92rem;">その場所のQRコードを読み取ると、謎が現れる。</p>
+      <a class="btn gold" href="scan.html">📷 QRコードを読み取る</a>
+      <p class="note" style="margin-top:14px;">読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入力。</p>
       <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
       <button class="btn ghost small" id="manualBtn">この番号の謎をひらく</button>
     </div>
@@ -403,7 +410,7 @@
     // 冒険の手順は出さない（記録は上の★5つで十分）。
     if (doorCleared) {
       document.getElementById("dummyText").hidden = true;
-      document.getElementById("manualCard").hidden = true;
+      document.getElementById("scanCard").hidden = true;
       document.getElementById("howtoCard").hidden = true;
       setUpSecretStage();
       return;

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<script src="js/zoom-fix.js"></script>
+<title>QRコードを読み取る | 応中の封印を解け！</title>
+<!--
+  OSのカメラアプリでQRを読み取ると、読み取るたびに新しいタブが増えていく
+  （iOS/Androidとも、カメラアプリからのリンクは新規タブとして開く挙動のため、
+  サイト側からは変えられない）。この画面はサイトの中にカメラを持たせることで、
+  同じタブのまま次々と謎を開けるようにするためのもの。
+
+  QRのデコードは js/vendor/jsQR.min.js（Apache-2.0・通信なしの純JS）で行う。
+  読み取れたら location.href で同じタブのまま遷移する（新規タブは一切開かない）。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .scan-frame {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 3 / 4;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+  .scan-frame video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* 読み取り枠。実際の当たり判定には使わず、目安の表示だけ */
+  .scan-guide {
+    position: absolute;
+    inset: 12% 10%;
+    border: 3px solid rgba(245, 196, 81, 0.85);
+    border-radius: 18px;
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+  }
+  .scan-status {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    min-height: 1.4em;
+  }
+  .scan-status.ok { color: var(--emerald); font-weight: 700; }
+  .scan-status.err { color: var(--ng); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="fog fog3"></div>
+  <div class="vignette"></div>
+</div>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">応中の封印を解け！</div>
+    <h1 style="font-size:1.5rem;">📷 QRコードを読み取る</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <section class="card">
+    <p class="note center" style="margin-bottom:14px;">
+      QRコードを枠の中に映してね。読み取れたら自動で謎が開くよ。
+    </p>
+
+    <div class="scan-frame" id="scanFrame">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="scan-guide" id="scanGuide" hidden></div>
+    </div>
+    <div class="scan-status" id="scanStatus">カメラを起動しています…</div>
+
+    <canvas id="canvas" hidden></canvas>
+
+    <div id="deniedBox" hidden style="margin-top:16px;">
+      <p class="note center">
+        カメラを使えませんでした。QRの下の<strong>番号（1〜5）</strong>を
+        入力しても謎を開けます。
+      </p>
+    </div>
+
+    <div id="manualBox" style="margin-top:18px;">
+      <label class="field">番号で開く（1〜5）</label>
+      <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
+      <button class="btn ghost small" id="manualBtn" style="margin-top:10px;">この番号の謎をひらく</button>
+    </div>
+
+    <a class="btn ghost small" href="index.html" style="margin-top:18px;">← ホームに戻る</a>
+  </section>
+</div>
+
+<script src="js/vendor/jsQR.min.js"></script>
+<script>
+(function () {
+  var video = document.getElementById("video");
+  var canvas = document.getElementById("canvas");
+  var ctx2d = canvas.getContext("2d", { willReadFrequently: true });
+  var statusEl = document.getElementById("scanStatus");
+  var guide = document.getElementById("scanGuide");
+  var deniedBox = document.getElementById("deniedBox");
+
+  var stream = null;
+  var rafId = null;
+  var found = false; // 一度見つけたら、遷移するまで二重に反応しない
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text;
+    statusEl.className = "scan-status" + (kind ? " " + kind : "");
+  }
+
+  function stopCamera() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    if (stream) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      stream = null;
+    }
+  }
+
+  // 読み取り成功。同じタブのまま遷移する（新しいタブは一切開かない）。
+  function onDecoded(text) {
+    if (found) return;
+    found = true;
+    stopCamera();
+    setStatus("読み取ったよ！ひらいています…", "ok");
+
+    // 印刷したQRは自サイトのURLしか埋め込んでいない（tools/qr.html参照）。
+    // 見慣れないものを踏んだときだけ、念のため確認を挟む。
+    var isOwnSite = text.indexOf(location.origin) === 0 || /^[a-zA-Z0-9_.\-]+\.html([?#].*)?$/.test(text);
+    if (!isOwnSite) {
+      setStatus("見慣れないQRコードです。スタッフに確認してね。", "err");
+      found = false;
+      startCamera();
+      return;
+    }
+    location.href = text;
+  }
+
+  function tick() {
+    if (found) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+      var img = ctx2d.getImageData(0, 0, canvas.width, canvas.height);
+      var code = null;
+      try {
+        code = window.jsQR ? jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" }) : null;
+      } catch (e) {
+        code = null;
+      }
+      if (code && code.data) {
+        onDecoded(code.data);
+        return;
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setStatus("この端末はカメラに対応していません。", "err");
+      deniedBox.hidden = false;
+      return;
+    }
+    setStatus("カメラを起動しています…");
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false,
+    }).then(function (s) {
+      stream = s;
+      video.srcObject = s;
+      guide.hidden = false;
+      setStatus("QRコードを枠の中に映してね");
+      rafId = requestAnimationFrame(tick);
+    }).catch(function () {
+      setStatus("カメラを使う許可がありません。", "err");
+      deniedBox.hidden = false;
+    });
+  }
+
+  startCamera();
+  window.addEventListener("pagehide", stopCamera);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stopCamera();
+    else if (!found) startCamera();
+  });
+
+  document.getElementById("manualBtn").addEventListener("click", function () {
+    var n = document.getElementById("manualNum").value;
+    if (!n || n < 1 || n > 5) {
+      alert("1〜5の番号を入れてね！");
+      return;
+    }
+    stopCamera();
+    location.href = "point.html?p=" + n + "&via=manual";
+  });
+})();
+</script>
+</body>
+</html>
