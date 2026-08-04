@@ -510,7 +510,7 @@
       document.getElementById("homePuzzleBody" + n).textContent = def.body;
       if (def.image) {
         var img = document.getElementById("homePuzzleImg" + n);
-        img.src = def.image; img.hidden = false;
+        img.src = def.image; img.alt = "謎の画像"; img.hidden = false;
       }
       if (def.link) {
         var a = document.getElementById("homePuzzleLink" + n);

@@ -72,6 +72,16 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
+  <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
+       配信中のときだけ<dialog>のshowModal()で出す。ブラウザのトップレイヤーに
+       描画されるため、ページ内の他の要素・アニメーションに関係なく必ず最前面に出る。
+       合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <dialog class="announce-modal" id="announceBanner">
+    <div class="announce-modal-icon">📯</div>
+    <p class="announce-modal-text" id="announceText"></p>
+    <button type="button" class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
+  </dialog>
+
   <section class="card">
     <p class="note center" style="margin-bottom:14px;">
       QRコードを枠の中に映してね。読み取れたら自動で謎が開くよ。
@@ -102,6 +112,8 @@
   </section>
 </div>
 
+<script src="js/config.js"></script>
+<script src="js/announce.js"></script>
 <script src="js/vendor/jsQR.min.js"></script>
 <script>
 (function () {

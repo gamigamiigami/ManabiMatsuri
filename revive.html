@@ -35,6 +35,16 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
+  <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
+       配信中のときだけ<dialog>のshowModal()で出す。ブラウザのトップレイヤーに
+       描画されるため、ページ内の他の要素・アニメーションに関係なく必ず最前面に出る。
+       合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <dialog class="announce-modal" id="announceBanner">
+    <div class="announce-modal-icon">📯</div>
+    <p class="announce-modal-text" id="announceText"></p>
+    <button type="button" class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
+  </dialog>
+
   <section class="card revive-card" id="reviveCard">
     <h2>復活の呪文</h2>
     <div class="revive-rune">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
@@ -45,6 +55,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/announce.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/store.js"></script>
 <script src="js/fx.js"></script>

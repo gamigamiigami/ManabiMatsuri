@@ -408,6 +408,14 @@ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px 
   80% { transform: translateX(3px); }
 }
 
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(3px); }
+}
+
 .feedback {
   min-height: 2.2em;
   text-align: center;
@@ -1091,6 +1099,16 @@ input[type="url"]:focus {
 /* ---------- カード出現アニメーション ---------- */
 .card:not([hidden]) {
   animation: cardAura 5s ease-in-out infinite alternate, cardAppear 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+/* 誤答時のカード全体シェイク（final.html・secret.html で使用）。
+   .card:not([hidden]) と同じ詳細度（0,2,0）で、こちらを後に置くことで
+   確実に勝たせている。単に .lock-shake {…} だけだと .card:not([hidden])
+   に詳細度で負けてshakeアニメーションが無視される
+   （final.htmlの元のインライン定義も同じ理由で実際には効いていなかった。
+   ここで直したことで、両ページとも初めてちゃんと揺れるようになる）。 */
+.card.lock-shake {
+  animation: lockShake 0.5s;
 }
 
 @keyframes cardAppear {
