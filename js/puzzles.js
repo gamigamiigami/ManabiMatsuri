@@ -381,7 +381,7 @@ const SECRET_PUZZLES = {
     instruction: SECRET_INSTRUCTIONS[1],
     lead: "「鍵」の文字がほどけ、その奥から謎が現れた。",
     body:
-      "同じ果物を横並びにして\n" +
+      "同じ果物が横並びになるように折り、\n" +
       "もう一度解け",
     link: null,
     image: "",
