@@ -76,14 +76,14 @@
   </header>
 
   <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
-       配信中のときだけ画面いちばん手前にモーダルで出す。合言葉は不要（進捗などの個人情報は含まない）。 -->
-  <div class="announce-modal" id="announceBanner" hidden>
-    <div class="announce-modal-box">
-      <div class="announce-modal-icon">📯</div>
-      <p class="announce-modal-text" id="announceText"></p>
-      <button type="button" class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
-    </div>
-  </div>
+       配信中のときだけ<dialog>のshowModal()で出す。ブラウザのトップレイヤーに
+       描画されるため、ページ内の他の要素・アニメーションに関係なく必ず最前面に出る。
+       合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <dialog class="announce-modal" id="announceBanner">
+    <div class="announce-modal-icon">📯</div>
+    <p class="announce-modal-text" id="announceText"></p>
+    <button type="button" class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
+  </dialog>
 
   <!-- Xからのメッセージ（QRから来た未登録ユーザー。skip=1 のとき表示） -->
   <section id="kozoMessage" class="card" hidden>
@@ -161,7 +161,9 @@
     </div>
 
     <!-- ここから最後の謎（大謎）用。扉の謎を解いた人にだけ出る。
-         封印を解く手順は secret.html に書いてあるが、仕掛けはこのホームにある。
+         封印を解く手順・現れた謎の問題文は、このホームだけに表示する。
+         secret.html 側は「扉の向こうの声」と合言葉の入力だけに絞ってあり、
+         重複表示しない（answer入力欄が下に追いやられるのを防ぐため）。
 
          月の謎・鍵の謎は「最後の謎」と並ぶ別の謎ではなく、その中にある
          2つの仕掛け（サブ項目）。もとはそれぞれ独立した .card だったため、

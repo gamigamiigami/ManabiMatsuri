@@ -776,29 +776,26 @@ table.teams .badge { white-space: nowrap; }
 }
 
 /* ---------- 運営からのお知らせ（js/announce.js） ----------
-   残り時間や集合場所など、今すぐ全員に気づいてほしい伝令なので、
-   バナーではなく画面いちばん手前に出す全画面モーダルにしてある。 */
-.announce-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(10, 8, 20, 0.82);
-  animation: announceFadeIn 0.25s ease;
-}
-.announce-modal-box {
-  width: 100%;
-  max-width: 400px;
+   残り時間や集合場所など、今すぐ全員に気づいてほしい伝令。
+   <dialog>＋showModal() を使い、ブラウザのトップレイヤーに描画させる。
+   position:fixedの自前オーバーレイと違い、ページ側のどんなCSS
+   （祖先のtransform/z-index/overflowなど）にも影響されず、
+   必ず一番手前に出る。中身（テキスト・ボタン）以外は基本ここで完結。 */
+dialog.announce-modal {
+  width: calc(100% - 48px);
+  max-width: 380px;
   padding: 30px 24px 24px;
   border-radius: 20px;
   text-align: center;
+  color: #fff3d6;
   background: linear-gradient(160deg, rgba(40, 28, 18, 0.98), rgba(20, 14, 10, 0.98));
   border: 1px solid rgba(245, 196, 81, 0.6);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 50px rgba(245, 196, 81, 0.25);
-  animation: announcePop 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.3);
+  animation: announcePop 0.3s cubic-bezier(0.2, 0.8, 0.3, 1.3);
+}
+dialog.announce-modal::backdrop {
+  background: rgba(6, 4, 14, 0.88);
+  animation: announceFadeIn 0.15s ease;
 }
 .announce-modal-icon {
   font-size: 2.4rem;
