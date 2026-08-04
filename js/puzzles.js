@@ -396,8 +396,8 @@ const SECRET_PUZZLES = {
 //   answers に書いた表記はどれでも正解になる（ひらがな・漢字・カタカナ）。
 //   入力する順番は問わない。どちらの欄にどちらを入れても通る。
 const SECRET_WORDS = [
-  { label: "ひとつめの合言葉", answers: ["おやこ", "親子"] },
-  { label: "ふたつめの合言葉", answers: ["がっこう", "学校"] },
+  { label: "月の謎の合言葉", answers: ["おやこ", "親子"] },
+  { label: "鍵の謎の合言葉", answers: ["がっこう", "学校"] },
 ];
 const SECRET_HINT =
   "ひとつめ … 今日、となりで一緒に悩んでくれたのは、だれ？\n" +
