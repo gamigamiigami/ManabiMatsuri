@@ -782,8 +782,20 @@ table.teams .badge { white-space: nowrap; }
    （祖先のtransform/z-index/overflowなど）にも影響されず、
    必ず一番手前に出る。中身（テキスト・ボタン）以外は基本ここで完結。 */
 dialog.announce-modal {
+  /* <dialog>標準の自動センタリング（inset:0 + margin:auto）は、
+     幅を明示指定すると Safari で効かず左上に張り付くことがある
+     （実機で確認ずみ）。UAの自動処理に頼らず、position:fixed +
+     transform:translate(-50%,-50%) で自前にセンタリングする。
+     この方式はブラウザ差に左右されない。 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
   width: calc(100% - 48px);
   max-width: 380px;
+  max-height: calc(100% - 48px);
+  overflow: auto;
   padding: 30px 24px 24px;
   border-radius: 20px;
   text-align: center;
@@ -815,9 +827,11 @@ dialog.announce-modal::backdrop {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* transform に translate(-50%,-50%) を含めておかないと、アニメーション
+   終了時にセンタリング用のtransformが上書きされて位置がズレる。 */
 @keyframes announcePop {
-  from { opacity: 0; transform: scale(0.85) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 10px)) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* ========================================
