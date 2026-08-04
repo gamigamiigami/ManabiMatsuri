@@ -75,6 +75,14 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
+  <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
+       配信中のときだけ出る。合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <div class="announce-banner" id="announceBanner" hidden>
+    <span class="announce-icon">📯</span>
+    <span class="announce-text" id="announceText"></span>
+    <button class="announce-close" id="announceCloseBtn" aria-label="閉じる">✕</button>
+  </div>
+
   <!-- Xからのメッセージ（QRから来た未登録ユーザー。skip=1 のとき表示） -->
   <section id="kozoMessage" class="card" hidden>
     <h2>✉ Xからの挑戦</h2>
@@ -121,6 +129,12 @@
       <div class="stars" id="stars"></div>
       <p class="center note" id="progressText"></p>
       <p class="center note" id="dummyText" style="margin-top:14px;"></p>
+      <!-- 全部クリアしたあとだけ出す、ジャンプの謎への導線。
+           途中（最後の謎に挑戦中）は scanCard ごと隠れているので、
+           QRを読み取る手段がここにしかない。 -->
+      <p class="center" id="dummyScanRow" hidden style="margin-top:10px;">
+        <a class="btn ghost small" href="scan.html">📷 ジャンプの謎のQRを読み取る</a>
+      </p>
     </div>
 
     <!-- 次の場所（在り処謎の再表示） -->
@@ -234,7 +248,7 @@
         <li>あらわれる<strong>「在り処謎」</strong>が次の場所を示す</li>
         <li>5つの鍵を集めれば封印は解ける</li>
       </ol>
-      <p class="note">困ったらヒントボタンを押すか、近くのスタッフに声をかけてね。</p>
+      <p class="note">困ったらヒントボタンを押すか、近くの先生に声をかけてね。</p>
     </div>
   </section>
 
@@ -258,6 +272,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/announce.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/arika.js"></script>
 <script src="js/letter-decor.js"></script>
@@ -387,7 +402,7 @@
     document.getElementById("progressText").textContent =
       "あつめた封印の鍵：" + solvedCount + " / 5";
     document.getElementById("dummyText").textContent =
-      "🃏 見つけて解いたダミー謎：" + Store.dummySolvedCount(team) + " / " + DUMMY_TOTAL +
+      "🃏 見つけて解いたジャンプの謎：" + Store.dummySolvedCount(team) + " / " + DUMMY_TOTAL +
       "（封印には関係ない、腕試しのおまけ）";
 
     // 次に向かう場所（在り処謎の再表示）
@@ -416,7 +431,10 @@
     // 中謎の5問に戻る必要はもうないので、5つの鍵の答え・扉へのボタン・
     // 冒険の手順は出さない（記録は上の★5つで十分）。
     if (doorCleared) {
+      // ジャンプの謎の進捗表示は setUpSecretStage() 側で
+      // 「全部クリアしたあとだけ」出す（paint() を参照）。
       document.getElementById("dummyText").hidden = true;
+      document.getElementById("dummyScanRow").hidden = true;
       document.getElementById("scanCard").hidden = true;
       document.getElementById("howtoCard").hidden = true;
       setUpSecretStage();
@@ -474,8 +492,11 @@
           : "この手順は、この画面（冒険記録）で試すこと。";
       if (st.foundMoon) fillHomePuzzle(1, SECRET_PUZZLES.moon);
       if (st.foundKey) fillHomePuzzle(2, SECRET_PUZZLES.key);
-      // 「はじめから遊びなおす」は封印を解いたあとにだけ現れる
+      // 「はじめから遊びなおす」も「ジャンプの謎」への導線も、
+      // 封印を解いたあとにだけ現れる（Xの最後の手紙の追伸で誘導される）。
       document.getElementById("replayCard").hidden = !st.solvedAt;
+      document.getElementById("dummyText").hidden = !st.solvedAt;
+      document.getElementById("dummyScanRow").hidden = !st.solvedAt;
     }
     function fillHomePuzzle(n, def) {
       document.getElementById("homePuzzleTitle" + n).textContent = def.title;

@@ -101,14 +101,16 @@
       });
     });
 
-    // --- ダミー謎QR（クリアに関係ないおまけ。校内の好きな場所に設置） ---
+    // --- ジャンプの謎QR（クリアに関係ないおまけ。校内の好きな場所に設置） ---
+    // URL（dummy.html?d=）とコード内の変数名は旧称「ダミー謎」のまま。
+    // 印刷して参加者の目に触れるラベルだけ「ジャンプの謎」にしてある。
     Object.keys(DUMMY_PUZZLES).forEach(function (n) {
       const url = base + "dummy.html?d=" + n;
       const card = document.createElement("div");
       card.className = "qr-card";
       card.innerHTML =
-        '<div class="head">応中の封印を解け！【ダミー謎・設置用】</div>' +
-        "<h2>ダミー " + n + "</h2>" +
+        '<div class="head">応中の封印を解け！【ジャンプの謎・設置用】</div>' +
+        "<h2>ジャンプ " + n + "</h2>" +
         '<div class="qr" id="dqr' + n + '"></div>' +
         '<div class="fallback">クリアには関係ない追加コンテンツです。<br>本物のQRと同じ見た目で、校内の好きな場所へ</div>';
       cards.appendChild(card);

@@ -28,6 +28,14 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
+  <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
+       配信中のときだけ出る。合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <div class="announce-banner" id="announceBanner" hidden>
+    <span class="announce-icon">📯</span>
+    <span class="announce-text" id="announceText"></span>
+    <button class="announce-close" id="announceCloseBtn" aria-label="閉じる">✕</button>
+  </div>
+
   <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
   <div class="card debug-banner" id="debugBanner" hidden>
     <p>🔧 デバッグ表示中（チーム未登録・記録されません）</p>
@@ -46,7 +54,7 @@
       <div id="hintText"></div>
     </div>
     <button class="btn ghost small" id="hintBtn" style="margin-top:14px;">🌟 ヒントを見る</button>
-    <p class="note">どうしても解けないときは、近くのスタッフに声をかけてね。</p>
+    <p class="note">どうしても解けないときは、近くの先生に声をかけてね。</p>
   </section>
 
   <!-- 順番違反（正しい在り処謎を辿らずに来た） -->
@@ -61,8 +69,8 @@
   <section class="card" id="cursedCard" hidden>
     <h2>⚡ 封印の反動</h2>
     <p class="note center" style="font-size:1rem; line-height:1.9;">封印が反撃してきた……！<br>Xの魔法で、しばらく謎に挑めない。</p>
-    <p class="center" style="font-family:'Yuji Syuku',serif; font-size:1.05rem; color:var(--gold); margin:18px 0; line-height:1.9;">大人たちも少しだけ魔法が使える。<br>近くの<strong>大人（スタッフ）</strong>を探して、<br><strong>復活の呪文（QRコード）</strong>を唱えてもらおう！</p>
-    <p class="note center">スタッフに「復活したいです！」と声をかけてね。</p>
+    <p class="center" style="font-family:'Yuji Syuku',serif; font-size:1.05rem; color:var(--gold); margin:18px 0; line-height:1.9;">先生たちも少しだけ魔法が使える。<br>近くの<strong>先生</strong>を探して、<br><strong>復活の呪文（QRコード）</strong>を唱えてもらおう！</p>
+    <p class="note center">先生に「復活したいです！」と声をかけてね。</p>
 
     <button class="btn gold" id="cursedScanBtn" style="margin-top:16px;">📷 復活のQRを読み取る</button>
     <p class="note center" style="margin-top:8px;">ボタンを押すとカメラが起動するよ。</p>
@@ -111,6 +119,7 @@
 
 <script src="js/vendor/jsQR.min.js"></script>
 <script src="js/config.js"></script>
+<script src="js/announce.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/arika.js"></script>
 <script src="js/store.js"></script>
@@ -336,7 +345,7 @@
           video.srcObject = stream;
           video.play();
           scanning = true;
-          statusEl.textContent = "スタッフの復活QRを枠内に映してね";
+          statusEl.textContent = "先生の復活QRを枠内に映してね";
           requestAnimationFrame(tick);
         })
         .catch(function () {

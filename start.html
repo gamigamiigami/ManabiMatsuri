@@ -28,6 +28,14 @@
     <div class="ornament">✦ ─── ◆ ─── ✦</div>
   </header>
 
+  <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
+       配信中のときだけ出る。合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <div class="announce-banner" id="announceBanner" hidden>
+    <span class="announce-icon">📯</span>
+    <span class="announce-text" id="announceText"></span>
+    <button class="announce-close" id="announceCloseBtn" aria-label="閉じる">✕</button>
+  </div>
+
   <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
   <div class="card debug-banner" id="debugBanner" hidden>
     <p>🔧 デバッグ表示中（チーム未登録・記録されません）</p>
@@ -55,6 +63,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/announce.js"></script>
 <script src="js/puzzles.js"></script>
 <script src="js/letter-decor.js"></script>
 <script src="js/letter-fixed.js"></script>

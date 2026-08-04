@@ -11,7 +11,9 @@
 // このコードの版。ダッシュボードはこの数字を見て、
 // 貼り替えと再デプロイが済んでいるかを判定する。
 // gas/Code.gs に集計を足したときは、この数字を1つ増やすこと。
-const BACKEND_VERSION = 2;
+//   v2: 扉の謎・最後の謎の集計
+//   v3: 運営からのお知らせ配信（ANNOUNCE_*）
+const BACKEND_VERSION = 3;
 
 // ダッシュボード閲覧用の合言葉。デプロイ前に必ず好きな文字列に変えること！
 const ADMIN_KEY = "oyakomanabi";
@@ -50,6 +52,17 @@ function doPost(e) {
       } finally {
         lock.releaseLock();
       }
+      return json_({ ok: true });
+    }
+
+    // 運営ダッシュボードからのお知らせ配信・取り消し（合言葉必須）。
+    // 全チーム共通の1件だけを持つ（履歴は残さない・スプレッドシートには書かない）。
+    // text が空文字なら「配信の取り消し」として扱う。
+    if (data.type === "admin_set_announcement") {
+      if (data.adminKey !== ADMIN_KEY) {
+        return json_({ ok: false, error: "認証エラー：合言葉（key）が違います" });
+      }
+      setAnnouncement_(String(data.text || ""));
       return json_({ ok: true });
     }
 
@@ -97,16 +110,63 @@ function deleteAllRows_() {
   }
 }
 
-// 運営ダッシュボード用の集計
+// ── 運営からのお知らせ ──────────────────────────────────
+// スプレッドシートの行ではなく PropertiesService に持たせる。
+// 「今アクティブな1件」だけが欲しいので、行として積んでいく必要がない
+// （events シートを汚さずに済む・集計ロジックにも影響しない）。
+const ANNOUNCE_PROP_TEXT = "ANNOUNCE_TEXT";
+const ANNOUNCE_PROP_AT = "ANNOUNCE_AT";
+const ANNOUNCE_PROP_ID = "ANNOUNCE_ID";
+
+function setAnnouncement_(text) {
+  const props = PropertiesService.getScriptProperties();
+  const trimmed = String(text || "").trim();
+  if (!trimmed) {
+    props.deleteProperty(ANNOUNCE_PROP_TEXT);
+    props.deleteProperty(ANNOUNCE_PROP_AT);
+    props.deleteProperty(ANNOUNCE_PROP_ID);
+    return;
+  }
+  props.setProperty(ANNOUNCE_PROP_TEXT, trimmed);
+  props.setProperty(ANNOUNCE_PROP_AT, new Date().toISOString());
+  // idは参加者側で「前回表示したお知らせと同じか」を見分けるためだけの値。
+  // 内容が同じでも送り直せば新しいidになり、消してからもう一度出せる。
+  props.setProperty(ANNOUNCE_PROP_ID, String(Date.now()));
+}
+
+function getAnnouncement_() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    text: props.getProperty(ANNOUNCE_PROP_TEXT) || "",
+    at: props.getProperty(ANNOUNCE_PROP_AT) || null,
+    id: props.getProperty(ANNOUNCE_PROP_ID) || null,
+  };
+}
+
+// 運営ダッシュボード用の集計・参加者向けお知らせ配信
 function doGet(e) {
   const p = (e && e.parameter) || {};
+
+  // 参加者の全端末が読みに来るエンドポイント。合言葉は不要
+  // （中身は運営が自分で書いたお知らせ文だけで、進捗などの個人情報は含まない）。
+  if (p.mode === "announcement") {
+    const a = getAnnouncement_();
+    return json_({ ok: true, version: BACKEND_VERSION, text: a.text, at: a.at, id: a.id });
+  }
+
   if (p.mode !== "dashboard") {
     return json_({ ok: true, version: BACKEND_VERSION, message: "応中の封印を解け！ backend is running." });
   }
   if (p.key !== ADMIN_KEY) {
     return json_({ ok: false, error: "認証エラー：合言葉（key）が違います" });
   }
-  return json_({ ok: true, version: BACKEND_VERSION, serverTime: new Date(), teams: aggregate_() });
+  return json_({
+    ok: true,
+    version: BACKEND_VERSION,
+    serverTime: new Date(),
+    teams: aggregate_(),
+    announcement: getAnnouncement_(),
+  });
 }
 
 // events シートの全行からチームごとの状態を組み立てる

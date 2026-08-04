@@ -141,7 +141,7 @@
     // 見慣れないものを踏んだときだけ、念のため確認を挟む。
     var isOwnSite = text.indexOf(location.origin) === 0 || /^[a-zA-Z0-9_.\-]+\.html([?#].*)?$/.test(text);
     if (!isOwnSite) {
-      setStatus("見慣れないQRコードです。スタッフに確認してね。", "err");
+      setStatus("見慣れないQRコードです。先生に確認してね。", "err");
       found = false;
       startCamera();
       return;

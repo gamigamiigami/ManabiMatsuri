@@ -58,8 +58,39 @@
         こちらならURLが変わらないので、<code>js/config.js</code> を直す必要がありません。<br>
         <strong>「新しいデプロイ」で作ってしまうとURLが変わり、サイトは古いほうを見たままになります。</strong>
         その場合は新しいURLを <code>js/config.js</code> の <code>GAS_URL</code> に貼り替えてください。<br>
-        貼り替えが済むと、この枠は自動で消え、上の表示が「集計プログラム v2 ✔」になります。
+        貼り替えが済むと、この枠は自動で消え、上の表示が「集計プログラム v3 ✔」になります。
       </p>
+    </div>
+
+    <!-- 参加者全員へのお知らせ配信。GAS v3 以上が必要（announce_プロパティを使う）。
+         履歴は持たず「いま配信中の1件」だけ。参加者側は index.html が
+         CONFIG.DASHBOARD_POLL_SECONDS と同じ間隔でこれをポーリングして
+         ホーム画面の上にバナーで出す（js/announce.js）。 -->
+    <div class="card" id="announceCard">
+      <h2>📢 参加者へメッセージを送る</h2>
+      <p class="note" id="announceVerNote" style="display:none;">
+        GASを最新版に貼り替えると使えるようになります（上の注意書きを参照）。
+      </p>
+      <div id="announceBody">
+        <p class="note">全チームのホーム画面の上に、バナーで表示されます。</p>
+        <div id="announceLive" hidden style="margin:10px 0; padding:10px 14px; border-radius:10px; background:rgba(245,196,81,0.1); border:1px solid rgba(245,196,81,0.3);">
+          <span class="note" style="margin:0;">📢 配信中：</span>
+          <strong id="announceLiveText"></strong>
+          <span class="note" id="announceLiveAt" style="margin:0 0 0 8px;"></span>
+          <button class="btn ghost small" id="announceClearBtn" style="width:auto; padding:4px 12px; margin:0 0 0 10px; font-size:0.78rem; border-color:var(--ng); color:var(--ng);">取り消す</button>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+          <button class="btn ghost small announce-preset" data-text="もうすぐ16時。封印がまだのチームは、近くの先生と力を合わせよ！" style="width:auto; padding:8px 14px; margin:0; font-size:0.82rem;">時間切れ間近（先生と協力）</button>
+          <button class="btn ghost small announce-preset" data-text="もうすぐ16時。学び舎に戻る刻限だ。教室（1-8）へ帰ってきてね。" style="width:auto; padding:8px 14px; margin:0; font-size:0.82rem;">時間切れ間近（教室へ）</button>
+        </div>
+
+        <textarea id="announceInput" rows="3" maxlength="120" placeholder="例）もうすぐ16時。教室（1-8）に戻ってきてね。" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--panel-edge); background:rgba(255,255,255,0.04); color:var(--text); font-family:inherit; font-size:0.95rem; resize:vertical;"></textarea>
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+          <button class="btn gold" id="announceSendBtn" style="width:auto; padding:10px 24px; margin:0;">配信する</button>
+          <span class="note" id="announceMsg" style="margin:0;"></span>
+        </div>
+      </div>
     </div>
 
     <div class="table-scroll">
@@ -82,7 +113,7 @@
             <th rowspan="2">いまどこ</th>
             <th rowspan="2">ヒント</th>
             <th rowspan="2">誤答</th>
-            <th rowspan="2">ダミー</th>
+            <th rowspan="2">ジャンプ</th>
             <th rowspan="2">最終更新</th>
             <th rowspan="2"></th>
           </tr>
@@ -350,12 +381,14 @@
       document.getElementById("lastUpdated").textContent =
         "最終取得 " + fmtTime(new Date().toISOString());
       render(data.teams);
+      renderAnnouncement(ver, data.announcement);
     } catch (e) {
       status.textContent = "⚠ 取得に失敗しました（自動で再試行します）";
     }
   }
 
-  async function postAdmin(body) {
+  async function postAdmin(body, failMsg) {
+    failMsg = failMsg || "削除に失敗しました";
     try {
       const res = await fetch(CONFIG.GAS_URL, {
         method: "POST",
@@ -364,12 +397,14 @@
       });
       const data = await res.json();
       if (!data.ok) {
-        alert(data.error || "削除に失敗しました");
-        return;
+        alert(data.error || failMsg);
+        return false;
       }
       fetchData();
+      return true;
     } catch (e) {
-      alert("削除に失敗しました（通信エラー）。もう一度お試しください。");
+      alert(failMsg + "（通信エラー）。もう一度お試しください。");
+      return false;
     }
   }
 
@@ -385,6 +420,60 @@
     if (!confirm("全チームの記録を削除します。よろしいですか？（元に戻せません）")) return;
     if (!confirm("本当に全削除してよいですか？もう一度確認します。")) return;
     deleteAll();
+  });
+
+  // ── 参加者へのお知らせ配信 ──────────────────────────────
+  // GAS v3 未満（announcement を返してこない旧デプロイ）では
+  // 送っても参加者側に届かないので、フォームごと隠して合言葉のかわりに
+  // 「貼り替えてください」の案内だけを出す。
+  const ANNOUNCE_MIN_VERSION = 3;
+  function renderAnnouncement(ver, announcement) {
+    const supported = ver >= ANNOUNCE_MIN_VERSION;
+    document.getElementById("announceBody").style.display = supported ? "" : "none";
+    document.getElementById("announceVerNote").style.display = supported ? "none" : "";
+    if (!supported) return;
+
+    const live = document.getElementById("announceLive");
+    if (announcement && announcement.text) {
+      live.hidden = false;
+      document.getElementById("announceLiveText").textContent = announcement.text;
+      document.getElementById("announceLiveAt").textContent =
+        announcement.at ? "（" + fmtTime(announcement.at) + " 配信）" : "";
+    } else {
+      live.hidden = true;
+    }
+  }
+
+  function sendAnnouncement(text) {
+    const msg = document.getElementById("announceMsg");
+    msg.textContent = "送信中…";
+    postAdmin(
+      { type: "admin_set_announcement", text: text, adminKey: adminKey },
+      "メッセージの送信に失敗しました"
+    ).then(function (ok) {
+      msg.textContent = !ok ? "" : text ? "配信しました。" : "取り消しました。";
+      if (ok) setTimeout(function () { msg.textContent = ""; }, 3000);
+    });
+  }
+
+  document.querySelectorAll(".announce-preset").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.getElementById("announceInput").value = btn.getAttribute("data-text");
+    });
+  });
+
+  document.getElementById("announceSendBtn").addEventListener("click", function () {
+    const text = document.getElementById("announceInput").value.trim();
+    if (!text) {
+      alert("メッセージを入力してね。");
+      return;
+    }
+    sendAnnouncement(text);
+  });
+
+  document.getElementById("announceClearBtn").addEventListener("click", function () {
+    if (!confirm("配信中のメッセージを取り消します。よろしいですか？")) return;
+    sendAnnouncement("");
   });
 
   function startPolling() {
