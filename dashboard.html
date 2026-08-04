@@ -19,6 +19,16 @@
     <a href="index.html" class="btn ghost small" style="display:inline-block; width:auto; padding:8px 18px; margin-top:8px;">参加者画面を見る →</a>
   </header>
 
+  <!-- 通信エラーなどの運営向けメッセージ。alert()だとブラウザによって
+       目立ち方がまちまちなので、参加者側のお知らせと同じ<dialog>で統一。
+       showModal()はブラウザのトップレイヤーに描画されるので、
+       ページのどこにあっても必ず最前面に出る。 -->
+  <dialog class="announce-modal" id="adminMsgBox">
+    <div class="announce-modal-icon" id="adminMsgBoxIcon">⚠</div>
+    <p class="announce-modal-text" id="adminMsgBoxText"></p>
+    <button type="button" class="btn gold announce-modal-btn" id="adminMsgBoxCloseBtn">わかった！</button>
+  </dialog>
+
   <!-- 合言葉入力（初回のみ） -->
   <section class="card" id="loginCard" hidden>
     <h2>合言葉を入力</h2>
@@ -180,6 +190,41 @@
 
   function minutesAgo(iso) {
     return Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  }
+
+  // ---- 運営向けメッセージボックス ----
+  // alert()はブラウザ・端末によって見た目や目立ち方がまちまちなので、
+  // 参加者側のお知らせと同じ<dialog>+showModal()で統一する。
+  const msgBox = document.getElementById("adminMsgBox");
+  const msgBoxText = document.getElementById("adminMsgBoxText");
+  const msgBoxCanModal = typeof msgBox.showModal === "function";
+  function showMsgBox(text) {
+    msgBoxText.textContent = text;
+    if (msgBoxCanModal) {
+      if (!msgBox.open) msgBox.showModal();
+    } else {
+      alert(text); // 古いブラウザ向けフォールバック
+    }
+  }
+  document.getElementById("adminMsgBoxCloseBtn").addEventListener("click", function () {
+    if (msgBoxCanModal && msgBox.open) msgBox.close();
+  });
+
+  // ---- 通信エラーに強くする ----
+  // 会場のWi-Fiなど不安定な回線では一度の失敗ですぐ諦めず、
+  // 短い間隔を空けて自動で1回だけ再試行してから失敗を報告する。
+  async function fetchJson(url, options, retries) {
+    retries = retries == null ? 1 : retries;
+    try {
+      const res = await fetch(url, options);
+      return await res.json();
+    } catch (e) {
+      if (retries > 0) {
+        await new Promise(function (r) { setTimeout(r, 900); });
+        return fetchJson(url, options, retries - 1);
+      }
+      throw e;
+    }
   }
 
   function starsHtml(team) {
@@ -357,11 +402,10 @@
   async function fetchData() {
     const status = document.getElementById("status");
     try {
-      const res = await fetch(
+      const data = await fetchJson(
         CONFIG.GAS_URL + "?mode=dashboard&key=" + encodeURIComponent(adminKey),
         { redirect: "follow" }
       );
-      const data = await res.json();
       if (!data.ok) {
         // 合言葉違い → 再入力へ
         localStorage.removeItem(KEY_STORE);
@@ -369,7 +413,7 @@
         stopPolling();
         dash.hidden = true;
         loginCard.hidden = false;
-        alert(data.error || "認証エラー");
+        showMsgBox(data.error || "認証エラー");
         return;
       }
       // 扉の謎・最後の謎の集計が入ったGASかどうか（古いと version が無い）
@@ -382,28 +426,29 @@
         "最終取得 " + fmtTime(new Date().toISOString());
       render(data.teams);
       renderAnnouncement(ver, data.announcement);
+      return true;
     } catch (e) {
       status.textContent = "⚠ 取得に失敗しました（自動で再試行します）";
+      return false;
     }
   }
 
   async function postAdmin(body, failMsg) {
     failMsg = failMsg || "削除に失敗しました";
     try {
-      const res = await fetch(CONFIG.GAS_URL, {
+      const data = await fetchJson(CONFIG.GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
       if (!data.ok) {
-        alert(data.error || failMsg);
+        showMsgBox(data.error || failMsg);
         return false;
       }
       fetchData();
       return true;
     } catch (e) {
-      alert(failMsg + "（通信エラー）。もう一度お試しください。");
+      showMsgBox(failMsg + "（通信エラー）。電波の悪い場所だと起きやすいので、もう一度お試しください。");
       return false;
     }
   }
@@ -465,7 +510,7 @@
   document.getElementById("announceSendBtn").addEventListener("click", function () {
     const text = document.getElementById("announceInput").value.trim();
     if (!text) {
-      alert("メッセージを入力してね。");
+      showMsgBox("メッセージを入力してね。");
       return;
     }
     sendAnnouncement(text);
@@ -496,7 +541,20 @@
     startPolling();
   });
 
-  document.getElementById("reloadBtn").addEventListener("click", fetchData);
+  // 押しても何も起きていないように見える、という声があったため、
+  // 押した瞬間に「更新中…」に変え、結果が出たら一瞬フラッシュして知らせる。
+  document.getElementById("reloadBtn").addEventListener("click", async function () {
+    const btn = this;
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "更新中…";
+    const ok = await fetchData();
+    btn.textContent = ok ? "✓ 更新しました" : "⚠ 失敗しました";
+    setTimeout(function () {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 1200);
+  });
 
   if (adminKey) startPolling();
   else loginCard.hidden = false;
