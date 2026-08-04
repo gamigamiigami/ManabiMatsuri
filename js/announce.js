@@ -1,22 +1,26 @@
 // ========================================
-// 運営からのお知らせバナー
+// 運営からのお知らせ（全画面モーダル）
 // ========================================
 // ダッシュボードの「📢 参加者へメッセージを送る」から配信された
-// お知らせを定期的に取りに行き、ページ上部にバナーで出す。
+// お知らせを定期的に取りに行き、残り時間や集合指示など「今すぐ
+// 気づいてほしい伝令」として、画面いちばん手前にモーダルで出す。
 //
 // ▼ 使い方
 //   HTML側に以下を1つだけ置き、このスクリプトを読み込むだけ。
 //   （id・class名は固定。書き換える場合はこのファイルも直すこと）
-//     <div class="announce-banner" id="announceBanner" hidden>
-//       <span class="announce-icon">📯</span>
-//       <span class="announce-text" id="announceText"></span>
-//       <button class="announce-close" id="announceCloseBtn" aria-label="閉じる">✕</button>
+//     <div class="announce-modal" id="announceBanner" hidden>
+//       <div class="announce-modal-box">
+//         <div class="announce-modal-icon">📯</div>
+//         <p class="announce-modal-text" id="announceText"></p>
+//         <button class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
+//       </div>
 //     </div>
 //
 // ▼ 仕組み
 //   ・合言葉は不要（中身は運営が書いた文面だけで、進捗などの
 //     個人情報は一切含まない）
-//   ・「✕」で閉じると、同じお知らせ（同じid）はもう出さない。
+//   ・気づいてほしい伝令なので短い間隔（POLL_MS）でポーリングする
+//   ・「わかった！」を押すと、同じお知らせ（同じid）はもう出さない。
 //     見た／閉じたことを localStorage に覚えておくだけ
 //   ・運営が新しいお知らせを配信する（idが変わる）と、
 //     前のを閉じていても改めて出る
@@ -25,7 +29,7 @@
 (function (global) {
   "use strict";
   var SEEN_KEY = "fuin_announce_seen_id";
-  var POLL_MS = 25000;
+  var POLL_MS = 6000;
 
   function setUp() {
     // js/config.js の CONFIG は const 宣言なので window.CONFIG にはならない

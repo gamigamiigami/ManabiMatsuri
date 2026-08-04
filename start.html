@@ -29,11 +29,13 @@
   </header>
 
   <!-- 運営からのお知らせ（js/announce.js）。定期的にGASへ取りに行き、
-       配信中のときだけ出る。合言葉は不要（進捗などの個人情報は含まない）。 -->
-  <div class="announce-banner" id="announceBanner" hidden>
-    <span class="announce-icon">📯</span>
-    <span class="announce-text" id="announceText"></span>
-    <button class="announce-close" id="announceCloseBtn" aria-label="閉じる">✕</button>
+       配信中のときだけ画面いちばん手前にモーダルで出す。合言葉は不要（進捗などの個人情報は含まない）。 -->
+  <div class="announce-modal" id="announceBanner" hidden>
+    <div class="announce-modal-box">
+      <div class="announce-modal-icon">📯</div>
+      <p class="announce-modal-text" id="announceText"></p>
+      <button type="button" class="btn gold announce-modal-btn" id="announceCloseBtn">わかった！</button>
+    </div>
   </div>
 
   <!-- デバッグ表示中バナー（?debug=1 のときだけ表示。記録は一切送信されない） -->
