@@ -1335,6 +1335,29 @@ header.site h1 {
 .spell-line.done { color: #7bd6ae; text-shadow: 0 0 14px rgba(75, 191, 156, 0.45); }
 .spell-line.done::after { content: " ✔"; }
 
+/* ===== 現れた謎（月の謎・鍵の謎）を「最後の謎」カードの中の一部として見せる =====
+   もとは homePuzzleCard1/2・puzzleCard1/2 がそれぞれ独立した .card
+   （.card h2 の金色の浮き見出し付き）だったため、「最後の謎／月の謎／鍵の謎」が
+   横に並ぶ3つの対等な章のように見えてしまっていた。実際は月の謎・鍵の謎は
+   「最後の謎」というひとつの謎の中の2つの仕掛けにすぎない。
+   そこで独立カードをやめ、親カード（「最後の謎」）の中に破線区切り＋
+   一段小さい見出しで差し込む形にした。.card h2 の浮きバッジは
+   親カードの見出しだけに使う。 */
+.sub-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(245, 196, 81, 0.3);
+}
+.sub-heading {
+  text-align: center;
+  font-family: "Yuji Syuku", serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(245, 196, 81, 0.4);
+  margin-bottom: 12px;
+}
+
 /* ===== 現れた謎 ===== */
 .puzzle-lead { text-align: center; font-family: "Yuji Syuku", serif; color: var(--gold); font-size: 0.98rem; margin-bottom: 12px; }
 
