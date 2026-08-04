@@ -66,19 +66,29 @@
       <table class="teams">
         <thead>
           <!-- クリア状況は段階ごとに列を分ける。「いまどこ」は現在地しか
-               出ないので、通り過ぎた段階（扉の謎など）が見えなくなっていた。 -->
+               出ないので、通り過ぎた段階（扉の謎など）が見えなくなっていた。
+
+               「月・鍵」は「最後の謎」と並ぶ段階ではなく、その中の2つの
+               仕掛け（サブ項目）。同じ高さの列に並べると4段階が横並びに
+               見えてしまい、階層が伝わらなかったので、ヘッダーを2段にして
+               「最後の謎」の下に「月・鍵」「クリア」をぶら下げる形にした。
+                 鍵あつめ → 扉の謎 → 最後の謎 ┬ 月・鍵（中の仕掛け）
+                                              └ クリア（合言葉が揃った） -->
           <tr>
-            <th>チーム</th>
-            <th>鍵あつめ</th>
-            <th>扉の謎</th>
-            <th>月・鍵</th>
-            <th>最後の謎</th>
-            <th>いまどこ</th>
-            <th>ヒント</th>
-            <th>誤答</th>
-            <th>ダミー</th>
-            <th>最終更新</th>
-            <th></th>
+            <th rowspan="2">チーム</th>
+            <th rowspan="2">鍵あつめ</th>
+            <th rowspan="2">扉の謎</th>
+            <th colspan="2">最後の謎</th>
+            <th rowspan="2">いまどこ</th>
+            <th rowspan="2">ヒント</th>
+            <th rowspan="2">誤答</th>
+            <th rowspan="2">ダミー</th>
+            <th rowspan="2">最終更新</th>
+            <th rowspan="2"></th>
+          </tr>
+          <tr>
+            <th class="sub">└ 月・鍵</th>
+            <th class="sub">└ クリア</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -88,12 +98,13 @@
     <p class="note">
       🔴 赤い行＝まだ解けていない謎でヒントを見ているチーム（経過が長いほど困っている可能性大）。
       優先的に様子を見に行ってください。緑＝最後の謎まで解いた完全クリア。<br>
-      <strong>クリア状況</strong>は段階ごとに4つの列で見られます。
-      <strong>鍵あつめ</strong>（★の数）→ <strong>扉の謎</strong> →
-      <strong>月・鍵</strong> → <strong>最後の謎</strong>。
+      <strong>クリア状況</strong>は
+      <strong>鍵あつめ</strong>（★の数）→ <strong>扉の謎</strong> → <strong>最後の謎</strong>
+      の3段階です。<strong>月・鍵</strong>は「最後の謎」と並ぶ段階ではなく、
+      その中にある2つの仕掛け（サブ項目）なので、「最後の謎」の下にぶら下げて表示しています。<br>
       <span class="badge clear">✔ 時刻</span> が解けた時刻、「挑戦中」はその段階に来ているがまだ、
       「─」はそこまで来ていないという意味です。<br>
-      <strong>月・鍵</strong> の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
+      <strong>月・鍵</strong>の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
       最後の謎の2つの仕掛けをホームで見つけたかどうか（薄い印はまだ見つけていない）。
       片方だけで止まっているチームがここで分かります。<br>
       <strong>いまどこ</strong>は、そのチームが<em>いま</em>取り組んでいる段階です。

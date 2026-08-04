@@ -549,6 +549,16 @@ table.teams {
 
 table.teams th, table.teams td { padding: 11px 13px; text-align: left; border-bottom: 1px solid rgba(212, 175, 106, 0.12); }
 table.teams th { background: #1c1230; color: var(--gold); font-size: 0.78rem; letter-spacing: 0.06em; white-space: nowrap; font-family: var(--serif); }
+/* 「最後の謎」の下にぶら下がる2段目の見出し（月・鍵／クリア）。
+   親の段階より一段小さく・薄い色にして、対等な段階ではなく
+   その中身（サブ項目）だと分かるようにする。 */
+table.teams th.sub {
+  padding-top: 4px;
+  font-size: 0.68rem;
+  color: #b39fe0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
 table.teams .stars-cell { color: var(--gold); letter-spacing: 0.16em; white-space: nowrap; }
 table.teams .stars-cell .off { color: #453a5e; }
 table.teams tr.needs-help { background: rgba(207, 79, 104, 0.1); }
@@ -580,14 +590,15 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
 table.teams .dim { color: var(--text-dim); }
 
 /* 段階ごとのクリア状況の列。「✔ 22:59」や「🌙🔑」が2行に割れると
-   丸バッジが崩れて読みにくいので、この4列だけ折り返さない。
+   丸バッジが崩れて読みにくいので、この5列だけ折り返さない
+   （th は上の table.teams th 側ですでに全列 nowrap 済み）。
    はみ出す分は .table-scroll が横スクロールで受ける。 */
-table.teams th:nth-child(1), table.teams td:nth-child(1),
-table.teams th:nth-child(2), table.teams td:nth-child(2),
-table.teams th:nth-child(3), table.teams td:nth-child(3),
-table.teams th:nth-child(4), table.teams td:nth-child(4),
-table.teams th:nth-child(5), table.teams td:nth-child(5),
-table.teams th:nth-child(6), table.teams td:nth-child(6) {
+table.teams td:nth-child(1),
+table.teams td:nth-child(2),
+table.teams td:nth-child(3),
+table.teams td:nth-child(4),
+table.teams td:nth-child(5),
+table.teams td:nth-child(6) {
   white-space: nowrap;
 }
 table.teams .badge { white-space: nowrap; }
