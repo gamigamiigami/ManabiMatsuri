@@ -304,6 +304,7 @@
   document.getElementById("beginFinalBtn").addEventListener("click", function () {
     document.getElementById("arrivalCard").hidden = true;
     document.getElementById("finalCard").hidden = false;
+    window.resetZoomAndScroll();
   });
 
   document.getElementById("debugResetBtn").addEventListener("click", function () {
@@ -404,7 +405,7 @@
     document.getElementById("letterFour").textContent = FINALE_MESSAGE;
     // 入力欄のカードを消したぶん画面が縮み、手紙が下から現れたように
     // 見えてしまう。切り替わりは必ずページの先頭からにする。
-    window.scrollTo(0, 0);
+    window.resetZoomAndScroll();
     setTimeout(function () {
       document.getElementById("doorScene").classList.add("open");
     }, 250);

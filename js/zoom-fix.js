@@ -20,28 +20,27 @@
 // という形にした。
 (function () {
   var self = document.currentScript;
-  if (self && self.hasAttribute("data-keep-zoom")) return;
+  var keepZoom = self && self.hasAttribute("data-keep-zoom");
 
   var ua = navigator.userAgent || "";
   var isIOS =
     /iP(hone|ad|od)/.test(ua) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  if (!isIOS) return;
 
   var meta = document.querySelector('meta[name="viewport"]');
-  if (!meta) return;
-  var original = meta.getAttribute("content");
+  var original = meta ? meta.getAttribute("content") : null;
   var timer = null;
 
   // どんな経路で呼ばれても、必ず元の viewport（拡大できる状態）へ戻す
   function restore() {
     if (timer) { clearTimeout(timer); timer = null; }
-    if (meta.getAttribute("content") !== original) {
+    if (meta && meta.getAttribute("content") !== original) {
       meta.setAttribute("content", original);
     }
   }
 
   function resetZoom() {
+    if (!isIOS || !meta) return;
     // すでに等倍なら触らない。触らなければ固まりようがない。
     var vv = window.visualViewport;
     if (vv && Math.abs(vv.scale - 1) < 0.01) return;
@@ -53,6 +52,23 @@
     // 保険②：万一タイマーが飛んでも、必ず戻す
     setTimeout(restore, 1500);
   }
+
+  // ▼ 画面内の「カードの出し替え」（ページ遷移なしでDOMだけ切り替える場面。
+  //   例：チーム登録直後にホームを描き直す、謎を解いてクリア画面に
+  //   切り替える、など）のあとに呼ぶための共通関数。
+  //   ・スクロール位置を必ず先頭へ戻す（全端末共通・副作用なし）
+  //   ・拡大率のリセットは iOS のみ（Android/内蔵ブラウザでは
+  //     viewportの書き換えがピンチズームを固めてしまった過去の事故が
+  //     あるため、確実に安全なiOSだけに絞ってある）
+  //   letter.html・letter-opening.html（data-keep-zoom付き）では、
+  //   パンフレット重ね謎のためにユーザーが合わせた拡大率を保ちたいので、
+  //   スクロールだけ戻し、拡大率には触らない。
+  window.resetZoomAndScroll = function () {
+    window.scrollTo(0, 0);
+    if (!keepZoom) resetZoom();
+  };
+
+  if (keepZoom) return;
 
   document.addEventListener("DOMContentLoaded", resetZoom);
   window.addEventListener("pageshow", resetZoom);

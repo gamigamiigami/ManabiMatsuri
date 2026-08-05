@@ -148,6 +148,7 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
     document.getElementById("dummyCount").textContent = countText();
     document.getElementById("solvedCard").hidden = false;
     document.getElementById("backHome").hidden = isDebug;
+    window.resetZoomAndScroll();
   }
 
   // 解いたことがあるならそのままクリア表示
@@ -163,6 +164,7 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
   document.getElementById("challengeBtn").addEventListener("click", function () {
     document.getElementById("gateCard").hidden = true;
     document.getElementById("puzzleCard").hidden = false;
+    window.resetZoomAndScroll();
     if (!isDebug) Store.send(team, "dummy_challenge", null, { dummy: Number(d) });
   });
 

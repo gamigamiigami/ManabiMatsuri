@@ -179,6 +179,9 @@
       ? "─ 封印の鍵 " + p + " を手に入れた ─"
       : "─ この封印は解除ずみ ─";
     document.getElementById("solvedCard").hidden = false;
+    // 入力欄のカードを消したぶん画面が縮み、下から現れたように見えてしまう。
+    // 切り替わりは必ずページの先頭・等倍から。
+    window.resetZoomAndScroll();
 
     // 全鍵がそろったら在り処謎ではなく扉謎へ誘導
     var allSolved = POINT_ORDER.every(function (q) {
@@ -294,6 +297,7 @@
   function showCursed() {
     document.getElementById("puzzleCard").hidden = true;
     document.getElementById("cursedCard").hidden = false;
+    window.resetZoomAndScroll();
   }
 
   // ---------- ページ内カメラで復活のQRを読み取る ----------

@@ -586,7 +586,7 @@
   document.getElementById("kozoStartBtn").addEventListener("click", function () {
     document.getElementById("kozoMessage").hidden = true;
     show(document.getElementById("kozoPuzzle"));
-    window.scrollTo(0, 0);
+    window.resetZoomAndScroll();
   });
 
   document.getElementById("kozoSubmitBtn").addEventListener("click", function () {
@@ -621,7 +621,7 @@
           arikaBox.appendChild(aimg);
         }
         show(document.getElementById("kozoCleared"));
-        window.scrollTo(0, 0);
+        window.resetZoomAndScroll();
       }, 1200);
     } else {
       fb.className = "feedback ng";
@@ -633,7 +633,7 @@
   document.getElementById("kozoClearedBtn").addEventListener("click", function () {
     document.getElementById("kozoCleared").hidden = true;
     show(document.getElementById("register"));
-    window.scrollTo(0, 0);
+    window.resetZoomAndScroll();
   });
 
   document.getElementById("registerBtn").addEventListener("click", function () {
@@ -653,7 +653,7 @@
       if (kozoCleared && assignedRoute) {
         // 在り処謎は既に見せたので、ホーム画面へ
         renderHome();
-        window.scrollTo(0, 0);
+        window.resetZoomAndScroll();
         return;
       } else if (start && PUZZLES[start]) {
         location.href = "start.html?s=" + start;
@@ -663,7 +663,7 @@
         location.href = "point.html?p=" + next;
       } else {
         renderHome();
-        window.scrollTo(0, 0);
+        window.resetZoomAndScroll();
       }
     }, 1100);
   });
