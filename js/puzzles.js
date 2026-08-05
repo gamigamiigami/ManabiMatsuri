@@ -34,7 +34,7 @@ const PLACE_IMAGES = {
 //         参加者の画面には出さない（在り処謎の画像が場所を示すため）。
 const PUZZLES = {
   1: {
-    place: "3-5 時間割表",
+    place: "第二理科室後ろ",
     title: "第一の封印",
     question: "封印の紋様が浮かびあがった……\n雑巾を使い、空欄を埋めよ。",
     image: KEY_IMAGES[1],
@@ -46,31 +46,35 @@ const PUZZLES = {
     status: "完成",
   },
   2: {
-    place: "3-6 時計",
+    place: "昇降口",
     title: "第二の封印",
-    question: "封印の紋様が浮かびあがった……\n法則を見つけ、答えに合うイラストを選べ。",
+    // KeyB.png の中身が「校章」の謎に差し替わったため、文面・正解も
+    // 旧・第三の封印（校章クイズ）のものをこちらに移した。
+    question: "封印の紋様が浮かびあがった……\n応時中の正しい校章を選べ。",
     image: KEY_IMAGES[2],
     arikaImage: PLACE_IMAGES[3],
-    choices: ["1", "2", "3", "4"],
-    answerIndex: 3,
-    smallHint: "左右で○の数が違う…",
-    arikaHint: "どこかで見たような…",
-    status: "完成",
-  },
-  3: {
-    place: "わたり廊下",
-    title: "第三の封印",
-    question: "封印の紋様が浮かびあがった……\n応時中の正しい校章を選べ。",
-    image: KEY_IMAGES[3],
-    arikaImage: PLACE_IMAGES[4],
     choices: ["1", "2", "3", "4"],
     answerIndex: 0, // 「①」
     smallHint: "本物をどこかで見ているはずだ",
     arikaHint: "どこかで見たような…",
     status: "完成",
   },
+  3: {
+    place: "第三理科室前",
+    title: "第三の封印",
+    // KeyC.png の中身が「市場」の謎に差し替わったため、文面・正解も
+    // 旧・第二の封印（市場クイズ）のものをこちらに移した。
+    question: "封印の紋様が浮かびあがった……\n法則を見つけ、答えに合うイラストを選べ。",
+    image: KEY_IMAGES[3],
+    arikaImage: PLACE_IMAGES[4],
+    choices: ["1", "2", "3", "4"],
+    answerIndex: 3,
+    smallHint: "左右で○の数が違う…",
+    arikaHint: "どこかで見たような…",
+    status: "完成",
+  },
   4: {
-    place: "3-5 うしろの黒板",
+    place: "第二理科室前",
     title: "第四の封印",
     question: "封印の紋様が浮かびあがった……\n謎をとき、正しい答えを選べ。",
     image: KEY_IMAGES[4],
@@ -86,7 +90,7 @@ const PUZZLES = {
     status: "完成",
   },
   5: {
-    place: "音楽室（しょうぞう画）",
+    place: "第一理科室",
     title: "第五の封印",
     question: "封印の紋様が浮かびあがった……\n色の法則を見抜き、答えに合うイラストを選べ。",
     image: KEY_IMAGES[5],
@@ -115,33 +119,41 @@ const POINT_ORDER = [1, 2, 3, 4, 5];
 // ・解いた数はホーム画面に「x / 総数」で表示される
 // ・総数はこの表に書いた数がそのまま反映される（増減はここに足す/消すだけ）
 // ・画像は images/DummyA.png, DummyB.png, DummyC.png …（A=1, B=2, …。無ければ自動非表示）
+// ・答えは選択式ではなく自由入力（secret.html の合言葉入力と同じ方式）。
+//   answers に書いた表記のどれかに一致すれば正解（表記ゆれは
+//   normalizeWord で吸収される。ひらがな・カタカナ・全角半角は同一視）。
 // ---------------------------------------------------------------
 const DUMMY_PUZZLES = {
   1: {
     title: "まやかしの封印・壱",
-    question: "【仮】ジャンプの謎1の問題文",
+    question: "ぼくが気まぐれで残した、数字の暗号。",
     image: "images/DummyA.png",
-    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
+    answers: ["さんたさん"],
+    smallHint: "それぞれの数字は何を表している？",
   },
   2: {
     title: "まやかしの封印・弐",
-    question: "【仮】ジャンプの謎2の問題文",
+    question: "食べ物の名前が、どこかに隠れているらしい。",
     image: "images/DummyB.png",
-    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
+    answers: ["なまはむ", "生ハム"],
+    smallHint: "ひらがなにすると4文字",
   },
   3: {
     title: "まやかしの封印・参",
-    question: "【仮】ジャンプの謎3の問題文",
+    question: "色にはきっと、意味がある。",
     image: "images/DummyC.png",
-    choices: ["【仮】選択肢A", "【仮】選択肢B", "【仮】選択肢C", "【仮】選択肢D"],
-    answerIndex: 0,
-    smallHint: "【仮】小ヒント（未設定）",
+    answers: ["SCIENCE", "サイエンス"],
+    smallHint: "赤と青、どこかで見たことが…",
   },
 };
+
+// 入力した答えが、そのジャンプの謎の answers のどれかに合っているか。
+// normalizeWord（本ファイル下部で定義）で表記ゆれを吸収する。
+function matchDummyAnswer(puzzle, input) {
+  const v = normalizeWord(input);
+  if (!v) return false;
+  return puzzle.answers.some(function (a) { return normalizeWord(a) === v; });
+}
 
 // ジャンプの謎の総数（自動計算。触らなくてよい）
 const DUMMY_TOTAL = Object.keys(DUMMY_PUZZLES).length;

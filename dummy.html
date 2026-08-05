@@ -9,6 +9,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+  /* 答えの入力欄（secret.html の .word-row と同じ見た目にしてある） */
+  .word-row { max-width: 340px; margin: 14px auto 0; }
+  input.word-input {
+    display: block; width: 100%; max-width: 340px; margin: 0 auto;
+    padding: 14px 16px;
+    border: 1px solid rgba(245, 196, 81, 0.45); border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #1b1420;
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 1.35rem; letter-spacing: 0.18em; text-align: center;
+  }
+  input.word-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245, 196, 81, 0.22); }
+</style>
 </head>
 <body>
 <div class="scene" aria-hidden="true">
@@ -60,7 +74,10 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
   <section class="card" id="puzzleCard" hidden>
     <h2 id="puzzleTitle"></h2>
     <div class="question" id="question"></div>
-    <div class="choices" id="choices"></div>
+    <div class="word-row">
+      <input type="text" class="word-input" id="answerInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="　　　　">
+    </div>
+    <button class="btn gold" id="submitBtn" style="margin-top:14px;">これだ！と思ったら</button>
     <div class="feedback" id="feedback"></div>
     <div class="hint-box" id="hintBox" hidden>
       <span class="tag">🌟 妖精のささやき</span>
@@ -171,46 +188,43 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
     hintBtn.hidden = true;
   });
 
-  const choicesEl = document.getElementById("choices");
   const feedback = document.getElementById("feedback");
+  const answerInput = document.getElementById("answerInput");
+  const submitBtn = document.getElementById("submitBtn");
 
-  puzzle.choices.forEach(function (text, i) {
-    const btn = document.createElement("button");
-    btn.className = "choice";
-    const abc = document.createElement("span");
-    abc.className = "abc";
-    abc.textContent = "ABCD"[i];
-    const label = document.createElement("span");
-    label.textContent = text;
-    btn.appendChild(abc);
-    btn.appendChild(label);
-    btn.addEventListener("click", function () {
-      if (state.solvedAt) return;
-      if (i === puzzle.answerIndex) {
-        btn.classList.add("right");
-        feedback.className = "feedback ok";
-        feedback.textContent = "見破った──これは、まやかし。";
-        const c = FX.centerOf(btn);
-        FX.burst({ x: c.x, y: c.y, count: 12 });
-        state.solvedAt = new Date().toISOString();
-        if (!isDebug) {
-          Store.save(team);
-          Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
-        }
-        setTimeout(showSolved, 1200);
-      } else {
-        btn.classList.add("wrong");
-        setTimeout(function () { btn.classList.remove("wrong"); }, 450);
-        feedback.className = "feedback ng";
-        feedback.textContent = "あれれ？ちがうみたい……もう一度考えてみて！";
-        state.wrong += 1;
-        if (!isDebug) {
-          Store.save(team);
-          Store.send(team, "dummy_wrong", null, { dummy: Number(d), choice: i });
-        }
+  answerInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") submitBtn.click();
+  });
+
+  submitBtn.addEventListener("click", function () {
+    if (state.solvedAt) return;
+    const v = answerInput.value;
+    if (!v.trim()) {
+      feedback.className = "feedback ng";
+      feedback.textContent = "答えを入力してね。";
+      return;
+    }
+    if (matchDummyAnswer(puzzle, v)) {
+      feedback.className = "feedback ok";
+      feedback.textContent = "見破った──これは、まやかし。";
+      const c = FX.centerOf(submitBtn);
+      FX.burst({ x: c.x, y: c.y, count: 12 });
+      state.solvedAt = new Date().toISOString();
+      if (!isDebug) {
+        Store.save(team);
+        Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
       }
-    });
-    choicesEl.appendChild(btn);
+      setTimeout(showSolved, 1200);
+    } else {
+      feedback.className = "feedback ng";
+      feedback.textContent = "あれれ？ちがうみたい……もう一度考えてみて！";
+      state.wrong += 1;
+      if (!isDebug) {
+        Store.save(team);
+        Store.send(team, "dummy_wrong", null, { dummy: Number(d), answer: v });
+      }
+      answerInput.select();
+    }
   });
 })();
 </script>
