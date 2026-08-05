@@ -1252,6 +1252,15 @@ header.site h1 {
 .arika-crop-wrap img {
   display: block;
   width: 100%;
+  /* .question img の装飾（枠線・box-shadow・materializeアニメーション）が
+     ここにも掛かってしまい、切り出し枠の上端だけ画像自体の角丸・枠線が
+     はみ出して二重の枠に見える不具合があったため、ここで打ち消す。 */
+  max-width: none;
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  animation: none;
 }
 
 /* PlaceE.png（1414×2000）の上半分（謎部分、y:0〜830px）だけを表示 */
