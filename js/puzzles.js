@@ -406,7 +406,8 @@ const SECRET_PUZZLES = {
 //   ・おやこ … 「月の謎」＝パンフレットを一通目の手紙に重ねる謎の答え
 //   ・がっこう … 「鍵の謎」＝謎解きシートの果物をそろえて解き直す謎の答え
 //   answers に書いた表記はどれでも正解になる（ひらがな・漢字・カタカナ）。
-//   入力する順番は問わない。どちらの欄にどちらを入れても通る。
+//   欄は固定：1つめの欄＝月の謎の答え、2つめの欄＝鍵の謎の答え。
+//   入れ違えると不正解になる（checkSecretAnswers / matchSecretWordAt）。
 const SECRET_WORDS = [
   { label: "月の謎の合言葉", answers: ["おやこ", "親子"] },
   { label: "鍵の謎の合言葉", answers: ["がっこう", "学校"] },
@@ -440,28 +441,18 @@ function normalizeWord(t) {
     .toLowerCase();
 }
 
-// 入力した合言葉が1つでも SECRET_WORDS のどれかに合っていれば、その番号を返す。
-// どれにも合わなければ -1。
-function matchSecretWord(input) {
+// 入力欄 i（0=月の謎、1=鍵の謎）の答えとして正しいか。
+// 欄は固定：月の謎の答えを鍵の謎の欄に入れても（その逆も）正解にならない。
+function matchSecretWordAt(input, i) {
   const v = normalizeWord(input);
-  if (!v) return -1;
-  for (let i = 0; i < SECRET_WORDS.length; i++) {
-    const hit = SECRET_WORDS[i].answers.some(function (a) { return normalizeWord(a) === v; });
-    if (hit) return i;
-  }
-  return -1;
+  if (!v || !SECRET_WORDS[i]) return false;
+  return SECRET_WORDS[i].answers.some(function (a) { return normalizeWord(a) === v; });
 }
 
-// ふたつの合言葉がそろっているか。入力の順番は問わない。
+// ふたつの合言葉が、それぞれ対応する欄に正しく入っているか（順番固定）。
 function checkSecretAnswers(inputs) {
-  const found = [];
-  for (const v of inputs) {
-    const i = matchSecretWord(v);
-    if (i < 0) return false;
-    if (found.indexOf(i) >= 0) return false; // 同じ言葉を2回入れてもダメ
-    found.push(i);
-  }
-  return found.length === SECRET_WORDS.length;
+  if (inputs.length !== SECRET_WORDS.length) return false;
+  return inputs.every(function (v, i) { return matchSecretWordAt(v, i); });
 }
 
 // エンディング（Xからの最後の手紙）。
