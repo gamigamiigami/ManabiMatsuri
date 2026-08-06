@@ -1,23 +1,27 @@
 // ========================================
 // ページ切り替え後に前の拡大率が残る問題への対策
 // ========================================
-// ただし最優先は「拡大できないまま固まらないこと」。
-// 最後の謎は letter.html の手紙にパンフレットを重ねて解くので、
-// 画面を指で広げて紙の大きさを合わせられないと詰んでしまう。
+// 画面が切り替わる（実際のページ遷移でも、show()によるカードの
+// 出し替えでも）たびに、必ずピンチズームを解除してスクロールも
+// 先頭へ戻す。例外は作らない。
 //
-// もともとの実装は全端末で viewport に user-scalable=no を差し込み、
-// 200ms後に戻していた。iOS Safari ではこれで拡大率が戻るが、
-// Android Chrome や WebView（LINE・Instagram などの内蔵ブラウザ）では
-// 元に戻してもピンチズームが復活しないことがあり、
-// さらに pageshow（戻る操作・bfcache復帰）で何度も掛かるため、
-// 一度ロックされると解除できなくなっていた。
-//
-// そこで、
-//   ・Android系では最初から何もしない（そもそも遷移で拡大率が戻る）
-//   ・iOSでも「実際に拡大されているとき」だけ、ごく短時間だけ掛ける
-//   ・画面に触れた時点で即座に元へ戻す＋保険のタイマーでも戻す
-//   ・data-keep-zoom を付けた読み込みでは一切動かさない（letter.html）
-// という形にした。
+// 拡大率を戻す方法：viewport の meta タグを一瞬「拡大禁止」の
+// 内容に差し替えると、iOS Safari はその場で拡大率を1.0まで
+// 強制的に戻す。すぐ元の内容（拡大可能）に戻せば、拡大操作自体は
+// 引き続きできる。
+// ・要素を作り直して差し替える（属性書き換えだけだと、実際の
+//   ページ読み込み以外のタイミングでは iOS Safari が変更を
+//   無視することがあるため）
+// ・「戻す」タイミングは requestAnimationFrame を2回挟む
+//   （＝最低でも1回分の描画を待ってから戻す）。setTimeoutの
+//   固定時間待ちより確実に「拡大禁止が実際に適用された後」に
+//   戻せる。
+// ・iOS以外（Android Chrome・LINE/Instagram内蔵ブラウザ等）は
+//   viewport書き換えがピンチズームを固めてしまう実害が過去に
+//   あったため、何もしない（そもそも画面遷移で拡大率は戻る）。
+// ・letter.html・letter-opening.html（data-keep-zoom付き）だけは
+//   例外：手紙にパンフレットを重ねて解く謎のため、ユーザーが
+//   合わせた拡大率を保つ必要がある。
 (function () {
   var self = document.currentScript;
   var keepZoom = self && self.hasAttribute("data-keep-zoom");
@@ -29,13 +33,7 @@
 
   var meta = document.querySelector('meta[name="viewport"]');
   var original = meta ? meta.getAttribute("content") : null;
-  var timer = null;
-  var locked = false;
 
-  // meta[name=viewport] を「同じ要素の属性を書き換える」だけだと、
-  // ページ読み込み直後（DOMContentLoaded/pageshow）以外のタイミングでは
-  // iOS Safari が変更を再評価してくれず、拡大率が戻らないことがある。
-  // 要素そのものを作り直して差し替えると、確実に再評価させられる。
   function setViewport(content) {
     if (!meta) return;
     var next = document.createElement("meta");
@@ -45,36 +43,18 @@
     meta = next;
   }
 
-  // どんな経路で呼ばれても、必ず元の viewport（拡大できる状態）へ戻す
-  function restore() {
-    if (timer) { clearTimeout(timer); timer = null; }
-    if (!locked) return;
-    locked = false;
-    setViewport(original);
-  }
-
   function resetZoom() {
-    if (!isIOS || !meta) return;
-    if (timer) { clearTimeout(timer); timer = null; }
-    locked = true;
+    if (!isIOS || !meta || !original) return;
     setViewport(original + ", maximum-scale=1.0, user-scalable=no");
-    timer = setTimeout(restore, 600);
-    // 保険①：指が触れたらその場で解除（拡大しようとする操作を邪魔しない）
-    window.addEventListener("touchstart", restore, { once: true, passive: true });
-    // 保険②：万一タイマーが飛んでも、必ず戻す
-    setTimeout(restore, 2000);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        setViewport(original);
+      });
+    });
   }
 
-  // ▼ 画面内の「カードの出し替え」（ページ遷移なしでDOMだけ切り替える場面。
-  //   例：チーム登録直後にホームを描き直す、謎を解いてクリア画面に
-  //   切り替える、など）のあとに呼ぶための共通関数。
-  //   ・スクロール位置を必ず先頭へ戻す（全端末共通・副作用なし）
-  //   ・拡大率のリセットは iOS のみ（Android/内蔵ブラウザでは
-  //     viewportの書き換えがピンチズームを固めてしまった過去の事故が
-  //     あるため、確実に安全なiOSだけに絞ってある）
-  //   letter.html・letter-opening.html（data-keep-zoom付き）では、
-  //   パンフレット重ね謎のためにユーザーが合わせた拡大率を保ちたいので、
-  //   スクロールだけ戻し、拡大率には触らない。
+  // 画面が切り替わるすべての箇所（実ページ遷移・show()での
+  // カード出し替え）から呼ぶ共通関数。
   window.resetZoomAndScroll = function () {
     window.scrollTo(0, 0);
     if (!keepZoom) resetZoom();
@@ -82,17 +62,8 @@
 
   if (keepZoom) return;
 
-  // ページ読み込み時は、1回だけだと早すぎて iOS Safari に無視される
-  // ことがあるため、複数のタイミングで重ねて掛ける
-  // （resetZoom自体は毎回タイマーを張り直すだけなので、何度呼んでも安全）。
+  // 実際のページ読み込み（新規読み込み・戻る操作でのbfcache復帰）
+  // の直後にも必ず掛ける。
   document.addEventListener("DOMContentLoaded", resetZoom);
-  window.addEventListener("load", resetZoom);
   window.addEventListener("pageshow", resetZoom);
-  setTimeout(resetZoom, 80);
-  // ▼ visibilitychangeでの保険は、あえて付けていない。
-  //   ページ読み込み直後（まさにロックしている最中）に
-  //   document.visibilityState が一瞬 "hidden" を報告することがあり
-  //   （実機・自動テスト両方で確認）、それを拾って即座に解除してしまうと
-  //   ロックそのものが一切効かなくなる実害があった。ロックは長くても
-  //   2秒で自動解除される（保険②）ため、この経路は無くても実害はない。
 })();
