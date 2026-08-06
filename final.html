@@ -251,7 +251,8 @@
 <script src="js/gimmicks.js"></script>
 <script>
 (function () {
-  const isDebug = new URLSearchParams(location.search).get("debug") === "1" && CONFIG.DEBUG_ENABLED;
+  const params = new URLSearchParams(location.search);
+  const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
   if (isDebug) {
     document.getElementById("debugBanner").hidden = false;
     document.getElementById("debugCompleteBtn").hidden = false;
@@ -297,14 +298,15 @@
 
   if (finalState.solvedAt) {
     showSuccess();
+  } else if (params.get("stage") === "final") {
+    // «読み込み直して» 来たときは、いきなり扉の謎を出す（等倍に戻すため）
+    document.getElementById("finalCard").hidden = false;
   } else {
     document.getElementById("arrivalCard").hidden = false;
   }
 
   document.getElementById("beginFinalBtn").addEventListener("click", function () {
-    document.getElementById("arrivalCard").hidden = true;
-    document.getElementById("finalCard").hidden = false;
-    window.resetZoomAndScroll();
+    location.href = "final.html?stage=final" + (isDebug ? "&debug=1" : "");
   });
 
   document.getElementById("debugResetBtn").addEventListener("click", function () {
@@ -379,8 +381,10 @@
       feedback.className = "feedback ok";
       feedback.textContent = "封印が、音をたてて崩れていく――";
       FX.circle();
-      window.resetZoomOnly();
-      setTimeout(showSuccess, 1400);
+      // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
+      setTimeout(function () {
+        location.href = "final.html?just=1" + (isDebug ? "&debug=1" : "");
+      }, 1400);
     } else {
       finalState.wrong += 1;
       if (!isDebug) {

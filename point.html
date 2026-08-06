@@ -154,7 +154,10 @@
   const puzzle = PUZZLES[p];
   const state = Store.point(team, p);
 
-  if (!isDebug) {
+  // just=1 / hit=1 は「自分で読み込み直した」ときの目印なので、
+  // QRを読んだ扱いで記録を二重に送らないようにする。
+  const isSelfReload = params.get("just") === "1" || params.get("hit") === "1";
+  if (!isDebug && !isSelfReload) {
     Store.send(team, "scan", p, { via: via });
   }
 
@@ -207,7 +210,8 @@
 
   // すでに正解済みなら、鍵と在り処謎を「解除済み」表示でそのまま見せる
   if (state.solvedAt) {
-    showSolved(false);
+    // just=1 なら「今解いた」ので、鍵をゲットした演出つきで見せる
+    showSolved(params.get("just") === "1");
     return;
   }
 
@@ -399,7 +403,6 @@
     btn.appendChild(label);
     btn.addEventListener("click", function () {
       if (state.solvedAt || locked) return;
-      window.resetZoomOnly();
       if (i === puzzle.answerIndex) {
         locked = true;
         btn.classList.add("right");
@@ -413,7 +416,10 @@
           Store.save(team);
           Store.send(team, "correct", p, { wrongCount: state.wrong });
         }
-        setTimeout(function () { showSolved(true); }, 1400);
+        // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
+        setTimeout(function () {
+          location.href = "point.html?p=" + p + "&just=1" + (isDebug ? "&debug=1" : "");
+        }, 1400);
       } else {
         locked = true;
         btn.classList.add("wrong");
@@ -425,7 +431,10 @@
         }
         feedback.className = "feedback ng";
         feedback.textContent = "封印が反撃してきた──！";
-        setTimeout(function () { showCursed(); }, 800);
+        // 呪い状態は保存済みなので、読み込み直せば呪い画面が出る（等倍に戻る）
+        setTimeout(function () {
+          location.href = "point.html?p=" + p + "&hit=1" + (isDebug ? "&debug=1" : "");
+        }, 800);
       }
     });
     choicesEl.appendChild(btn);

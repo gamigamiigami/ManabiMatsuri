@@ -294,9 +294,27 @@
   const skip = params.get("skip");   // skip=1: 手紙スキップ（謎解きシートのQRから来た場合）
   const route = params.get("route"); // route=A or B: QRで決まるグループ
   const isDebug = params.get("debug") === "1" && CONFIG.DEBUG_ENABLED;
+  // stage: 画面の切り替えを「ページの読み込み直し」で行うための目印。
+  // iOS Safariの拡大率はページを読み込み直すことでしか等倍に戻せないため、
+  // 小謎まわりの画面切り替えは全てこのstageを付けた遷移で行う（zoom-fix.js参照）。
+  const stage = params.get("stage");
   let team = Store.load();
-  let kozoCleared = false;
+  // stageが進んでいれば、小謎はクリア済みとして復元する
+  let kozoCleared = (stage === "cleared" || stage === "register");
   let assignedRoute = (route && START_ROUTES[route]) ? START_ROUTES[route] : null;
+  if (kozoCleared && !assignedRoute) assignedRoute = START_ROUTES["A"];
+
+  // 小謎まわりの画面へ「実際に遷移する」ためのURLを組み立てる。
+  // 拡大率を戻すのが目的なので、必ず今と違うURLになるようstageを変える。
+  function stageUrl(nextStage) {
+    var q = ["skip=1", "route=" + encodeURIComponent(route || "A")];
+    if (isDebug) q.push("debug=1");
+    if (next) q.push("next=" + encodeURIComponent(next));
+    if (start) q.push("start=" + encodeURIComponent(start));
+    if (dummy) q.push("dummy=" + encodeURIComponent(dummy));
+    if (nextStage) q.push("stage=" + nextStage);
+    return "index.html?" + q.join("&");
+  }
 
   if (isDebug) {
     document.getElementById("debugLinks").hidden = false;
@@ -586,9 +604,8 @@
   // Xのメッセージ → 「謎に挑戦する」→ 答え入力画面へ
   document.getElementById("kozoLetter").textContent = KOZO_CHALLENGE_MESSAGE;
   document.getElementById("kozoStartBtn").addEventListener("click", function () {
-    document.getElementById("kozoMessage").hidden = true;
-    show(document.getElementById("kozoPuzzle"));
-    window.resetZoomAndScroll();
+    // 画面を差し替えるのではなく、実際に読み込み直して等倍に戻す
+    location.href = stageUrl("kozo");
   });
 
   document.getElementById("kozoSubmitBtn").addEventListener("click", function () {
@@ -608,23 +625,9 @@
       fb.className = "feedback ok";
       fb.textContent = "正解──";
       FX.burst({ count: 14 });
-      window.resetZoomOnly();
+      // 正解の演出を見せてから、手紙の画面へ「読み込み直して」移る
       setTimeout(function () {
-        document.getElementById("kozoPuzzle").hidden = true;
-        // 5つの鍵メッセージ＋最初の在り処謎を表示
-        document.getElementById("kozoClearedLetter").textContent = KOZO_CLEARED_MESSAGE;
-        var arikaBox = document.getElementById("kozoClearedArika");
-        var prevIdx = POINT_ORDER.indexOf(assignedRoute);
-        var prevPoint = POINT_ORDER[(prevIdx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
-        if (PUZZLES[prevPoint] && PUZZLES[prevPoint].arikaImage) {
-          var aimg = document.createElement("img");
-          aimg.src = PUZZLES[prevPoint].arikaImage;
-          aimg.alt = "在り処謎";
-          aimg.onerror = function () { this.remove(); };
-          arikaBox.appendChild(aimg);
-        }
-        show(document.getElementById("kozoCleared"));
-        window.resetZoomAndScroll();
+        location.href = stageUrl("cleared");
       }, 1200);
     } else {
       fb.className = "feedback ng";
@@ -632,12 +635,26 @@
     }
   });
 
-  // 在り処謎を見た → チーム登録へ
+  // 在り処謎を見た → チーム登録へ（読み込み直して等倍に戻す）
   document.getElementById("kozoClearedBtn").addEventListener("click", function () {
-    document.getElementById("kozoCleared").hidden = true;
-    show(document.getElementById("register"));
-    window.resetZoomAndScroll();
+    location.href = stageUrl("register");
   });
+
+  // 小謎クリア後の画面（Xからの手紙＋最初の在り処謎）を描く
+  function renderKozoCleared() {
+    document.getElementById("kozoClearedLetter").textContent = KOZO_CLEARED_MESSAGE;
+    var arikaBox = document.getElementById("kozoClearedArika");
+    var prevIdx = POINT_ORDER.indexOf(assignedRoute);
+    var prevPoint = POINT_ORDER[(prevIdx - 1 + POINT_ORDER.length) % POINT_ORDER.length];
+    if (PUZZLES[prevPoint] && PUZZLES[prevPoint].arikaImage) {
+      var aimg = document.createElement("img");
+      aimg.src = PUZZLES[prevPoint].arikaImage;
+      aimg.alt = "在り処謎";
+      aimg.onerror = function () { this.remove(); };
+      arikaBox.appendChild(aimg);
+    }
+    show(document.getElementById("kozoCleared"));
+  }
 
   document.getElementById("registerBtn").addEventListener("click", function () {
     const name = document.getElementById("teamName").value.trim();
@@ -652,22 +669,17 @@
       Store.save(team);
     }
     FX.circle();
-    window.resetZoomOnly();
     setTimeout(function () {
-      if (kozoCleared && assignedRoute) {
-        // 在り処謎は既に見せたので、ホーム画面へ
-        renderHome();
-        window.resetZoomAndScroll();
-        return;
-      } else if (start && PUZZLES[start]) {
+      if (start && PUZZLES[start]) {
         location.href = "start.html?s=" + start;
       } else if (dummy && DUMMY_PUZZLES[dummy]) {
         location.href = "dummy.html?d=" + dummy;
       } else if (next && PUZZLES[next]) {
         location.href = "point.html?p=" + next;
       } else {
-        renderHome();
-        window.resetZoomAndScroll();
+        // ホーム画面も「読み込み直し」で出す（登録済みなのでstageは不要）。
+        // 等倍に戻すため、必ず今と違うURLになるようにする。
+        location.href = "index.html" + (isDebug ? "?debug=1" : "?home=1");
       }
     }, 1100);
   });
@@ -681,7 +693,20 @@
     location.href = "point.html?p=" + n + "&via=manual";
   });
 
-  if (team) {
+  if (stage && !team) {
+    // 小謎まわりの画面は、stage付きのURLで «読み込み直して» 表示される。
+    // （iOS Safariの拡大率をページ読み込みで等倍に戻すため。zoom-fix.js参照）
+    try { localStorage.setItem("fuin_letter_seen", "1"); } catch (e) {}
+    if (stage === "kozo") {
+      show(document.getElementById("kozoPuzzle"));
+    } else if (stage === "cleared") {
+      renderKozoCleared();
+    } else if (stage === "register") {
+      show(document.getElementById("register"));
+    } else {
+      show(document.getElementById("kozoMessage"));
+    }
+  } else if (team) {
     renderHome();
   } else if (skip === "1") {
     // 謎解きシートのQRから来た → 手紙スキップ、Xのメッセージへ

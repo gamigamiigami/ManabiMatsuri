@@ -133,7 +133,10 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
   const puzzle = DUMMY_PUZZLES[d];
   const state = Store.dummy(team, d);
 
-  if (!isDebug) {
+  // stage / just は「自分で読み込み直した」ときの目印なので、
+  // QRを読んだ扱いで記録を二重に送らないようにする。
+  const isSelfReload = params.get("stage") === "puzzle" || params.get("just") === "1";
+  if (!isDebug && !isSelfReload) {
     // ダミーはポイント扱いしない（現在地は動かさない）。detailに番号を入れて記録
     Store.send(team, "dummy_scan", null, { dummy: Number(d) });
   }
@@ -157,15 +160,18 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
     return;
   }
 
-  // ---------- ゲート表示 ----------
-  document.getElementById("gateCard").hidden = false;
-  document.getElementById("gateCount").textContent = countText();
+  // ---------- ゲート表示 / 謎本体 ----------
+  // stage=puzzle で «読み込み直して» 来たときは、いきなり謎を出す（等倍に戻すため）
+  if (params.get("stage") === "puzzle") {
+    document.getElementById("puzzleCard").hidden = false;
+    if (!isDebug) Store.send(team, "dummy_challenge", null, { dummy: Number(d) });
+  } else {
+    document.getElementById("gateCard").hidden = false;
+    document.getElementById("gateCount").textContent = countText();
+  }
 
   document.getElementById("challengeBtn").addEventListener("click", function () {
-    document.getElementById("gateCard").hidden = true;
-    document.getElementById("puzzleCard").hidden = false;
-    window.resetZoomAndScroll();
-    if (!isDebug) Store.send(team, "dummy_challenge", null, { dummy: Number(d) });
+    location.href = "dummy.html?d=" + d + "&stage=puzzle" + (isDebug ? "&debug=1" : "");
   });
 
   // ---------- 謎本体 ----------
@@ -216,8 +222,10 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
         Store.save(team);
         Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
       }
-      window.resetZoomOnly();
-      setTimeout(showSolved, 1200);
+      // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
+      setTimeout(function () {
+        location.href = "dummy.html?d=" + d + "&just=1" + (isDebug ? "&debug=1" : "");
+      }, 1200);
     } else {
       feedback.className = "feedback ng";
       feedback.textContent = "あれれ？ちがうみたい……もう一度考えてみて！";
