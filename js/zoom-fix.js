@@ -30,23 +30,34 @@
   var meta = document.querySelector('meta[name="viewport"]');
   var original = meta ? meta.getAttribute("content") : null;
   var timer = null;
+  var locked = false;
+
+  // meta[name=viewport] を「同じ要素の属性を書き換える」だけだと、
+  // ページ読み込み直後（DOMContentLoaded/pageshow）以外のタイミングでは
+  // iOS Safari が変更を再評価してくれず、拡大率が戻らないことがある。
+  // 要素そのものを作り直して差し替えると、確実に再評価させられる。
+  function setViewport(content) {
+    if (!meta) return;
+    var next = document.createElement("meta");
+    next.setAttribute("name", "viewport");
+    next.setAttribute("content", content);
+    meta.parentNode.replaceChild(next, meta);
+    meta = next;
+  }
 
   // どんな経路で呼ばれても、必ず元の viewport（拡大できる状態）へ戻す
   function restore() {
     if (timer) { clearTimeout(timer); timer = null; }
-    if (meta && meta.getAttribute("content") !== original) {
-      meta.setAttribute("content", original);
-    }
+    if (!locked) return;
+    locked = false;
+    setViewport(original);
   }
 
   function resetZoom() {
     if (!isIOS || !meta) return;
-    // すでに等倍なら触らない。触らなければ固まりようがない。
-    var vv = window.visualViewport;
-    if (vv && Math.abs(vv.scale - 1) < 0.01) return;
-
-    meta.setAttribute("content", original + ", maximum-scale=1.0, user-scalable=no");
-    timer = setTimeout(restore, 200);
+    locked = true;
+    setViewport(original + ", maximum-scale=1.0, user-scalable=no");
+    timer = setTimeout(restore, 350);
     // 保険①：指が触れたらその場で解除（拡大しようとする操作を邪魔しない）
     window.addEventListener("touchstart", restore, { once: true, passive: true });
     // 保険②：万一タイマーが飛んでも、必ず戻す
