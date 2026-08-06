@@ -379,6 +379,7 @@
       feedback.className = "feedback ok";
       feedback.textContent = "封印が、音をたてて崩れていく――";
       FX.circle();
+      window.resetZoomOnly();
       setTimeout(showSuccess, 1400);
     } else {
       finalState.wrong += 1;

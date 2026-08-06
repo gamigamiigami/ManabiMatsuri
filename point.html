@@ -399,6 +399,7 @@
     btn.appendChild(label);
     btn.addEventListener("click", function () {
       if (state.solvedAt || locked) return;
+      window.resetZoomOnly();
       if (i === puzzle.answerIndex) {
         locked = true;
         btn.classList.add("right");

@@ -216,6 +216,7 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
         Store.save(team);
         Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
       }
+      window.resetZoomOnly();
       setTimeout(showSolved, 1200);
     } else {
       feedback.className = "feedback ng";

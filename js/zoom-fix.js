@@ -60,6 +60,19 @@
     if (!keepZoom) resetZoom();
   };
 
+  // iOSは「ユーザー操作（タップ）そのものの中」でないと拡大率の
+  // 変更を無視することがあるらしく、setTimeoutで遅らせて画面を
+  // 切り替えるボタン（答えを送信する、名前を登録する、など）では
+  // resetZoomAndScroll を呼ぶタイミングが遅すぎて効かないことがある。
+  // そこで、ボタンのclickハンドラの中で「正解が確定した／画面が
+  // 切り替わることが決まった」瞬間に、スクロールは動かさず拡大率
+  // だけ即座にリセットするための関数を別に用意する
+  // （スクロールは実際に画面が切り替わるshow()側でresetZoomAndScrollを
+  // 呼んで行う）。
+  window.resetZoomOnly = function () {
+    if (!keepZoom) resetZoom();
+  };
+
   if (keepZoom) return;
 
   // 実際のページ読み込み（新規読み込み・戻る操作でのbfcache復帰）

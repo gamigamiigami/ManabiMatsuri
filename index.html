@@ -608,6 +608,7 @@
       fb.className = "feedback ok";
       fb.textContent = "正解──";
       FX.burst({ count: 14 });
+      window.resetZoomOnly();
       setTimeout(function () {
         document.getElementById("kozoPuzzle").hidden = true;
         // 5つの鍵メッセージ＋最初の在り処謎を表示
@@ -651,6 +652,7 @@
       Store.save(team);
     }
     FX.circle();
+    window.resetZoomOnly();
     setTimeout(function () {
       if (kozoCleared && assignedRoute) {
         // 在り処謎は既に見せたので、ホーム画面へ
