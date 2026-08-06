@@ -306,7 +306,7 @@
   }
 
   document.getElementById("beginFinalBtn").addEventListener("click", function () {
-    location.href = "final.html?stage=final" + (isDebug ? "&debug=1" : "");
+    window.gotoFresh("final.html?stage=final" + (isDebug ? "&debug=1" : ""));
   });
 
   document.getElementById("debugResetBtn").addEventListener("click", function () {
@@ -383,7 +383,7 @@
       FX.circle();
       // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
       setTimeout(function () {
-        location.href = "final.html?just=1" + (isDebug ? "&debug=1" : "");
+        window.gotoFresh("final.html?just=1" + (isDebug ? "&debug=1" : ""));
       }, 1400);
     } else {
       finalState.wrong += 1;

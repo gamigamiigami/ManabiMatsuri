@@ -171,7 +171,7 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
   }
 
   document.getElementById("challengeBtn").addEventListener("click", function () {
-    location.href = "dummy.html?d=" + d + "&stage=puzzle" + (isDebug ? "&debug=1" : "");
+    window.gotoFresh("dummy.html?d=" + d + "&stage=puzzle" + (isDebug ? "&debug=1" : ""));
   });
 
   // ---------- 謎本体 ----------
@@ -224,7 +224,7 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
       }
       // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
       setTimeout(function () {
-        location.href = "dummy.html?d=" + d + "&just=1" + (isDebug ? "&debug=1" : "");
+        window.gotoFresh("dummy.html?d=" + d + "&just=1" + (isDebug ? "&debug=1" : ""));
       }, 1200);
     } else {
       feedback.className = "feedback ng";

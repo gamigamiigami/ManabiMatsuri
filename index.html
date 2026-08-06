@@ -605,7 +605,7 @@
   document.getElementById("kozoLetter").textContent = KOZO_CHALLENGE_MESSAGE;
   document.getElementById("kozoStartBtn").addEventListener("click", function () {
     // 画面を差し替えるのではなく、実際に読み込み直して等倍に戻す
-    location.href = stageUrl("kozo");
+    window.gotoFresh(stageUrl("kozo"));
   });
 
   document.getElementById("kozoSubmitBtn").addEventListener("click", function () {
@@ -627,7 +627,7 @@
       FX.burst({ count: 14 });
       // 正解の演出を見せてから、手紙の画面へ「読み込み直して」移る
       setTimeout(function () {
-        location.href = stageUrl("cleared");
+        window.gotoFresh(stageUrl("cleared"));
       }, 1200);
     } else {
       fb.className = "feedback ng";
@@ -637,7 +637,7 @@
 
   // 在り処謎を見た → チーム登録へ（読み込み直して等倍に戻す）
   document.getElementById("kozoClearedBtn").addEventListener("click", function () {
-    location.href = stageUrl("register");
+    window.gotoFresh(stageUrl("register"));
   });
 
   // 小謎クリア後の画面（Xからの手紙＋最初の在り処謎）を描く
@@ -671,15 +671,15 @@
     FX.circle();
     setTimeout(function () {
       if (start && PUZZLES[start]) {
-        location.href = "start.html?s=" + start;
+        window.gotoFresh("start.html?s=" + start);
       } else if (dummy && DUMMY_PUZZLES[dummy]) {
-        location.href = "dummy.html?d=" + dummy;
+        window.gotoFresh("dummy.html?d=" + dummy);
       } else if (next && PUZZLES[next]) {
-        location.href = "point.html?p=" + next;
+        window.gotoFresh("point.html?p=" + next);
       } else {
         // ホーム画面も「読み込み直し」で出す（登録済みなのでstageは不要）。
         // 等倍に戻すため、必ず今と違うURLになるようにする。
-        location.href = "index.html" + (isDebug ? "?debug=1" : "?home=1");
+        window.gotoFresh("index.html" + (isDebug ? "?debug=1" : "?home=1"));
       }
     }, 1100);
   });
@@ -690,7 +690,7 @@
       alert("1〜5の番号を入れてね！");
       return;
     }
-    location.href = "point.html?p=" + n + "&via=manual";
+    window.gotoFresh("point.html?p=" + n + "&via=manual");
   });
 
   if (stage && !team) {

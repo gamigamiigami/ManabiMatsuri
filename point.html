@@ -418,7 +418,7 @@
         }
         // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
         setTimeout(function () {
-          location.href = "point.html?p=" + p + "&just=1" + (isDebug ? "&debug=1" : "");
+          window.gotoFresh("point.html?p=" + p + "&just=1" + (isDebug ? "&debug=1" : ""));
         }, 1400);
       } else {
         locked = true;
@@ -433,7 +433,7 @@
         feedback.textContent = "封印が反撃してきた──！";
         // 呪い状態は保存済みなので、読み込み直せば呪い画面が出る（等倍に戻る）
         setTimeout(function () {
-          location.href = "point.html?p=" + p + "&hit=1" + (isDebug ? "&debug=1" : "");
+          window.gotoFresh("point.html?p=" + p + "&hit=1" + (isDebug ? "&debug=1" : ""));
         }, 800);
       }
     });
