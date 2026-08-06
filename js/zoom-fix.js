@@ -55,13 +55,14 @@
 
   function resetZoom() {
     if (!isIOS || !meta) return;
+    if (timer) { clearTimeout(timer); timer = null; }
     locked = true;
     setViewport(original + ", maximum-scale=1.0, user-scalable=no");
-    timer = setTimeout(restore, 350);
+    timer = setTimeout(restore, 600);
     // 保険①：指が触れたらその場で解除（拡大しようとする操作を邪魔しない）
     window.addEventListener("touchstart", restore, { once: true, passive: true });
     // 保険②：万一タイマーが飛んでも、必ず戻す
-    setTimeout(restore, 1500);
+    setTimeout(restore, 2000);
   }
 
   // ▼ 画面内の「カードの出し替え」（ページ遷移なしでDOMだけ切り替える場面。
@@ -81,7 +82,17 @@
 
   if (keepZoom) return;
 
+  // ページ読み込み時は、1回だけだと早すぎて iOS Safari に無視される
+  // ことがあるため、複数のタイミングで重ねて掛ける
+  // （resetZoom自体は毎回タイマーを張り直すだけなので、何度呼んでも安全）。
   document.addEventListener("DOMContentLoaded", resetZoom);
+  window.addEventListener("load", resetZoom);
   window.addEventListener("pageshow", resetZoom);
-  document.addEventListener("visibilitychange", restore);
+  setTimeout(resetZoom, 80);
+  // ▼ visibilitychangeでの保険は、あえて付けていない。
+  //   ページ読み込み直後（まさにロックしている最中）に
+  //   document.visibilityState が一瞬 "hidden" を報告することがあり
+  //   （実機・自動テスト両方で確認）、それを拾って即座に解除してしまうと
+  //   ロックそのものが一切効かなくなる実害があった。ロックは長くても
+  //   2秒で自動解除される（保険②）ため、この経路は無くても実害はない。
 })();
