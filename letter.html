@@ -624,7 +624,11 @@
 <script src="js/letter-fixed.js"></script>
 <script>
 (function () {
-  var isReplay = new URLSearchParams(location.search).get("replay") === "1";
+  var replayParams = new URLSearchParams(location.search);
+  var isReplay = replayParams.get("replay") === "1";
+  // 参加者がホームから「手紙を読みかえす」で来た場合は &home=1 が付く。
+  // これがない場合（みんなで見る用に配るリンク）は、注意事項ページへ「次へ」進む。
+  var isFromHome = replayParams.get("home") === "1";
 
   // 手紙本文は puzzles.js の PROLOGUE を単一の情報源として使う（差し替えはそちらで完結）
   var lines = PROLOGUE.split("\n");
@@ -798,10 +802,14 @@
     }, 120);
   });
 
-  // 再読み込み（ホームからの読みかえし・みんなで見る用）ではCTAを
-  // 注意事項ページへの「次へ」ボタンにする。
+  // 再読み込み時のCTA：
+  //   ホームからの「手紙を読みかえす」→ ホームへ戻る
+  //   みんなで見る用に配るリンク（&home=1なし）→ 注意事項ページへ「次へ」
   var ctaLink = document.getElementById("ctaLink");
-  if (isReplay) {
+  if (isReplay && isFromHome) {
+    ctaLink.textContent = "ホームへ戻る";
+    ctaLink.href = "index.html";
+  } else if (isReplay) {
     ctaLink.textContent = "次へ";
     ctaLink.href = "notice.html";
   } else {
