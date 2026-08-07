@@ -799,22 +799,11 @@
   });
 
   // 再読み込み（ホームからの読みかえし・みんなで見る用）ではCTAを
-  // 「閉じる」ボタンにする（このページはそのまま閉じるだけでよい）。
+  // 注意事項ページへの「次へ」ボタンにする。
   var ctaLink = document.getElementById("ctaLink");
   if (isReplay) {
-    ctaLink.textContent = "閉じる";
-    ctaLink.removeAttribute("href");
-    ctaLink.setAttribute("role", "button");
-    ctaLink.setAttribute("tabindex", "0");
-    ctaLink.addEventListener("click", function (e) {
-      e.preventDefault();
-      window.close();
-      // 端末やブラウザによってはスクリプトで開始したタブでないと
-      // window.close() が効かないことがあるため、その場合の案内。
-      setTimeout(function () {
-        ctaLink.textContent = "このタブ／画面を閉じてね";
-      }, 400);
-    });
+    ctaLink.textContent = "次へ";
+    ctaLink.href = "notice.html";
   } else {
     // 初回：この手紙を読んだことを記録（indexでのリダイレクトループ防止）
     try { localStorage.setItem("fuin_letter_seen", "1"); } catch (e) {}

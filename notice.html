@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<script src="js/zoom-fix.js"></script>
+<title>注意事項 | 応中の封印を解け！</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="fog fog1"></div>
+  <div class="fog fog2"></div>
+  <div class="fog fog3"></div>
+  <div class="runes">
+    <span>応</span><span>時</span><span>親</span><span>子</span><span>学</span><span>鍵</span><span>在</span><span>謎</span><span>封</span><span>解</span><span>鍵</span><span>封</span><span>解</span><span>謎</span>
+  </div>
+  <div class="vignette"></div>
+</div>
+<div class="wrap">
+  <header class="site">
+    <div class="subtitle">転校生Xからの挑戦状</div>
+    <h1>注意事項</h1>
+    <div class="ornament">✦ ─── ◆ ─── ✦</div>
+  </header>
+
+  <section class="card">
+    <h2>冒険に出る前に</h2>
+    <ol class="howto">
+      <li><strong>16時まで</strong>に封印を解除して戻ってくること</li>
+      <li><strong>貴重品</strong>は必ず持って移動すること</li>
+      <li>スマホの<strong>プライベートモードは解除</strong>しておくこと</li>
+      <li>困ったら、近くの<strong>先生</strong>に声をかけること</li>
+    </ol>
+  </section>
+
+  <div style="margin-top: 20px;">
+    <a class="btn gold" id="closeBtn" href="#">閉じる</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var closeBtn = document.getElementById("closeBtn");
+  closeBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+    window.close();
+    // 端末やブラウザによってはスクリプトで開始したタブでないと
+    // window.close() が効かないことがあるため、その場合の案内。
+    setTimeout(function () {
+      closeBtn.textContent = "このタブ／画面を閉じてね";
+    }, 400);
+  });
+})();
+</script>
+</body>
+</html>
