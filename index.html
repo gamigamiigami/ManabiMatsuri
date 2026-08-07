@@ -133,10 +133,15 @@
       <p class="center note" id="dummyText" style="margin-top:14px;"></p>
       <!-- 全部クリアしたあとだけ出す、ジャンプの謎への導線。
            途中（最後の謎に挑戦中）は scanCard ごと隠れているので、
-           QRを読み取る手段がここにしかない。 -->
-      <p class="center" id="dummyScanRow" hidden style="margin-top:10px;">
-        <a class="btn ghost small" href="scan.html">📷 ジャンプの謎のQRを読み取る</a>
-      </p>
+           QRを読み取る手段・番号を手入力する手段はここにしかない。 -->
+      <div id="dummyScanRow" hidden style="margin-top:10px;">
+        <p class="center">
+          <a class="btn ghost small" href="scan.html">📷 ジャンプの謎のQRを読み取る</a>
+        </p>
+        <p class="note center" style="margin-top:10px;">読み取れないときだけ、QRの下の<strong>番号（1〜3）</strong>を入力。</p>
+        <input type="number" id="dummyManualNum" min="1" max="3" inputmode="numeric" placeholder="番号（1〜3）">
+        <button class="btn ghost small" id="dummyManualBtn">この番号の謎をひらく</button>
+      </div>
     </div>
 
     <!-- 完全制覇（本編＋ジャンプの謎すべてクリア）した人だけに出る特別な導線 -->
@@ -709,6 +714,18 @@
     }
     window.gotoFresh("point.html?p=" + n + "&via=manual");
   });
+
+  var dummyManualBtn = document.getElementById("dummyManualBtn");
+  if (dummyManualBtn) {
+    dummyManualBtn.addEventListener("click", function () {
+      const dn = document.getElementById("dummyManualNum").value;
+      if (!DUMMY_PUZZLES[dn]) {
+        alert("1〜3の番号を入れてね！");
+        return;
+      }
+      window.gotoFresh("dummy.html?d=" + dn + "&via=manual");
+    });
+  }
 
   if (stage && !team) {
     // 小謎まわりの画面は、stage付きのURLで «読み込み直して» 表示される。
