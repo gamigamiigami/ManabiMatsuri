@@ -148,7 +148,8 @@
       <strong>月・鍵</strong>の <span class="stage-mark">🌙</span><span class="stage-mark">🔑</span> は、
       最後の謎の2つの仕掛けをホームで見つけたかどうか（薄い印はまだ見つけていない）。
       片方だけで止まっているチームがここで分かります。<br>
-      <strong>いまどこ</strong>は、そのチームが<em>いま</em>取り組んでいる段階です。
+      <strong>いまどこ</strong>は、そのチームが<em>いま</em>取り組んでいる段階（上段）と、
+      次に向かう段階（下段・薄字）の2行です。
     </p>
   </section>
 
@@ -376,15 +377,30 @@
            '<span class="stage-mark' + (sc.keyAt ? "" : " off") + '" title="鍵の謎">🔑</span>';
   }
 
-  // 「いまどこ」の中身。段階が進むほど強調される。
+  // 「いまどこ」の中身。今どこ／次どこの2行で出す（横には広げない）。
   function stageCell(r) {
     const t = r.t;
-    if (r.stage === "done") return '<span class="badge clear">完全クリア</span>';
+    if (r.stage === "done") {
+      return '<span class="badge clear">完全クリア</span>';
+    }
+    let nowHtml, nextText;
     // 🌙🔑 は「月・鍵」の列に出すので、ここでは段階だけ
-    if (r.stage === "secret") return '<span class="badge stage-secret">最後の謎</span>';
-    if (r.stage === "door") return '<span class="badge stage-door">扉の謎</span>';
-    if (!t.lastPoint) return '<span class="dim">未スタート</span>';
-    return pointLabel(t.lastPoint);
+    if (r.stage === "secret") {
+      nowHtml = '<span class="badge stage-secret">最後の謎</span>';
+      nextText = "→ クリア";
+    } else if (r.stage === "door") {
+      nowHtml = '<span class="badge stage-door">扉の謎</span>';
+      nextText = "→ 最後の謎";
+    } else if (!t.lastPoint) {
+      nowHtml = '<span class="dim">未スタート</span>';
+      nextText = "→ " + pointLabel(POINT_ORDER[0]);
+    } else {
+      nowHtml = pointLabel(t.lastPoint);
+      nextText = r.solvedCount < POINT_ORDER.length
+        ? "→ " + pointLabel(POINT_ORDER[r.solvedCount])
+        : "→ 扉の謎";
+    }
+    return '<div class="now-next"><div class="now">' + nowHtml + '</div><div class="next">' + nextText + '</div></div>';
   }
 
   function pointLabel(p) {

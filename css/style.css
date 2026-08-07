@@ -597,6 +597,11 @@ table.teams tr.cleared { background: rgba(75, 191, 156, 0.1); }
 .stage-mark.off { opacity: 0.28; filter: grayscale(1); }
 table.teams .dim { color: var(--text-dim); }
 
+/* 「いまどこ」列：今どこ／次どこの2行表示。列を横に広げたくないので
+   1つのセルの中で縦に2行に積む（次どこは一段小さく・薄い色）。 */
+.now-next { display: flex; flex-direction: column; gap: 2px; line-height: 1.3; }
+.now-next .next { font-size: 0.76rem; color: var(--text-dim); }
+
 /* 段階ごとのクリア状況の列。「✔ 22:59」や「🌙🔑」が2行に割れると
    丸バッジが崩れて読みにくいので、この5列だけ折り返さない
    （th は上の table.teams th 側ですでに全列 nowrap 済み）。
