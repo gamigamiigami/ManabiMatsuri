@@ -222,9 +222,19 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
         Store.save(team);
         Store.send(team, "dummy_correct", null, { dummy: Number(d), wrongCount: state.wrong });
       }
+      // 本編（扉＋学校の秘密）をすでにクリアしていて、これがジャンプの謎
+      // 最後の1つだったなら、完全制覇の証へそのまま送る。
+      const nowFullClear =
+        !!(team.finalGate && team.finalGate.solvedAt) &&
+        !!(team.secretGate && team.secretGate.solvedAt) &&
+        Store.dummySolvedCount(team) >= DUMMY_TOTAL;
       // 画面を差し替えるのではなく «読み込み直して» 等倍に戻す
       setTimeout(function () {
-        window.gotoFresh("dummy.html?d=" + d + "&just=1" + (isDebug ? "&debug=1" : ""));
+        if (nowFullClear) {
+          window.gotoFresh("complete.html");
+        } else {
+          window.gotoFresh("dummy.html?d=" + d + "&just=1" + (isDebug ? "&debug=1" : ""));
+        }
       }, 1200);
     } else {
       feedback.className = "feedback ng";

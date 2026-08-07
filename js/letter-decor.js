@@ -1101,6 +1101,13 @@
       "alchemy|70% auto|50% 10%",
       "stardust|120px 120px|center|repeat",
     ],
+
+    // 完全制覇の証（complete.html）— すべてを見つけ出した者への認定状
+    letterComplete: [
+      "flowerOfLife|64% auto|50% 12%",
+      "sealStamp|30% auto|86% 88%",
+      "stardust|120px 120px|center|repeat",
+    ],
   };
 
   // 既定の組み合わせ（手前 → 奥）

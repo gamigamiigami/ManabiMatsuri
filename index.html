@@ -139,6 +139,13 @@
       </p>
     </div>
 
+    <!-- 完全制覇（本編＋ジャンプの謎すべてクリア）した人だけに出る特別な導線 -->
+    <div class="card" id="completeCard" hidden style="border-color:var(--gold); text-align:center;">
+      <h2>🏆 完全制覇</h2>
+      <p class="note center" style="font-size:0.95rem;">本編もジャンプの謎も、すべて見つけ出した――</p>
+      <a class="btn gold" href="complete.html" style="margin-top:12px;">→ 完全制覇の証を見る</a>
+    </div>
+
     <!-- 次の場所（在り処謎の再表示） -->
     <div class="card" id="nextPlaceCard" hidden>
       <h2>📜 次に向かう場所</h2>
@@ -521,6 +528,10 @@
       document.getElementById("replayCard").hidden = !st.solvedAt;
       document.getElementById("dummyText").hidden = !st.solvedAt;
       document.getElementById("dummyScanRow").hidden = !st.solvedAt;
+      // 本編（扉＋学校の秘密）に加えて、ジャンプの謎も全部見つけたチームにだけ、
+      // 完全制覇の証への導線を出す。
+      document.getElementById("completeCard").hidden =
+        !(st.solvedAt && Store.dummySolvedCount(team) >= DUMMY_TOTAL);
     }
     function fillHomePuzzle(n, def) {
       document.getElementById("homePuzzleTitle" + n).textContent = def.title;
