@@ -12,25 +12,75 @@
 <style>
   body.complete-page {
     background:
-      radial-gradient(ellipse 90% 50% at 50% 0%, rgba(212, 175, 106, 0.14), transparent 62%),
-      radial-gradient(ellipse 70% 45% at 12% 85%, rgba(155, 127, 232, 0.16), transparent 60%),
-      radial-gradient(ellipse 70% 45% at 90% 90%, rgba(75, 191, 156, 0.10), transparent 60%),
-      linear-gradient(178deg, #0c0714 0%, #12081f 45%, #070510 100%);
+      radial-gradient(ellipse 95% 55% at 50% -4%, rgba(212, 175, 106, 0.22), transparent 60%),
+      radial-gradient(ellipse 75% 50% at 8% 90%, rgba(155, 127, 232, 0.22), transparent 62%),
+      radial-gradient(ellipse 75% 50% at 94% 94%, rgba(75, 191, 156, 0.16), transparent 62%),
+      radial-gradient(ellipse 60% 40% at 90% 6%, rgba(207, 79, 104, 0.14), transparent 60%),
+      linear-gradient(178deg, #0d0817 0%, #180b28 42%, #0a0512 100%);
+    background-size: 140% 140%, 140% 140%, 140% 140%, 140% 140%, 100% 100%;
+    animation: completeAurora 18s ease-in-out infinite alternate;
+  }
+  @keyframes completeAurora {
+    0% { background-position: 0% 0%, 0% 100%, 100% 100%, 100% 0%, center; }
+    100% { background-position: 8% 6%, 4% 92%, 92% 90%, 92% 8%, center; }
   }
   body.complete-page .vignette {
-    background: radial-gradient(ellipse 120% 90% at 50% 30%, transparent 40%, rgba(0, 0, 0, 0.78) 100%);
+    background: radial-gradient(ellipse 120% 90% at 50% 30%, transparent 38%, rgba(0, 0, 0, 0.8) 100%);
+  }
+
+  /* 星のまたたき（このページだけの特別演出） */
+  .complete-sparkles {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .complete-sparkles span {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: #f5e3ae; box-shadow: 0 0 6px 1px rgba(245, 227, 174, 0.9);
+    animation: sparkleTwinkle 3.4s ease-in-out infinite;
+  }
+  @keyframes sparkleTwinkle {
+    0%, 100% { opacity: 0.15; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.3); }
   }
 
   /* ===== 認定状カード ===== */
   #certCard {
+    position: relative;
     border: 1.5px solid var(--gold);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 60px rgba(212, 175, 106, 0.18), inset 0 0 50px rgba(212, 175, 106, 0.06);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75), 0 0 90px rgba(212, 175, 106, 0.22), inset 0 0 60px rgba(212, 175, 106, 0.08);
     text-align: center;
+    overflow: visible;
+  }
+  /* カードの縁取りをもう一段（金の外枠 + 内側の細い光） */
+  #certCard::before {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid rgba(212, 175, 106, 0.35);
+    border-radius: calc(var(--radius) - 4px);
+    pointer-events: none;
   }
   #certCard h2 { background: linear-gradient(135deg, #fdf3da, var(--gold)); }
 
+  /* バッジの後ろで回り続ける光輪 */
+  .cert-badge-wrap {
+    position: relative;
+    width: 132px; height: 132px;
+    margin: 4px auto 10px;
+  }
+  .cert-badge-wrap::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(212, 175, 106, 0.55) 40deg, transparent 90deg, rgba(155, 127, 232, 0.45) 200deg, transparent 260deg, rgba(212, 175, 106, 0.5) 330deg, transparent 360deg);
+    filter: blur(6px);
+    animation: haloSpin 7s linear infinite;
+  }
+  @keyframes haloSpin {
+    to { transform: rotate(360deg); }
+  }
+
   .cert-badge {
-    width: 108px; height: 108px; margin: 4px auto 10px;
+    position: relative;
+    width: 108px; height: 108px; margin: 12px auto 0;
     filter: drop-shadow(0 0 22px rgba(212, 175, 106, 0.55));
     animation: certSpin 2.2s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
   }
@@ -52,12 +102,18 @@
     font-family: var(--brush);
     font-size: 2.3rem;
     line-height: 1.3;
-    background: linear-gradient(180deg, #fdf3da 15%, #ecca87 55%, #c99b4e 92%);
+    background: linear-gradient(100deg, #fdf3da 10%, var(--gold) 30%, #fff6de 45%, #ecca87 60%, var(--gold) 80%, #fdf3da 95%);
+    background-size: 260% 100%;
+    animation: titleShimmer 5s ease-in-out infinite;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 22px var(--gold-glow));
     margin: 2px 0 14px;
+  }
+  @keyframes titleShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
   .cert-team {
     font-family: var(--serif);
@@ -133,6 +189,7 @@
 </style>
 </head>
 <body class="complete-page">
+<div class="complete-sparkles" aria-hidden="true" id="completeSparkles"></div>
 <div class="scene" aria-hidden="true">
   <div class="moon"></div>
   <div class="fog fog1"></div>
@@ -209,21 +266,23 @@
   <section class="card" id="certCard" hidden>
     <h2>認定状</h2>
 
-    <svg class="cert-badge" viewBox="0 0 200 200" aria-hidden="true">
-      <g fill="none" stroke="#d4af6a">
-        <circle cx="100" cy="100" r="92" stroke-width="1.4"/>
-        <circle cx="100" cy="100" r="84" stroke-width="0.7" opacity="0.6"/>
-        <polygon points="100,14 26,143 174,143" stroke-width="1"/>
-        <polygon points="100,186 26,57 174,57" stroke-width="1"/>
-      </g>
-      <g fill="none" stroke="#9b7fe8" opacity="0.85">
-        <circle cx="100" cy="100" r="62" stroke-width="0.9" stroke-dasharray="3 6"/>
-      </g>
-      <g fill="rgba(212,175,106,0.9)">
-        <circle cx="100" cy="94" r="12"/>
-        <path d="M94,102 L106,102 L111,123 L89,123 Z"/>
-      </g>
-    </svg>
+    <div class="cert-badge-wrap">
+      <svg class="cert-badge" viewBox="0 0 200 200" aria-hidden="true">
+        <g fill="none" stroke="#d4af6a">
+          <circle cx="100" cy="100" r="92" stroke-width="1.4"/>
+          <circle cx="100" cy="100" r="84" stroke-width="0.7" opacity="0.6"/>
+          <polygon points="100,14 26,143 174,143" stroke-width="1"/>
+          <polygon points="100,186 26,57 174,57" stroke-width="1"/>
+        </g>
+        <g fill="none" stroke="#9b7fe8" opacity="0.85">
+          <circle cx="100" cy="100" r="62" stroke-width="0.9" stroke-dasharray="3 6"/>
+        </g>
+        <g fill="rgba(212,175,106,0.9)">
+          <circle cx="100" cy="94" r="12"/>
+          <path d="M94,102 L106,102 L111,123 L89,123 Z"/>
+        </g>
+      </svg>
+    </div>
 
     <div class="cert-eyebrow">C E R T I F I C A T E</div>
     <div class="cert-title">完全制覇</div>
@@ -233,6 +292,15 @@
     <div class="cert-divider">achievements</div>
 
     <div class="cert-checklist">
+      <div class="cert-row">
+        <div class="cert-check">✓</div>
+        <div>
+          <div class="cert-row-label">① 謎解きシート</div>
+          <div class="cert-row-detail">
+            <div class="cert-secret-words" id="certKozoAnswer"></div>
+          </div>
+        </div>
+      </div>
       <div class="cert-row">
         <div class="cert-check">✓</div>
         <div>
@@ -312,7 +380,24 @@
   document.getElementById("letterCard").hidden = false;
   document.getElementById("completeActions").hidden = false;
 
+  // 星のまたたき背景（位置・タイミングをばらけさせる）
+  (function scatterSparkles() {
+    var box = document.getElementById("completeSparkles");
+    var html = "";
+    for (var i = 0; i < 26; i++) {
+      var top = Math.random() * 100;
+      var left = Math.random() * 100;
+      var delay = (Math.random() * 3.4).toFixed(2);
+      var dur = (2.6 + Math.random() * 2.2).toFixed(2);
+      html += '<span style="top:' + top + '%; left:' + left + '%; animation-delay:' + delay + 's; animation-duration:' + dur + 's;"></span>';
+    }
+    box.innerHTML = html;
+  })();
+
   document.getElementById("certTeamName").textContent = team.teamName || "冒険チーム";
+
+  document.getElementById("certKozoAnswer").innerHTML =
+    "<span>" + SMALL_PUZZLE_ANSWERS[0][0] + "</span><span>" + SMALL_PUZZLE_ANSWERS[1][0] + "</span>";
 
   const keysRow = document.getElementById("certKeysRow");
   keysRow.innerHTML = POINT_ORDER.map(function (p) {
@@ -332,7 +417,21 @@
   document.getElementById("certDate").textContent =
     now.getFullYear() + "年" + (now.getMonth() + 1) + "月" + now.getDate() + "日";
 
-  document.getElementById("completeLetter").textContent = COMPLETE_MESSAGE;
+  // 結び（「── ○○より」の行）だけ右詰めにする（一通目の手紙と揃える）。
+  (function renderLetter() {
+    var el = document.getElementById("completeLetter");
+    var lines = COMPLETE_MESSAGE.split("\n");
+    var signIndex = -1;
+    for (var i = lines.length - 1; i >= 0; i--) {
+      if (lines[i].indexOf("──") === 0) { signIndex = i; break; }
+    }
+    if (signIndex === -1) { el.textContent = COMPLETE_MESSAGE; return; }
+    el.textContent = lines.slice(0, signIndex).join("\n");
+    var sign = document.createElement("span");
+    sign.className = "letter-sign-right";
+    sign.textContent = lines[signIndex];
+    el.appendChild(sign);
+  })();
 
   // 盛大な演出：中央のバーストを間隔をあけて3連発する
   FX.circle({ count: 22 });

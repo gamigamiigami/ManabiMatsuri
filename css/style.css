@@ -770,6 +770,18 @@ table.teams .badge { white-space: nowrap; }
   transform: rotate(-12deg);
 }
 
+/* 手紙の結び（「── ○○より」の行）だけ右詰めにする。
+   一通目の手紙（letter.html）は専用の紙面演出の中で右詰めにしているが、
+   カード形式の .letter ではそのままだと左詰めになるため、
+   本文と結びをJSで分けてこのクラスを当てる。 */
+.letter-sign-right {
+  display: block;
+  text-align: right;
+  margin-top: 10px;
+  /* 右下の封蝋（.letter::after）と文字が重ならないよう、その分だけ空ける */
+  padding-right: 46px;
+}
+
 @keyframes letterOpen {
   0% { opacity: 0; transform: translateY(18px) scale(0.96); filter: blur(3px); }
   60% { filter: blur(0); }
