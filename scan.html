@@ -97,14 +97,14 @@
 
     <div id="deniedBox" hidden style="margin-top:16px;">
       <p class="note center">
-        カメラを使えませんでした。QRの下の<strong>番号（1〜5）</strong>を
-        入力しても謎を開けます。
+        カメラを使えませんでした。QRの下の<strong>番号</strong>を
+        入力しても謎を開けます（中謎1〜5／ジャンプの謎101〜103）。
       </p>
     </div>
 
     <div id="manualBox" style="margin-top:18px;">
-      <label class="field">番号で開く（1〜5）</label>
-      <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
+      <label class="field">番号で開く（中謎1〜5／ジャンプの謎101〜103）</label>
+      <input type="number" id="manualNum" min="1" max="103" inputmode="numeric" placeholder="番号（中謎1〜5／ジャンプ101〜103）">
       <button class="btn ghost small" id="manualBtn" style="margin-top:10px;">この番号の謎をひらく</button>
     </div>
 
@@ -212,9 +212,15 @@
   });
 
   document.getElementById("manualBtn").addEventListener("click", function () {
-    var n = document.getElementById("manualNum").value;
+    var n = Number(document.getElementById("manualNum").value);
+    // 101〜103 はジャンプの謎（101→1, 102→2, 103→3）。それ以外は中謎1〜5。
+    if (n >= 101 && n <= 103) {
+      stopCamera();
+      location.href = "dummy.html?d=" + (n - 100) + "&via=manual";
+      return;
+    }
     if (!n || n < 1 || n > 5) {
-      alert("1〜5の番号を入れてね！");
+      alert("番号を確認してね（中謎は1〜5、ジャンプの謎は101〜103）！");
       return;
     }
     stopCamera();

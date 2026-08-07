@@ -246,8 +246,8 @@
       <h2>謎はここから探す</h2>
       <p style="font-size:0.92rem;">その場所のQRコードを読み取ると、謎が現れる。</p>
       <a class="btn gold" href="scan.html">📷 QRコードを読み取る</a>
-      <p class="note" style="margin-top:14px;">読み取れないときだけ、QRの下の<strong>番号（1〜5）</strong>を入力。</p>
-      <input type="number" id="manualNum" min="1" max="5" inputmode="numeric" placeholder="番号（1〜5）">
+      <p class="note" style="margin-top:14px;">読み取れないときだけ、QRの下の<strong>番号</strong>を入力。中謎は<strong>1〜5</strong>、ジャンプの謎は<strong>101〜103</strong>。</p>
+      <input type="number" id="manualNum" min="1" max="103" inputmode="numeric" placeholder="番号（中謎1〜5／ジャンプ101〜103）">
       <button class="btn ghost small" id="manualBtn">この番号の謎をひらく</button>
     </div>
 
@@ -697,8 +697,14 @@
 
   document.getElementById("manualBtn").addEventListener("click", function () {
     const n = document.getElementById("manualNum").value;
+    // 101〜103 はジャンプの謎（101→1, 102→2, 103→3）。それ以外は中謎1〜5。
+    if (Number(n) >= 101 && Number(n) <= 103) {
+      const d = String(Number(n) - 100);
+      window.gotoFresh("dummy.html?d=" + d + "&via=manual");
+      return;
+    }
     if (!PUZZLES[n]) {
-      alert("1〜5の番号を入れてね！");
+      alert("番号を確認してね（中謎は1〜5、ジャンプの謎は101〜103）！");
       return;
     }
     window.gotoFresh("point.html?p=" + n + "&via=manual");

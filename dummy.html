@@ -132,13 +132,14 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
 
   const puzzle = DUMMY_PUZZLES[d];
   const state = Store.dummy(team, d);
+  const via = params.get("via") === "manual" ? "manual" : "qr";
 
   // stage / just は「自分で読み込み直した」ときの目印なので、
   // QRを読んだ扱いで記録を二重に送らないようにする。
   const isSelfReload = params.get("stage") === "puzzle" || params.get("just") === "1";
   if (!isDebug && !isSelfReload) {
     // ダミーはポイント扱いしない（現在地は動かさない）。detailに番号を入れて記録
-    Store.send(team, "dummy_scan", null, { dummy: Number(d) });
+    Store.send(team, "dummy_scan", null, { dummy: Number(d), via: via });
   }
 
   function countText() {
