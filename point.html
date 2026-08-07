@@ -383,6 +383,18 @@
   // 現在バックラッシュ中なら謎を表示しない
   if (isCursed()) {
     showCursed();
+    // 復活のQRは「先生のQR→カメラが使えなければOSのカメラアプリで」という
+    // 案内をしているため、別タブでrevive.htmlが開かれることがある。
+    // その場合でも、この（元々開いている）タブが自動で続きを表示できるように、
+    // 同じ端末の別タブでの localStorage 更新（storageイベント）を見て
+    // 呪いが解けたら自動で読み込み直す。
+    window.addEventListener("storage", function (e) {
+      if (e.key !== Store.KEY) return;
+      var latest = Store.load();
+      if (latest && latest.points[p] && !latest.points[p].cursed) {
+        location.href = "point.html?p=" + p + "&revived=1" + (isDebug ? "&debug=1" : "");
+      }
+    });
     return;
   }
 

@@ -124,7 +124,9 @@
   setTimeout(function () {
     FX.dispel({ count: 18 });
     textEl.textContent = "Xの呪いが、解けていく──";
-    okEl.textContent = "復活完了！もう一度挑戦できるぞ。";
+    okEl.innerHTML =
+      "復活完了！もう一度挑戦できるぞ。<br>" +
+      '<span style="font-size:0.85rem; opacity:0.85;">元の謎の画面が開いたままなら、そのまま自動で続きが出るよ。</span>';
     okEl.hidden = false;
     btnEl.textContent = "→ " + PUZZLES[cursedPoint].title + " に再挑戦する";
     btnEl.href = "point.html?p=" + cursedPoint + "&revived=1";
