@@ -162,8 +162,11 @@ Xが気まぐれで仕込んだ、本編とは無関係のおまけだ。
   }
 
   // ---------- ゲート表示 / 謎本体 ----------
-  // stage=puzzle で «読み込み直して» 来たときは、いきなり謎を出す（等倍に戻すため）
-  if (params.get("stage") === "puzzle") {
+  // 最後の謎（本編）をすでにクリアしたあとなら、封印とは無関係なのは
+  // 分かりきっているので「それでも解く？」の確認は挟まず、いきなり謎を出す。
+  const mainCleared = !!(team.secretGate && team.secretGate.solvedAt);
+  // stage=puzzle で «読み込み直して» 来たときも、いきなり謎を出す（等倍に戻すため）
+  if (mainCleared || params.get("stage") === "puzzle") {
     document.getElementById("puzzleCard").hidden = false;
     if (!isDebug) Store.send(team, "dummy_challenge", null, { dummy: Number(d) });
   } else {
