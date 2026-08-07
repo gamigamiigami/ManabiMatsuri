@@ -371,14 +371,11 @@
     });
   })();
 
-  // revive.html から戻ってきたとき（?revived=1）→ 呪いを解除
-  if (params.get("revived") === "1" && isCursed()) {
-    state.cursed = false;
-    if (!isDebug) {
-      Store.save(team);
-      Store.send(team, "revived", p, {});
-    }
-  }
+  // 呪いを解除するのは revive.html だけ（localStorageを直接書き換える）。
+  // ここでは「revived=1」のようなURLの印を一切信用しない。
+  // 過去はURLの印だけで呪いを解除していたため、そのURL（ブラウザの
+  // 履歴・戻る操作・古いタブの再利用など）を踏むだけで、QRを読み直さずに
+  // 何度でも復活できてしまっていた。必ず現在のlocalStorageの値だけを見る。
 
   // 現在バックラッシュ中なら謎を表示しない
   if (isCursed()) {
@@ -392,7 +389,7 @@
       if (e.key !== Store.KEY) return;
       var latest = Store.load();
       if (latest && latest.points[p] && !latest.points[p].cursed) {
-        location.href = "point.html?p=" + p + "&revived=1" + (isDebug ? "&debug=1" : "");
+        window.gotoFresh("point.html?p=" + p + (isDebug ? "&debug=1" : ""));
       }
     });
     return;
