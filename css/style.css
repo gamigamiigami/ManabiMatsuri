@@ -625,8 +625,12 @@ table.teams .badge { white-space: nowrap; }
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
   overflow: hidden;
+  /* z-indexをここでは指定しない（=このコンテナ自体はスタッキング
+     コンテキストを作らない）。月・霧・ビネットはDOM順どおり
+     .wrapの後ろに沈むが、.runesだけは下で独自にz-indexを持たせて
+     手前に出す（「鍵」の文字だけ特別扱いで手前に来る、という
+     見た目の不公平をなくすため。詳細は.scene .runesのコメント参照）。 */
 }
 
 .scene .moon {
