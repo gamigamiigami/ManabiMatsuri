@@ -1470,14 +1470,14 @@ header.site h1 {
    display:table + margin:0 autoで、中身の幅だけ丸背景がつく。 */
 .sub-heading {
   display: table;
-  margin: 0 auto 14px;
+  margin: 0 auto 16px;
   font-family: var(--brush);
-  font-size: 1.2rem;
+  font-size: clamp(1.5rem, 7vw, 1.85rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 8px 26px;
+  letter-spacing: 0.1em;
+  padding: 10px 34px;
   border-radius: 999px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .sub-section.accent-moon .sub-heading {
   background: linear-gradient(135deg, #cbb8f5, #9b7fe8);
