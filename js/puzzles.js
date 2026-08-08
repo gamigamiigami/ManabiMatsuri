@@ -56,7 +56,7 @@ const PUZZLES = {
     choices: ["1", "2", "3", "4"],
     answerIndex: 0, // 「①」
     smallHint: "本物をどこかで見ているはずだ",
-    arikaHint: "左右？上下ではなく？",
+    arikaHint: "どこかで見たような…",
     status: "完成",
   },
   3: {
@@ -70,7 +70,7 @@ const PUZZLES = {
     choices: ["1", "2", "3", "4"],
     answerIndex: 3,
     smallHint: "左右で○の数が違う…",
-    arikaHint: "どこかで見たような…",
+    arikaHint: "左右？上下ではなく？",
     status: "完成",
   },
   4: {
