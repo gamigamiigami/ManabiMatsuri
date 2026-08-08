@@ -42,7 +42,7 @@ const PUZZLES = {
     choices: ["1", "2", "3", "4"],
     answerIndex: 2, // 「3」
     smallHint: "使えるものが、どこかにあるはずだ",
-    arikaHint: "どこかで見たような…",
+    arikaHint: "学級旗のことか？",
     status: "完成",
   },
   2: {
@@ -56,7 +56,7 @@ const PUZZLES = {
     choices: ["1", "2", "3", "4"],
     answerIndex: 0, // 「①」
     smallHint: "本物をどこかで見ているはずだ",
-    arikaHint: "どこかで見たような…",
+    arikaHint: "左右？上下ではなく？",
     status: "完成",
   },
   3: {
@@ -98,7 +98,7 @@ const PUZZLES = {
     choices: ["1", "2", "3", "4"],
     answerIndex: 2,
     smallHint: "どんな言葉が入るのだろう…",
-    arikaHint: "どこかで見たような…",
+    arikaHint: "どこから読もう？",
     status: "完成",
   },
 };

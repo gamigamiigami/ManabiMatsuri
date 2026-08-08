@@ -1359,14 +1359,17 @@ header.site h1 {
   100% { opacity: 0;   transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.9); }
 }
 
-/* たたける「鍵」。runeRise は css/style.css で定義済み */
+/* たたける「鍵」。runeRise は css/style.css で定義済み。
+   ほかの背景の文字（.scene .runes span）と同じ薄さ・光り方にして、
+   これだけが目立って一目で分かってしまわないようにする
+   （他の文字に紛れて探す、というゲーム性を保つため）。 */
 #gimmickLayer .key-rune {
   position: absolute;
   left: 46%; bottom: -60px;
   font-family: var(--brush);
   font-size: 2.4rem;
-  color: rgba(212, 175, 106, 0.75);
-  text-shadow: 0 0 18px rgba(212, 175, 106, 0.8);
+  color: rgba(212, 175, 106, 0.55);
+  text-shadow: 0 0 12px rgba(212, 175, 106, 0.6);
   animation: runeRise 26s linear infinite;
   pointer-events: auto;
   cursor: pointer;
