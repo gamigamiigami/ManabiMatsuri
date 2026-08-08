@@ -8,10 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- 書体の役割分担：
      Yuji Mai   … タイトル（掠れ・墨だまりの強い筆致＝叩きつけた挑戦状）
-     Yuji Syuku … 本文・軽口（サイト本体の見出しと同じ筆文字）
-     Shippori Mincho B1 … 宛名など「読ませる」格式ある部分
-     Zen Kurenaido … 花押・署名（手で書き添えた硬筆風） -->
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Yuji+Mai&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+     Yuji Syuku … 本文・ルーン文字（サイト本体の見出しと同じ筆文字）
+     Shippori Mincho B1 … 封蝋など「読ませる」格式ある部分 -->
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Yuji+Mai&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   body {
@@ -40,6 +39,28 @@
   .setup th, .setup td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
   .setup th { background: #f0ede4; }
 
+  /* ---------- 1枚の紙（A4）----------
+     紙＝.sheet、その中に「ポスター本体（.poster）」と
+     「スタッフ用の切り取り帯（.poster-tab）」を上下に並べる。
+     以前は帯をポスターの内側に置いていたため、ポスターの外枠・
+     四隅の飾り・内枠が帯の下に隠れて印刷されていなかった。
+     分離することで、ポスターは帯の「上まで」で完結し、
+     切り取ってもデザインが欠けない。
+     周囲5mmの白フチは、家庭用・学校のプリンタが印字できない
+     紙端（3〜5mm）にデザインがかからないようにするための逃げ。 */
+  .sheet {
+    width: 210mm;
+    height: 297mm;
+    margin: 24px auto;
+    padding: 5mm;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+
   /* ---------- ポスター本体（印刷対象） ----------
      ミステリアス・魔法・挑戦状の世界観を出すため、サイト本体と同じ
      真夜中の紺〜紫のグラデーション背景にする（QRだけは読み取り精度の
@@ -47,9 +68,8 @@
      背景のradial-gradientの先頭3行は「古い紙の染み・焼け跡」。
      いずれもQR領域（中央やや下）を避けた座標に置いてある。 */
   .poster {
-    width: 210mm;
-    min-height: 297mm;
-    margin: 24px auto;
+    flex: 1;
+    min-height: 0;
     background:
       radial-gradient(ellipse 26% 10% at 78% 30%, rgba(20, 10, 5, 0.22), transparent 70%),
       radial-gradient(ellipse 18% 8% at 12% 58%, rgba(20, 10, 5, 0.16), transparent 70%),
@@ -66,9 +86,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 26px 28px 0;
-    page-break-after: always;
-    break-after: page;
+    padding: 22px 28px 16px;
+    /* 濃い背景がスタッフの設定漏れで白飛びするのを防ぐ（8枚全滅する
+       単一障害点なので、注意書きではなくCSSで強制する） */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   /* 賞状・免状のような、角を面取りした内枠（正式な発行物の視覚文法） */
   .poster::before {
@@ -140,35 +162,17 @@
   .poster-constellation path { fill: none; stroke: rgba(212, 175, 106, 0.32); stroke-width: 0.6; }
   .poster-constellation circle { fill: rgba(245, 227, 174, 0.8); }
 
-  /* 魔法陣から伸びる光条（下＝QR方向へは意図的に伸ばさない） */
-  .poster-ley {
-    position: absolute;
-    left: 50%; top: 300px;
-    width: 1px; height: 1px;
-    pointer-events: none;
-  }
-  .poster-ley::before, .poster-ley::after {
-    content: "";
-    position: absolute;
-  }
-  .poster-ley::before {
-    width: 520px; height: 1.5px; left: -260px; top: 0;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 106, 0.26), transparent);
-  }
-  .poster-ley::after {
-    width: 1.5px; height: 150px; left: 0; top: -160px;
-    background: linear-gradient(180deg, transparent, rgba(155, 127, 232, 0.24));
-  }
+  /* ---------- 鍵と錠前（「封印」の主題そのもの） ----------
+     背景の余白（左右のマージン）だけに置き、QRの帯には決して重ねない。
+     いずれも薄く、傾けて散らしてある＝きちんと並べない＝いたずらっぽさ。 */
+  .poster-lock { position: absolute; pointer-events: none; }
+  .poster-lock svg { display: block; width: 100%; height: auto; }
+  .poster-lock .stroke { fill: none; stroke: rgba(212, 175, 106, 0.30); stroke-width: 3; }
+  .poster-lock .solid { fill: rgba(212, 175, 106, 0.26); }
+  .poster-lock.violet .stroke { stroke: rgba(155, 127, 232, 0.30); }
+  .poster-lock.violet .solid { fill: rgba(155, 127, 232, 0.26); }
 
   /* ---------- 書状としての見出し部 ---------- */
-  .poster-address {
-    font-family: "Shippori Mincho B1", serif;
-    font-weight: 700;
-    font-size: 0.92rem;
-    letter-spacing: 0.35em;
-    color: #cbb489;
-    position: relative;
-  }
   /* 挑戦状らしく、わずかに傾けて「勢いで書いた」荒っぽさを出す */
   .poster-title {
     font-family: "Yuji Mai", "Yuji Syuku", "Shippori Mincho B1", serif;
@@ -204,7 +208,7 @@
     position: relative;
   }
 
-  .poster-circle { width: 260px; height: 260px; margin: 4px 0 8px; position: relative; }
+  .poster-circle { width: 284px; height: 284px; margin: 2px 0 6px; position: relative; }
 
   .poster-lead {
     font-family: "Yuji Syuku", serif;
@@ -216,18 +220,9 @@
     margin: 4px 0 4px;
     position: relative;
   }
-  /* Xの軽口。強がりの挑発で、答えやヒントには一切触れない */
-  .poster-jeer {
-    font-family: "Yuji Syuku", serif;
-    font-size: 0.85rem;
-    color: rgba(236, 202, 135, 0.62);
-    margin: 6px 0 16px;
-    text-align: center;
-    position: relative;
-  }
-
   .poster-qr-frame {
-    padding: 16px;
+    margin-top: 14px;
+    padding: 14px;
     background: #fdfaf2;
     border: 2px solid #d4af6a;
     border-radius: 14px;
@@ -253,7 +248,7 @@
     border-radius: 0 0 40% 40% / 0 0 60% 60%;
   }
   .poster-seal {
-    width: 54px; height: 54px;
+    width: 60px; height: 60px;
     border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
     background: radial-gradient(circle at 35% 30%, #e0687e, #a52a45 55%, #741428 100%);
     color: #f4d99a;
@@ -270,30 +265,18 @@
     position: relative;
     z-index: 1;
   }
-  /* 花押（発行者の署名）。手で書き添えた風の硬筆書体 */
-  .poster-colophon {
-    font-family: "Zen Kurenaido", "Shippori Mincho B1", serif;
-    font-size: 0.76rem;
-    letter-spacing: 0.24em;
-    color: rgba(212, 175, 106, 0.6);
-    margin-top: 12px;
-    position: relative;
-  }
-
-  /* ---------- スタッフ用の「耳」（切り離して捨てる） ---------- */
+  /* ---------- スタッフ用の「耳」（切り離して捨てる） ----------
+     ポスター本体（.poster）の外に、紙の下端として並べてある。
+     ここを切り落としてもポスターのデザインは一切欠けない。 */
   .poster-tab {
-    margin-top: auto;
+    flex: none;
     width: 100%;
     background: #fff;
     border-top: 2px dashed #999;
-    padding: 10px 20px 16px;
+    padding: 8px 20px 0;
     text-align: center;
     font-size: 0.82rem;
     color: #555;
-    /* 背景装飾（絶対配置＝位置指定済みレイヤー）より確実に手前に置く。
-       これがないと、漂うルーン文字が白い帯の上に重なって印字されてしまう。 */
-    position: relative;
-    z-index: 2;
   }
   .poster-tab .scissors { font-size: 0.9rem; }
   .poster-tab .staff-label {
@@ -305,10 +288,20 @@
   }
   .poster-tab .staff-place { color: #444; }
 
+  /* 用紙をA4・余白ゼロで固定する。これがないとブラウザ既定の余白
+     （約10mm）のせいで210×297mmが版面に収まらず、1枚のポスターが
+     2ページに割れて「8枚のつもりが16枚出る」事故になる。 */
+  @page { size: A4; margin: 0; }
+
   @media print {
     body { background: #fff; }
     .setup { display: none; }
-    .poster { margin: 0; box-shadow: none; }
+    .sheet {
+      margin: 0;
+      box-shadow: none;
+    }
+    /* 最後の1枚のあとに空白ページを作らない */
+    .sheet:last-child { page-break-after: auto; break-after: auto; }
   }
 </style>
 </head>
@@ -317,11 +310,15 @@
   <!-- ============ 画面確認用（印刷されない） ============ -->
   <div class="setup">
     <h1>🖨 掲示用QRポスター（このページを開いたら、そのまま印刷してください）</h1>
-    <p>ブラウザの印刷（Ctrl / Cmd + P）を押すと、この下の8枚が1謎1ページで印刷されます。</p>
+    <p>
+      ブラウザの印刷（Ctrl / Cmd + P）を押すと、この下の8枚が
+      <strong>1謎1ページ・ちょうど8ページ</strong>で印刷されます（用紙はA4）。
+      拡大縮小は「100%（実寸）」のままでOKです。
+    </p>
     <p class="warn">
-      ⚠ 背景が濃い紺〜紫色のデザインです。印刷ダイアログの詳細設定で
-      <strong>「背景のグラフィック」（Chromeでは"背景のグラフィック"、Safariでは"背景を印刷"）を必ずON</strong>
-      にしてください。OFFのままだと背景が真っ白になり、金色の文字が見えなくなります。
+      ⚠ 濃い背景はCSSで強制的に印刷されるようにしてありますが、
+      もし印刷プレビューが真っ白に見えたときだけ、詳細設定の
+      <strong>「背景のグラフィック」（Safariでは「背景を印刷」）をON</strong>にしてください。
     </p>
     <p class="warn">
       ⚠ 各ポスターの一番下に、点線で区切った「STAFF ONLY」の耳が付いています。
@@ -405,35 +402,99 @@
     '<circle cx="360" cy="440" r="2.2"/><circle cx="392" cy="424" r="1.6"/>' +
     '</svg>';
 
-  // 星をランダムにばらまく（背景の質感づけ）
+  // ▼ 星・ルーン文字・鍵錠の位置はすべて固定値にしてある。
+  //   乱数で散らすと8枚が全部違う絵になり「どの謎のQRか分からない」
+  //   という前提が崩れる（参加者が模様の違いで見分けられてしまう）。
+
+  // 星（背景の質感づけ）
+  var STARS = [
+    [4,12],[9,31],[6,66],[13,49],[17,22],[15,71],[21,8],[24,58],
+    [28,86],[31,17],[35,44],[38,73],[42,5],[45,63],[50,27],[53,94],
+    [57,15],[61,52],[66,79],[70,33],[74,7],[78,60],[83,88],[87,21],
+    [91,47],[95,72]
+  ];
   function starsHtml() {
-    var html = "";
-    for (var i = 0; i < 26; i++) {
-      var top = Math.random() * 100;
-      var left = Math.random() * 100;
-      html += '<span style="top:' + top + '%; left:' + left + '%;"></span>';
-    }
-    return html;
+    return STARS.map(function (s) {
+      return '<span style="top:' + s[0] + '%; left:' + s[1] + '%;"></span>';
+    }).join("");
   }
 
-  // 漂うルーン文字。QRフレームのある帯（縦58〜82%・横26〜74%）は避ける。
-  var RUNE_CHARS = ["応", "時", "親", "子", "学", "鍵", "在", "謎", "封", "解"];
+  // 漂うルーン文字。「謎・鍵・封・応」の4文字だけを使う。
+  // 座標はタイトル・魔法陣・QR・封蝋の帯を避けて、左右の余白に固定。
+  var RUNES = [
+    [8,  15, "封", 1.9, ""],
+    [22, 80, "謎", 1.2, "pale"],
+    [29, 4,  "謎", 1.5, "violet"],
+    [33, 90, "鍵", 1.8, ""],
+    [40, 13, "鍵", 1.3, "violet"],
+    [47, 8,  "応", 1.3, "pale"],
+    [50, 87, "封", 1.4, "violet"],
+    [60, 4,  "謎", 2.2, ""],
+    [57, 84, "封", 1.3, ""],
+    [73, 9,  "鍵", 1.6, "violet"],
+    [76, 91, "応", 1.5, "pale"],
+    [88, 86, "謎", 1.4, ""],
+    [94, 15, "封", 1.2, "pale"]
+  ];
   function runesHtml() {
-    var html = "";
-    for (var i = 0; i < 14; i++) {
-      var top = Math.random() * 100;
-      var left = Math.random() * 100;
-      if (top > 50 && top < 84 && left > 24 && left < 76) continue;  // QR帯を除外
-      if (top < 16 && left > 20 && left < 80) continue;              // タイトル帯を除外
-      if (top > 84) continue;                                        // 封蝋・花押・スタッフ帯を除外
-      var ch = RUNE_CHARS[Math.floor(Math.random() * RUNE_CHARS.length)];
-      var size = (1.1 + Math.random() * 1.5).toFixed(2);
-      var r = Math.random();
-      var cls = r < 0.3 ? "violet" : (r < 0.55 ? "pale" : "");
-      html += '<span class="' + cls + '" style="top:' + top + '%; left:' + left +
-        '%; font-size:' + size + 'rem;">' + ch + '</span>';
-    }
-    return html;
+    return RUNES.map(function (r) {
+      return '<span class="' + r[4] + '" style="top:' + r[0] + '%; left:' + r[1] +
+        '%; font-size:' + r[3] + 'rem;">' + r[2] + '</span>';
+    }).join("");
+  }
+
+  // 錠前（かかったままの封印）と、それを開ける鍵。
+  // この物語の主題そのものなので、背景の余白に散らしておく。
+  var lockSvg =
+    '<svg viewBox="0 0 64 84" aria-hidden="true">' +
+    '<path class="stroke" d="M20,36 V24 a12,12 0 0,1 24,0 V36"/>' +
+    '<rect class="stroke" x="8" y="36" width="48" height="42" rx="7"/>' +
+    '<circle class="solid" cx="32" cy="52" r="5"/>' +
+    '<path class="solid" d="M29.5,54 h5 l1.6,12 h-8.2 Z"/>' +
+    '</svg>';
+  var keySvg =
+    '<svg viewBox="0 0 120 34" aria-hidden="true">' +
+    '<circle class="stroke" cx="17" cy="17" r="11"/>' +
+    '<circle class="stroke" cx="17" cy="17" r="4.5" stroke-width="2"/>' +
+    '<rect class="solid" x="27" y="15" width="78" height="4" rx="2"/>' +
+    '<rect class="solid" x="84" y="19" width="4.5" height="9" rx="1.5"/>' +
+    '<rect class="solid" x="95" y="19" width="4.5" height="7" rx="1.5"/>' +
+    '<circle class="solid" cx="105" cy="17" r="3"/>' +
+    '</svg>';
+
+  // 錠前を吊るしている鎖。上から垂れて錠前につながる＝「封印されている」画。
+  var chainSvg =
+    '<svg viewBox="0 0 22 132" aria-hidden="true">' +
+    '<ellipse class="stroke" cx="11" cy="13" rx="7" ry="11" stroke-width="2.4"/>' +
+    '<ellipse class="stroke" cx="11" cy="35" rx="7" ry="11" stroke-width="2.4"/>' +
+    '<ellipse class="stroke" cx="11" cy="57" rx="7" ry="11" stroke-width="2.4"/>' +
+    '<ellipse class="stroke" cx="11" cy="79" rx="7" ry="11" stroke-width="2.4"/>' +
+    '<ellipse class="stroke" cx="11" cy="101" rx="7" ry="11" stroke-width="2.4"/>' +
+    '<ellipse class="stroke" cx="11" cy="123" rx="7" ry="11" stroke-width="2.4"/>' +
+    '</svg>';
+
+  // Xの落書き。定規で引いたような他の飾りの中に、一本だけ手描きの
+  // 走り書きを混ぜておく（几帳面な書状のふりをした悪ふざけ）。
+  var scrawlSvg =
+    '<svg viewBox="0 0 120 46" aria-hidden="true">' +
+    '<path class="stroke" d="M5,34 C22,6 34,42 50,14 C61,-4 69,40 86,18 C94,8 101,28 115,14" ' +
+    'stroke-width="2.4" stroke-linecap="round"/>' +
+    '</svg>';
+
+  // [上%, 左%, 幅px, 回転deg, 図形, 追加クラス]
+  var LOCKS = [
+    [5,  4,  20,  5,   chainSvg, ""],      // 鎖 → 下の錠前へつながる
+    [17, 2,  52,  -9,  lockSvg,  ""],
+    [40, 77, 112, 22,  keySvg,   ""],
+    [64, 88, 40,  12,  lockSvg,  "violet"],
+    [84, 3,  92,  -28, keySvg,   "violet"],
+    [91, 54, 110, -4,  scrawlSvg, ""]
+  ];
+  function locksHtml() {
+    return LOCKS.map(function (o) {
+      return '<div class="poster-lock ' + o[5] + '" style="top:' + o[0] + '%; left:' + o[1] +
+        '%; width:' + o[2] + 'px; transform:rotate(' + o[3] + 'deg);">' + o[4] + '</div>';
+    }).join("");
   }
 
   var postersEl = document.getElementById("posters");
@@ -441,43 +502,45 @@
 
   ITEMS.forEach(function (item, i) {
     var qrId = "qr" + i;
-    var poster = document.createElement("div");
-    poster.className = "poster";
-    poster.innerHTML =
-      '<div class="poster-moon"></div>' +
-      '<div class="poster-stars">' + starsHtml() + '</div>' +
-      '<div class="poster-runes">' + runesHtml() + '</div>' +
-      constellationSvg +
-      '<div class="poster-corner tl">◆</div>' +
-      '<div class="poster-corner tr">◆</div>' +
-      '<div class="poster-corner bl">◆</div>' +
-      '<div class="poster-corner br">✕</div>' +
-      '<div class="poster-address">応中に集いし者たちへ</div>' +
-      '<div class="poster-title">応中の封印を解け<span class="flick">！</span></div>' +
-      '<div class="poster-eyebrow">―新入生Xからの挑戦状―</div>' +
-      '<div class="poster-ornament">✦ ── ◆ ── ✦</div>' +
-      '<div class="poster-ley"></div>' +
-      magicCircleSvg +
-      '<div class="poster-lead">この札に、封印の欠片が眠る。<br>読み取り、解き明かせ。</div>' +
-      '<div class="poster-jeer">……どうせ、解けないと思うけどね。</div>' +
-      '<div class="poster-qr-frame"><div id="' + qrId + '"></div></div>' +
-      '<div class="poster-seal-wrap"><div class="poster-seal">X</div></div>' +
-      '<div class="poster-colophon">封印の刻　新入生Ｘ</div>' +
+    var sheet = document.createElement("div");
+    sheet.className = "sheet";
+    sheet.innerHTML =
+      '<div class="poster">' +
+        '<div class="poster-moon"></div>' +
+        '<div class="poster-stars">' + starsHtml() + '</div>' +
+        '<div class="poster-runes">' + runesHtml() + '</div>' +
+        locksHtml() +
+        constellationSvg +
+        '<div class="poster-corner tl">◆</div>' +
+        '<div class="poster-corner tr">◆</div>' +
+        '<div class="poster-corner bl">◆</div>' +
+        '<div class="poster-corner br">✕</div>' +
+        '<div class="poster-title">応中の封印を解け<span class="flick">！</span></div>' +
+        '<div class="poster-eyebrow">―新入生Xからの挑戦状―</div>' +
+        '<div class="poster-ornament">✦ ── ◆ ── ✦</div>' +
+        magicCircleSvg +
+        '<div class="poster-lead">この札に、封印の欠片が眠る。<br>読み取り、解き明かせ。</div>' +
+        '<div class="poster-qr-frame"><div id="' + qrId + '"></div></div>' +
+        '<div class="poster-seal-wrap"><div class="poster-seal">X</div></div>' +
+      '</div>' +
       '<div class="poster-tab">' +
         '<span class="scissors">✂️ ―――――――――――――――――――――――――――――― ✂️</span><br>' +
         '<span class="staff-label">STAFF ONLY　' + item.staffLabel + '</span><br>' +
         '<span class="staff-place">' + item.staffPlace + '</span><br>' +
         '掲示したら、この帯を切り取って捨ててください。' +
       '</div>';
-    postersEl.appendChild(poster);
+    postersEl.appendChild(sheet);
 
-    // typeNumber 0 = 文字数に応じて自動でサイズを決める
+    // typeNumber 0 = 文字数に応じて自動でサイズを決める。
+    // 第2引数はクワイエットゾーン（静穏領域）。QR規格は4モジュール分を
+    // 要求するので cellSize 6 × 4 = 24 を必ず渡す（0にすると読み取り
+    // 失敗率が上がる）。
     var qr = qrcode(0, "M");
     qr.addData(item.url);
     qr.make();
     var holder = document.getElementById(qrId);
-    holder.innerHTML = qr.createSvgTag(6, 0);
-    holder.querySelector("svg").style.cssText = "display:block; width:220px; height:220px;";
+    holder.innerHTML = qr.createSvgTag(6, 24);
+    holder.querySelector("svg").style.cssText = "display:block; width:248px; height:248px;";
 
     checkRows.push(
       "<tr><td>" + (i + 1) + "</td><td>" + item.staffLabel + "</td><td>" +
