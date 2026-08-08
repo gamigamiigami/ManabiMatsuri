@@ -231,17 +231,6 @@
   <section class="card" id="letterCard" hidden>
     <h2>✉ Xからの手紙・四</h2>
     <div class="letter" id="letterFour" data-decor="preset:letterFinale"></div>
-
-    <!-- 月の謎・鍵の謎の指示文。ホームに戻る前にここでも見せておく
-         （ホームに着いてからでは遅い、と参加者から指摘があったため）。
-         仕掛け（魔法陣・漂う「鍵」）自体はホームにしかないので、
-         ここではあくまで指示文の案内だけを出す。 -->
-    <div class="spell-box" style="margin-top:16px;">
-      <p class="note center" id="finalHandoffMsg" style="white-space:pre-wrap; margin-bottom:12px;"></p>
-      <div class="spell-line" id="finalSpell1"></div>
-      <div class="spell-line" id="finalSpell2"></div>
-    </div>
-
     <!-- 5つの鍵がそろうと扉謎のボタンが出るのと同じで、
          扉が開いたら最後の謎（大謎）への入口が現れる -->
     <a class="btn gold" href="secret.html" id="toSecretBtn" style="margin-top:16px;">→ 「学校の秘密」を探しに行く</a>
@@ -419,9 +408,6 @@
     document.getElementById("successCard").hidden = false;
     document.getElementById("successMsg").textContent = FINAL_SUCCESS_MESSAGE;
     document.getElementById("letterFour").textContent = FINALE_MESSAGE;
-    document.getElementById("finalHandoffMsg").textContent = SECRET_HANDOFF_MESSAGE;
-    document.getElementById("finalSpell1").textContent = SECRET_INSTRUCTIONS[0];
-    document.getElementById("finalSpell2").textContent = SECRET_INSTRUCTIONS[1];
     // 入力欄のカードを消したぶん画面が縮み、手紙が下から現れたように
     // 見えてしまう。切り替わりは必ずページの先頭からにする。
     window.resetZoomAndScroll();
