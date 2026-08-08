@@ -1449,17 +1449,42 @@ header.site h1 {
    親カードの見出しだけに使う。 */
 .sub-section {
   margin-top: 22px;
-  padding-top: 18px;
+  padding: 16px 14px 4px;
   border-top: 1px dashed rgba(245, 196, 81, 0.3);
+  border-radius: 10px;
+}
+/* 月の謎＝紫、鍵の謎＝金でアクセント色を分ける。
+   指示文と謎文が2種類ぶん並ぶと見分けがつかない、という指摘への対応。
+   左に色帯を出し、背景もうっすら色づけて「今どちらの謎の中か」を
+   スクロールしながらでも一目で分かるようにする。 */
+.sub-section.accent-moon {
+  border-left: 3px solid rgba(155, 127, 232, 0.55);
+  background: rgba(155, 127, 232, 0.05);
+}
+.sub-section.accent-key {
+  border-left: 3px solid rgba(245, 196, 81, 0.55);
+  background: rgba(245, 196, 81, 0.05);
 }
 .sub-heading {
   text-align: center;
   font-family: "Yuji Syuku", serif;
-  font-size: 1rem;
+  font-size: 1.05rem;
   letter-spacing: 0.08em;
   color: var(--gold);
   text-shadow: 0 0 10px rgba(245, 196, 81, 0.4);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+}
+/* 「この指示文からこの謎が現れた」という一言だけの、控えめなキャプション。
+   以前はここも指示文カード（.spell-box）を丸ごと繰り返していて、
+   上の手順欄と同じ見た目のブロックが何度も出てくることで
+   「指示文」と「謎文」の境目が分かりにくくなっていた。
+   ここは小さな一行の注記にとどめ、目立たせるのは謎文（.puzzle-body）だけにする。 */
+.found-note {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin: 0 0 10px;
+  line-height: 1.6;
 }
 
 /* ===== 現れた謎 ===== */

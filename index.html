@@ -187,23 +187,27 @@
       <h2>最後の謎</h2>
       <p class="center note" id="secretGuideNote"></p>
       <div class="question" id="secretHandoffMsg" style="margin:10px 0 0; font-size:0.95rem;"></div>
-      <div class="spell-box" style="margin-top:12px;">
+      <!-- まだ見つけていない指示文だけを出す（見つけたら下のsub-sectionに
+           役目を譲るので、ここでは消す＝同じ文章が2箇所に出て混乱するのを防ぐ） -->
+      <div class="spell-box" id="spellBoxWrap" style="margin-top:12px;">
         <div class="spell-line" id="homeSpell1"></div>
         <div class="spell-line" id="homeSpell2"></div>
       </div>
 
-      <!-- 仕掛けが成立した瞬間に、その場で中に謎を差し込む -->
-      <div class="sub-section" id="homePuzzleCard1" hidden>
+      <!-- 仕掛けが成立した瞬間に、その場で中に謎を差し込む。
+           月＝紫、鍵＝金でアクセント色を分け、どちらの謎の情報かを
+           見出しの絵文字と合わせてパッと見て区別できるようにする。 -->
+      <div class="sub-section accent-moon" id="homePuzzleCard1" hidden>
         <div class="sub-heading" id="homePuzzleTitle1"></div>
-        <div class="spell-box"><div class="spell-line done" id="homePuzzleInstruction1"></div></div>
+        <p class="found-note" id="homePuzzleInstruction1"></p>
         <div class="puzzle-lead" id="homePuzzleLead1"></div>
         <img class="puzzle-img" id="homePuzzleImg1" hidden alt="">
         <div class="puzzle-body" id="homePuzzleBody1"></div>
         <a class="btn ghost small" id="homePuzzleLink1" hidden style="margin-top:14px;"></a>
       </div>
-      <div class="sub-section" id="homePuzzleCard2" hidden>
+      <div class="sub-section accent-key" id="homePuzzleCard2" hidden>
         <div class="sub-heading" id="homePuzzleTitle2"></div>
-        <div class="spell-box"><div class="spell-line done" id="homePuzzleInstruction2"></div></div>
+        <p class="found-note" id="homePuzzleInstruction2"></p>
         <div class="puzzle-lead" id="homePuzzleLead2"></div>
         <img class="puzzle-img" id="homePuzzleImg2" hidden alt="">
         <div class="puzzle-body" id="homePuzzleBody2"></div>
@@ -520,8 +524,11 @@
     document.getElementById("secretGoCard").hidden = false;
 
     function paint() {
-      document.getElementById("homeSpell1").classList.toggle("done", !!st.foundMoon);
-      document.getElementById("homeSpell2").classList.toggle("done", !!st.foundKey);
+      // 見つけた指示文は、下のsub-sectionに役目を譲ってここでは消す
+      // （同じ文章が画面に2回出て「どっちがどっち」になる混乱を防ぐ）。
+      document.getElementById("homeSpell1").hidden = !!st.foundMoon;
+      document.getElementById("homeSpell2").hidden = !!st.foundKey;
+      document.getElementById("spellBoxWrap").hidden = !!(st.foundMoon && st.foundKey);
       document.getElementById("secretGuideNote").textContent =
         st.solvedAt ? "封印は解けた。"
           : (st.foundMoon && st.foundKey) ? "ふたつの謎がそろった。合言葉を刻みに行こう。"
@@ -539,9 +546,12 @@
         !(st.solvedAt && Store.dummySolvedCount(team) >= DUMMY_TOTAL);
     }
     function fillHomePuzzle(n, def) {
-      document.getElementById("homePuzzleTitle" + n).textContent = def.title;
-      // どの指示文から現れた謎なのかを、カードの中にも残しておく
-      document.getElementById("homePuzzleInstruction" + n).textContent = def.instruction || "";
+      var icon = def === SECRET_PUZZLES.moon ? "🌙 " : "🔑 ";
+      document.getElementById("homePuzzleTitle" + n).textContent = icon + def.title;
+      // どの指示文から現れた謎なのかを、小さな一言だけ残しておく
+      // （指示文をまるごと繰り返すと謎文と見分けがつかなくなるため、控えめに）
+      document.getElementById("homePuzzleInstruction" + n).textContent =
+        def.instruction ? "きっかけ：" + def.instruction.replace(/\n/g, "") : "";
       document.getElementById("homePuzzleLead" + n).textContent = def.lead;
       document.getElementById("homePuzzleBody" + n).textContent = def.body;
       if (def.image) {
