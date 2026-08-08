@@ -18,5 +18,5 @@ const CONFIG = {
   // デバッグ機能（?debug=1 での謎プレビュー、final.htmlの「デバッグ用」
   // ボタンなど）を使えるかどうか。本番前に false に変えるだけで、
   // サイト全体のデバッグ機能が一括で無効になる。
-  DEBUG_ENABLED: true,
+  DEBUG_ENABLED: false,
 };
