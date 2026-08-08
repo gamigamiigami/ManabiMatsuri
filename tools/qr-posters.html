@@ -6,7 +6,12 @@
 <title>掲示用QRポスター（運営用・印刷して会場に貼る）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&display=swap" rel="stylesheet">
+<!-- 書体の役割分担：
+     Yuji Mai   … タイトル（掠れ・墨だまりの強い筆致＝叩きつけた挑戦状）
+     Yuji Syuku … 本文・軽口（サイト本体の見出しと同じ筆文字）
+     Shippori Mincho B1 … 宛名など「読ませる」格式ある部分
+     Zen Kurenaido … 花押・署名（手で書き添えた硬筆風） -->
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&family=Yuji+Mai&family=Zen+Kurenaido&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   body {
@@ -34,119 +39,244 @@
   }
   .setup th, .setup td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
   .setup th { background: #f0ede4; }
-  .setup button {
-    margin-top: 14px; padding: 12px 26px; font-size: 1rem; border: none;
-    border-radius: 8px; background: #1a7f42; color: #fff; cursor: pointer;
-  }
 
   /* ---------- ポスター本体（印刷対象） ----------
      ミステリアス・魔法・挑戦状の世界観を出すため、サイト本体と同じ
      真夜中の紺〜紫のグラデーション背景にする（QRだけは読み取り精度の
-     ため白いカードの上に置く。それ以外は暗い背景で統一）。 */
+     ため明るいカードの上に置く。それ以外は暗い背景で統一）。
+     背景のradial-gradientの先頭3行は「古い紙の染み・焼け跡」。
+     いずれもQR領域（中央やや下）を避けた座標に置いてある。 */
   .poster {
     width: 210mm;
     min-height: 297mm;
     margin: 24px auto;
     background:
+      radial-gradient(ellipse 26% 10% at 78% 30%, rgba(20, 10, 5, 0.22), transparent 70%),
+      radial-gradient(ellipse 18% 8% at 12% 58%, rgba(20, 10, 5, 0.16), transparent 70%),
+      radial-gradient(ellipse 14% 7% at 88% 80%, rgba(20, 10, 5, 0.14), transparent 70%),
       radial-gradient(ellipse 70% 45% at 50% 6%, rgba(212, 175, 106, 0.16), transparent 60%),
       radial-gradient(ellipse 60% 40% at 15% 90%, rgba(155, 127, 232, 0.14), transparent 60%),
       radial-gradient(ellipse 60% 40% at 85% 90%, rgba(155, 127, 232, 0.10), transparent 60%),
       linear-gradient(178deg, #100a1c 0%, #0a0614 55%, #050309 100%);
     border: 3px solid #8a6a34;
     outline: 1px solid rgba(212, 175, 106, 0.5);
-    outline-offset: -8px;
+    outline-offset: -10px;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 34px 28px 0;
+    padding: 26px 28px 0;
     page-break-after: always;
     break-after: page;
   }
-  /* 四隅の飾り（正式な書状・巻物のような格式を出す） */
+  /* 賞状・免状のような、角を面取りした内枠（正式な発行物の視覚文法） */
+  .poster::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(212, 175, 106, 0.5);
+    clip-path: polygon(
+      24px 0, calc(100% - 24px) 0, 100% 24px,
+      100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%,
+      0 calc(100% - 24px), 0 24px
+    );
+    pointer-events: none;
+  }
+
+  /* 四隅の飾り。右下だけXの落書きに差し替えて傾けてある
+     （几帳面な書状のふりをして、一箇所だけ悪ふざけを残す） */
   .poster-corner {
     position: absolute;
     font-size: 1.1rem;
     color: rgba(212, 175, 106, 0.7);
   }
-  .poster-corner.tl { top: 16px; left: 18px; }
-  .poster-corner.tr { top: 16px; right: 18px; }
-  .poster-corner.bl { bottom: 16px; left: 18px; }
-  .poster-corner.br { bottom: 16px; right: 18px; }
-
-  /* 背景にうっすら浮かぶ星（印刷しても軽い） */
-  .poster-stars {
-    position: absolute; inset: 0; pointer-events: none;
+  .poster-corner.tl { top: 14px; left: 16px; }
+  .poster-corner.tr { top: 14px; right: 16px; }
+  .poster-corner.bl { bottom: 14px; left: 16px; }
+  .poster-corner.br {
+    bottom: 14px; right: 16px;
+    transform: rotate(-12deg);
+    font-size: 1rem;
+    opacity: 0.8;
   }
+
+  /* 夜空に浮かぶ月（サイト本体の .scene .moon と同じ配色・質感） */
+  .poster-moon {
+    position: absolute;
+    top: 58px;
+    right: 40px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #f3ead6, #d9c497 55%, #a98f66 100%);
+    box-shadow:
+      0 0 26px 8px rgba(210, 190, 150, 0.32),
+      0 0 70px 26px rgba(155, 127, 232, 0.18),
+      inset -8px -7px 16px rgba(90, 60, 110, 0.5);
+    opacity: 0.85;
+  }
+
+  /* 背景に漂うルーン文字（サイト本体と同じ10文字。QR領域は除外して配置） */
+  .poster-runes { position: absolute; inset: 0; pointer-events: none; }
+  .poster-runes span {
+    position: absolute;
+    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
+    color: rgba(212, 175, 106, 0.20);
+    text-shadow: 0 0 10px rgba(212, 175, 106, 0.28);
+  }
+  .poster-runes span.violet { color: rgba(155, 127, 232, 0.22); text-shadow: 0 0 10px rgba(155, 127, 232, 0.3); }
+  .poster-runes span.pale { color: rgba(236, 224, 200, 0.16); text-shadow: none; }
+
+  /* 星のまたたき（背景の質感づけ） */
+  .poster-stars { position: absolute; inset: 0; pointer-events: none; }
   .poster-stars span {
     position: absolute; width: 3px; height: 3px; border-radius: 50%;
     background: rgba(245, 227, 174, 0.75);
   }
 
-  /* 「挑戦状」らしさを出すため、タイトル・肩書きはサイト本体の見出しと
-     同じ筆文字フォント（Yuji Syuku＝ --brush 相当）にする。 */
-  .poster-eyebrow {
-    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
-    font-size: 0.95rem;
-    letter-spacing: 0.4em;
-    color: #d4af6a;
-    text-shadow: 0 0 8px rgba(212, 175, 106, 0.4);
-    margin-top: 6px;
+  /* 星座（既存の星を意味づける細線。四隅の余白のみ使い、QRからは離す） */
+  .poster-constellation { position: absolute; inset: 0; pointer-events: none; }
+  .poster-constellation path { fill: none; stroke: rgba(212, 175, 106, 0.32); stroke-width: 0.6; }
+  .poster-constellation circle { fill: rgba(245, 227, 174, 0.8); }
+
+  /* 魔法陣から伸びる光条（下＝QR方向へは意図的に伸ばさない） */
+  .poster-ley {
+    position: absolute;
+    left: 50%; top: 300px;
+    width: 1px; height: 1px;
+    pointer-events: none;
+  }
+  .poster-ley::before, .poster-ley::after {
+    content: "";
+    position: absolute;
+  }
+  .poster-ley::before {
+    width: 520px; height: 1.5px; left: -260px; top: 0;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 106, 0.26), transparent);
+  }
+  .poster-ley::after {
+    width: 1.5px; height: 150px; left: 0; top: -160px;
+    background: linear-gradient(180deg, transparent, rgba(155, 127, 232, 0.24));
+  }
+
+  /* ---------- 書状としての見出し部 ---------- */
+  .poster-address {
+    font-family: "Shippori Mincho B1", serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.35em;
+    color: #cbb489;
     position: relative;
   }
+  /* 挑戦状らしく、わずかに傾けて「勢いで書いた」荒っぽさを出す */
   .poster-title {
-    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
+    font-family: "Yuji Mai", "Yuji Syuku", "Shippori Mincho B1", serif;
     font-weight: 400;
-    font-size: 2.6rem;
-    letter-spacing: 0.1em;
+    font-size: 3.4rem;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
     color: #ecca87;
-    text-shadow: 0 0 16px rgba(212, 175, 106, 0.6), 0 0 40px rgba(155, 127, 232, 0.3);
-    margin: 10px 0 4px;
+    text-shadow: 0 0 16px rgba(212, 175, 106, 0.6), 0 0 44px rgba(155, 127, 232, 0.32);
+    margin: 8px 0 6px;
     text-align: center;
+    transform: rotate(-1.2deg);
+    position: relative;
+  }
+  .poster-title .flick {
+    display: inline-block;
+    transform: translateY(-5px) rotate(5deg);
+  }
+  .poster-eyebrow {
+    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.32em;
+    color: #d4af6a;
+    text-shadow: 0 0 8px rgba(212, 175, 106, 0.4);
+    margin-top: 4px;
     position: relative;
   }
   .poster-ornament {
     color: #d4af6a;
     font-size: 1rem;
     letter-spacing: 0.3em;
-    margin-bottom: 10px;
+    margin: 8px 0 6px;
     position: relative;
   }
 
-  .poster-circle { width: 230px; height: 230px; margin: 6px 0 10px; position: relative; }
+  .poster-circle { width: 260px; height: 260px; margin: 4px 0 8px; position: relative; }
 
   .poster-lead {
     font-family: "Yuji Syuku", serif;
-    font-size: 1.15rem;
-    line-height: 2;
+    font-size: 1.05rem;
+    line-height: 1.85;
     text-align: center;
     color: #ece4f6;
-    max-width: 440px;
-    margin: 6px 0 22px;
+    max-width: 400px;
+    margin: 4px 0 4px;
+    position: relative;
+  }
+  /* Xの軽口。強がりの挑発で、答えやヒントには一切触れない */
+  .poster-jeer {
+    font-family: "Yuji Syuku", serif;
+    font-size: 0.85rem;
+    color: rgba(236, 202, 135, 0.62);
+    margin: 6px 0 16px;
+    text-align: center;
     position: relative;
   }
 
   .poster-qr-frame {
-    padding: 20px;
+    padding: 16px;
     background: #fdfaf2;
     border: 2px solid #d4af6a;
     border-radius: 14px;
     box-shadow: 0 0 0 6px rgba(212, 175, 106, 0.18), 0 0 40px rgba(212, 175, 106, 0.12);
     position: relative;
   }
-  .poster-qr-frame img, .poster-qr-frame canvas { display: block; width: 260px; height: 260px; }
 
+  /* ---------- 封蝋（垂れた蝋＋押印のくぼみ） ---------- */
+  .poster-seal-wrap {
+    position: relative;
+    margin-top: 20px;
+    width: 64px;
+    display: flex;
+    justify-content: center;
+  }
+  .poster-seal-wrap::before {
+    content: "";
+    position: absolute;
+    top: 34px; left: 50%;
+    transform: translateX(-50%);
+    width: 30px; height: 22px;
+    background: radial-gradient(ellipse at 50% 0%, #8f1c30, #5c0f1c 80%);
+    border-radius: 0 0 40% 40% / 0 0 60% 60%;
+  }
   .poster-seal {
-    margin-top: 30px;
     width: 54px; height: 54px;
     border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
     background: radial-gradient(circle at 35% 30%, #e0687e, #a52a45 55%, #741428 100%);
     color: #f4d99a;
     font-family: "Shippori Mincho B1", serif;
+    font-weight: 800;
     font-size: 1.35rem;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 10px rgba(60, 5, 20, 0.5);
+    box-shadow:
+      0 4px 10px rgba(60, 5, 20, 0.5),
+      inset 0 2px 3px rgba(255, 255, 255, 0.25),
+      inset 0 -3px 5px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+    transform: rotate(-7deg);
+    position: relative;
+    z-index: 1;
+  }
+  /* 花押（発行者の署名）。手で書き添えた風の硬筆書体 */
+  .poster-colophon {
+    font-family: "Zen Kurenaido", "Shippori Mincho B1", serif;
+    font-size: 0.76rem;
+    letter-spacing: 0.24em;
+    color: rgba(212, 175, 106, 0.6);
+    margin-top: 12px;
     position: relative;
   }
 
@@ -160,6 +290,10 @@
     text-align: center;
     font-size: 0.82rem;
     color: #555;
+    /* 背景装飾（絶対配置＝位置指定済みレイヤー）より確実に手前に置く。
+       これがないと、漂うルーン文字が白い帯の上に重なって印字されてしまう。 */
+    position: relative;
+    z-index: 2;
   }
   .poster-tab .scissors { font-size: 0.9rem; }
   .poster-tab .staff-label {
@@ -245,6 +379,14 @@
     '<circle cx="80.5" cy="131" r="13" stroke-width="1.1"/>' +
     '<circle cx="319.5" cy="131" r="13" stroke-width="1.1"/>' +
     '</g>' +
+    '<g fill="#9b7fe8" opacity="0.85" font-size="13" text-anchor="middle" font-family="\'Shippori Mincho B1\',serif">' +
+    '<text x="200" y="67">月</text>' +
+    '<text x="80.5" y="274">星</text>' +
+    '<text x="319.5" y="274">夜</text>' +
+    '<text x="200" y="343">影</text>' +
+    '<text x="80.5" y="136">風</text>' +
+    '<text x="319.5" y="136">灯</text>' +
+    '</g>' +
     '<g fill="rgba(212,175,106,0.9)">' +
     '<circle cx="200" cy="193" r="12"/>' +
     '<path d="M194,201 L206,201 L211,222 L189,222 Z"/>' +
@@ -252,13 +394,44 @@
     '<circle cx="200" cy="200" r="34" fill="none" stroke="rgba(212,175,106,0.6)" stroke-width="0.8" stroke-dasharray="3 5"/>' +
     '</svg>';
 
-  // 星をランダムにばらまく（背景の質感づけ。印刷しても軽い）
+  // 星座（左上・右下の余白のみ。QR領域からは離してある）
+  var constellationSvg =
+    '<svg class="poster-constellation" viewBox="0 0 400 560" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path d="M40,72 L70,50 L100,66 L92,98 L55,102 Z"/>' +
+    '<circle cx="40" cy="72" r="2.2"/><circle cx="70" cy="50" r="1.8"/>' +
+    '<circle cx="100" cy="66" r="2"/><circle cx="92" cy="98" r="1.6"/><circle cx="55" cy="102" r="2"/>' +
+    '<path d="M320,430 L348,408 L360,440 L392,424"/>' +
+    '<circle cx="320" cy="430" r="2"/><circle cx="348" cy="408" r="1.8"/>' +
+    '<circle cx="360" cy="440" r="2.2"/><circle cx="392" cy="424" r="1.6"/>' +
+    '</svg>';
+
+  // 星をランダムにばらまく（背景の質感づけ）
   function starsHtml() {
     var html = "";
     for (var i = 0; i < 26; i++) {
       var top = Math.random() * 100;
       var left = Math.random() * 100;
       html += '<span style="top:' + top + '%; left:' + left + '%;"></span>';
+    }
+    return html;
+  }
+
+  // 漂うルーン文字。QRフレームのある帯（縦58〜82%・横26〜74%）は避ける。
+  var RUNE_CHARS = ["応", "時", "親", "子", "学", "鍵", "在", "謎", "封", "解"];
+  function runesHtml() {
+    var html = "";
+    for (var i = 0; i < 14; i++) {
+      var top = Math.random() * 100;
+      var left = Math.random() * 100;
+      if (top > 50 && top < 84 && left > 24 && left < 76) continue;  // QR帯を除外
+      if (top < 16 && left > 20 && left < 80) continue;              // タイトル帯を除外
+      if (top > 84) continue;                                        // 封蝋・花押・スタッフ帯を除外
+      var ch = RUNE_CHARS[Math.floor(Math.random() * RUNE_CHARS.length)];
+      var size = (1.1 + Math.random() * 1.5).toFixed(2);
+      var r = Math.random();
+      var cls = r < 0.3 ? "violet" : (r < 0.55 ? "pale" : "");
+      html += '<span class="' + cls + '" style="top:' + top + '%; left:' + left +
+        '%; font-size:' + size + 'rem;">' + ch + '</span>';
     }
     return html;
   }
@@ -271,18 +444,25 @@
     var poster = document.createElement("div");
     poster.className = "poster";
     poster.innerHTML =
+      '<div class="poster-moon"></div>' +
       '<div class="poster-stars">' + starsHtml() + '</div>' +
+      '<div class="poster-runes">' + runesHtml() + '</div>' +
+      constellationSvg +
       '<div class="poster-corner tl">◆</div>' +
       '<div class="poster-corner tr">◆</div>' +
       '<div class="poster-corner bl">◆</div>' +
-      '<div class="poster-corner br">◆</div>' +
-      '<div class="poster-title">応中の封印を解け</div>' +
+      '<div class="poster-corner br">✕</div>' +
+      '<div class="poster-address">応中に集いし者たちへ</div>' +
+      '<div class="poster-title">応中の封印を解け<span class="flick">！</span></div>' +
       '<div class="poster-eyebrow">―新入生Xからの挑戦状―</div>' +
       '<div class="poster-ornament">✦ ── ◆ ── ✦</div>' +
+      '<div class="poster-ley"></div>' +
       magicCircleSvg +
       '<div class="poster-lead">この札に、封印の欠片が眠る。<br>読み取り、解き明かせ。</div>' +
+      '<div class="poster-jeer">……どうせ、解けないと思うけどね。</div>' +
       '<div class="poster-qr-frame"><div id="' + qrId + '"></div></div>' +
-      '<div class="poster-seal">X</div>' +
+      '<div class="poster-seal-wrap"><div class="poster-seal">X</div></div>' +
+      '<div class="poster-colophon">封印の刻　新入生Ｘ</div>' +
       '<div class="poster-tab">' +
         '<span class="scissors">✂️ ―――――――――――――――――――――――――――――― ✂️</span><br>' +
         '<span class="staff-label">STAFF ONLY　' + item.staffLabel + '</span><br>' +
@@ -295,8 +475,9 @@
     var qr = qrcode(0, "M");
     qr.addData(item.url);
     qr.make();
-    document.getElementById(qrId).innerHTML = qr.createSvgTag(6, 0);
-    document.getElementById(qrId).querySelector("svg").style.cssText = "display:block; width:260px; height:260px;";
+    var holder = document.getElementById(qrId);
+    holder.innerHTML = qr.createSvgTag(6, 0);
+    holder.querySelector("svg").style.cssText = "display:block; width:220px; height:220px;";
 
     checkRows.push(
       "<tr><td>" + (i + 1) + "</td><td>" + item.staffLabel + "</td><td>" +
