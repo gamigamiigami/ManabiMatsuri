@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>掲示用QRポスター（運営用・印刷して会場に貼る）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Yuji+Syuku&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #e8e4da;
+    color: #2a2015;
+  }
+
+  /* ---------- 画面確認用（印刷されない） ---------- */
+  .setup {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 24px 28px;
+    line-height: 1.7;
+  }
+  .setup h1 { font-size: 1.15rem; margin-bottom: 6px; }
+  .setup p { font-size: 0.88rem; color: #555; margin: 4px 0; }
+  .setup .warn {
+    background: #fff8e1; border: 1.5px dashed #e8a53a; border-radius: 8px;
+    padding: 10px 14px; font-size: 0.85rem; margin-top: 10px;
+  }
+  .setup table {
+    width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 0.85rem;
+  }
+  .setup th, .setup td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+  .setup th { background: #f0ede4; }
+  .setup button {
+    margin-top: 14px; padding: 12px 26px; font-size: 1rem; border: none;
+    border-radius: 8px; background: #1a7f42; color: #fff; cursor: pointer;
+  }
+
+  /* ---------- ポスター本体（印刷対象） ----------
+     ミステリアス・魔法・挑戦状の世界観を出すため、サイト本体と同じ
+     真夜中の紺〜紫のグラデーション背景にする（QRだけは読み取り精度の
+     ため白いカードの上に置く。それ以外は暗い背景で統一）。 */
+  .poster {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 6%, rgba(212, 175, 106, 0.16), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 15% 90%, rgba(155, 127, 232, 0.14), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 90%, rgba(155, 127, 232, 0.10), transparent 60%),
+      linear-gradient(178deg, #100a1c 0%, #0a0614 55%, #050309 100%);
+    border: 3px solid #8a6a34;
+    outline: 1px solid rgba(212, 175, 106, 0.5);
+    outline-offset: -8px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 34px 28px 0;
+    page-break-after: always;
+    break-after: page;
+  }
+  /* 背景にうっすら浮かぶ星（印刷しても軽い） */
+  .poster-stars {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .poster-stars span {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: rgba(245, 227, 174, 0.75);
+  }
+
+  .poster-eyebrow {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.35em;
+    color: #d4af6a;
+    margin-top: 6px;
+    position: relative;
+  }
+  .poster-title {
+    font-family: "Shippori Mincho B1", serif;
+    font-weight: 800;
+    font-size: 2.35rem;
+    letter-spacing: 0.06em;
+    color: #ecca87;
+    text-shadow: 0 0 14px rgba(212, 175, 106, 0.55);
+    margin: 8px 0 4px;
+    text-align: center;
+    position: relative;
+  }
+  .poster-ornament {
+    color: #d4af6a;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .poster-circle { width: 230px; height: 230px; margin: 6px 0 10px; position: relative; }
+
+  .poster-lead {
+    font-family: "Yuji Syuku", serif;
+    font-size: 1.15rem;
+    line-height: 2;
+    text-align: center;
+    color: #ece4f6;
+    max-width: 440px;
+    margin: 6px 0 22px;
+    position: relative;
+  }
+
+  .poster-qr-frame {
+    padding: 20px;
+    background: #fdfaf2;
+    border: 2px solid #d4af6a;
+    border-radius: 14px;
+    box-shadow: 0 0 0 6px rgba(212, 175, 106, 0.18), 0 0 40px rgba(212, 175, 106, 0.12);
+    position: relative;
+  }
+  .poster-qr-frame img, .poster-qr-frame canvas { display: block; width: 260px; height: 260px; }
+
+  .poster-footer {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 0.95rem;
+    color: #d4af6a;
+    margin-top: 22px;
+    text-align: center;
+    letter-spacing: 0.15em;
+    position: relative;
+  }
+  .poster-seal {
+    margin-top: 26px;
+    width: 54px; height: 54px;
+    border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
+    background: radial-gradient(circle at 35% 30%, #e0687e, #a52a45 55%, #741428 100%);
+    color: #f4d99a;
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 1.35rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(60, 5, 20, 0.5);
+    position: relative;
+  }
+
+  /* ---------- スタッフ用の「耳」（切り離して捨てる） ---------- */
+  .poster-tab {
+    margin-top: auto;
+    width: 100%;
+    background: #fff;
+    border-top: 2px dashed #999;
+    padding: 10px 20px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #555;
+  }
+  .poster-tab .scissors { font-size: 0.9rem; }
+  .poster-tab .staff-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #222;
+    letter-spacing: 0.08em;
+    margin: 4px 0 2px;
+  }
+  .poster-tab .staff-place { color: #444; }
+
+  @media print {
+    body { background: #fff; }
+    .setup { display: none; }
+    .poster { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ 画面確認用（印刷されない） ============ -->
+  <div class="setup">
+    <h1>🖨 掲示用QRポスター（このページを開いたら、そのまま印刷してください）</h1>
+    <p>ブラウザの印刷（Ctrl / Cmd + P）を押すと、この下の8枚が1謎1ページで印刷されます。</p>
+    <p class="warn">
+      ⚠ 背景が濃い紺〜紫色のデザインです。印刷ダイアログの詳細設定で
+      <strong>「背景のグラフィック」（Chromeでは"背景のグラフィック"、Safariでは"背景を印刷"）を必ずON</strong>
+      にしてください。OFFのままだと背景が真っ白になり、金色の文字が見えなくなります。
+    </p>
+    <p class="warn">
+      ⚠ 各ポスターの一番下に、点線で区切った「STAFF ONLY」の耳が付いています。
+      <strong>会場に貼ったら、必ずその部分を切り取って捨ててください。</strong>
+      本体だけになれば、参加者からはどの謎のQRか分かりません。
+    </p>
+    <table id="checkTable"></table>
+  </div>
+
+  <!-- ============ ポスター本体（印刷対象） ============ -->
+  <div id="posters"></div>
+
+<script src="../js/vendor/qrcode-generator.js"></script>
+<script src="../js/puzzles.js"></script>
+<script>
+(function () {
+  var BASE = "https://gamigamiigami.github.io/ManabiMatsuri/";
+
+  // 会場に掲示する8件。表示上はすべて同じ見た目にするため、
+  // ラベル（中謎／ジャンプの謎の別・番号・場所）はスタッフ用の
+  // 「耳」だけに使い、ポスター本体には一切出さない。
+  var ITEMS = [];
+  POINT_ORDER.forEach(function (p) {
+    ITEMS.push({
+      url: BASE + "point.html?p=" + p,
+      staffLabel: "中謎" + "①②③④⑤".charAt(p - 1),
+      staffPlace: PUZZLES[p].place,
+    });
+  });
+  Object.keys(DUMMY_PUZZLES).forEach(function (n) {
+    ITEMS.push({
+      url: BASE + "dummy.html?d=" + n,
+      staffLabel: "ジャンプの謎" + n,
+      staffPlace: "校内の好きな場所（ジャンプの謎）",
+    });
+  });
+
+  var magicCircleSvg =
+    '<svg class="poster-circle" viewBox="0 0 400 400" aria-hidden="true">' +
+    '<g fill="none" stroke="#d4af6a">' +
+    '<circle cx="200" cy="200" r="194" stroke-width="1.6" opacity="0.9"/>' +
+    '<circle cx="200" cy="200" r="187" stroke-width="0.7" opacity="0.55"/>' +
+    '<circle cx="200" cy="200" r="140" stroke-width="1.1" opacity="0.8"/>' +
+    '<circle cx="200" cy="200" r="134" stroke-width="0.6" opacity="0.5"/>' +
+    '<polygon points="200,62 80.5,269 319.5,269" stroke-width="1.3" opacity="0.7"/>' +
+    '<polygon points="200,338 80.5,131 319.5,131" stroke-width="1.3" opacity="0.7"/>' +
+    '<circle cx="200" cy="200" r="56" stroke-width="1" opacity="0.75"/>' +
+    '<circle cx="200" cy="200" r="50" stroke-width="0.6" opacity="0.5"/>' +
+    '</g>' +
+    '<g fill="none" stroke="#9b7fe8" opacity="0.85">' +
+    '<circle cx="200" cy="62" r="13" stroke-width="1.1"/>' +
+    '<circle cx="80.5" cy="269" r="13" stroke-width="1.1"/>' +
+    '<circle cx="319.5" cy="269" r="13" stroke-width="1.1"/>' +
+    '<circle cx="200" cy="338" r="13" stroke-width="1.1"/>' +
+    '<circle cx="80.5" cy="131" r="13" stroke-width="1.1"/>' +
+    '<circle cx="319.5" cy="131" r="13" stroke-width="1.1"/>' +
+    '</g>' +
+    '<g fill="rgba(212,175,106,0.9)">' +
+    '<circle cx="200" cy="193" r="12"/>' +
+    '<path d="M194,201 L206,201 L211,222 L189,222 Z"/>' +
+    '</g>' +
+    '<circle cx="200" cy="200" r="34" fill="none" stroke="rgba(212,175,106,0.6)" stroke-width="0.8" stroke-dasharray="3 5"/>' +
+    '</svg>';
+
+  // 星をランダムにばらまく（背景の質感づけ。印刷しても軽い）
+  function starsHtml() {
+    var html = "";
+    for (var i = 0; i < 26; i++) {
+      var top = Math.random() * 100;
+      var left = Math.random() * 100;
+      html += '<span style="top:' + top + '%; left:' + left + '%;"></span>';
+    }
+    return html;
+  }
+
+  var postersEl = document.getElementById("posters");
+  var checkRows = ['<tr><th>#</th><th>内容</th><th>場所</th><th>URL</th></tr>'];
+
+  ITEMS.forEach(function (item, i) {
+    var qrId = "qr" + i;
+    var poster = document.createElement("div");
+    poster.className = "poster";
+    poster.innerHTML =
+      '<div class="poster-stars">' + starsHtml() + '</div>' +
+      '<div class="poster-eyebrow">－Xからの挑戦状－</div>' +
+      '<div class="poster-title">応中の封印を解け！</div>' +
+      '<div class="poster-ornament">✦ ── ◆ ── ✦</div>' +
+      magicCircleSvg +
+      '<div class="poster-lead">この札に、封印の欠片が眠る。<br>QRコードを読み取り、封を破れ。</div>' +
+      '<div class="poster-qr-frame"><div id="' + qrId + '"></div></div>' +
+      '<div class="poster-footer">封　―　解</div>' +
+      '<div class="poster-seal">X</div>' +
+      '<div class="poster-tab">' +
+        '<span class="scissors">✂️ ―――――――――――――――――――――――――――――― ✂️</span><br>' +
+        '<span class="staff-label">STAFF ONLY　' + item.staffLabel + '</span><br>' +
+        '<span class="staff-place">' + item.staffPlace + '</span><br>' +
+        '掲示したら、この帯を切り取って捨ててください。' +
+      '</div>';
+    postersEl.appendChild(poster);
+
+    // typeNumber 0 = 文字数に応じて自動でサイズを決める
+    var qr = qrcode(0, "M");
+    qr.addData(item.url);
+    qr.make();
+    document.getElementById(qrId).innerHTML = qr.createSvgTag(6, 0);
+    document.getElementById(qrId).querySelector("svg").style.cssText = "display:block; width:260px; height:260px;";
+
+    checkRows.push(
+      "<tr><td>" + (i + 1) + "</td><td>" + item.staffLabel + "</td><td>" +
+      item.staffPlace + "</td><td style='font-size:0.75rem;'>" + item.url + "</td></tr>"
+    );
+  });
+
+  document.getElementById("checkTable").innerHTML = checkRows.join("");
+})();
+</script>
+</body>
+</html>
