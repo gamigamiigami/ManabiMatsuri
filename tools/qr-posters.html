@@ -64,6 +64,17 @@
     page-break-after: always;
     break-after: page;
   }
+  /* 四隅の飾り（正式な書状・巻物のような格式を出す） */
+  .poster-corner {
+    position: absolute;
+    font-size: 1.1rem;
+    color: rgba(212, 175, 106, 0.7);
+  }
+  .poster-corner.tl { top: 16px; left: 18px; }
+  .poster-corner.tr { top: 16px; right: 18px; }
+  .poster-corner.bl { bottom: 16px; left: 18px; }
+  .poster-corner.br { bottom: 16px; right: 18px; }
+
   /* 背景にうっすら浮かぶ星（印刷しても軽い） */
   .poster-stars {
     position: absolute; inset: 0; pointer-events: none;
@@ -73,22 +84,25 @@
     background: rgba(245, 227, 174, 0.75);
   }
 
+  /* 「挑戦状」らしさを出すため、タイトル・肩書きはサイト本体の見出しと
+     同じ筆文字フォント（Yuji Syuku＝ --brush 相当）にする。 */
   .poster-eyebrow {
-    font-family: "Shippori Mincho B1", serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.35em;
+    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.4em;
     color: #d4af6a;
+    text-shadow: 0 0 8px rgba(212, 175, 106, 0.4);
     margin-top: 6px;
     position: relative;
   }
   .poster-title {
-    font-family: "Shippori Mincho B1", serif;
-    font-weight: 800;
-    font-size: 2.35rem;
-    letter-spacing: 0.06em;
+    font-family: "Yuji Syuku", "Shippori Mincho B1", serif;
+    font-weight: 400;
+    font-size: 2.6rem;
+    letter-spacing: 0.1em;
     color: #ecca87;
-    text-shadow: 0 0 14px rgba(212, 175, 106, 0.55);
-    margin: 8px 0 4px;
+    text-shadow: 0 0 16px rgba(212, 175, 106, 0.6), 0 0 40px rgba(155, 127, 232, 0.3);
+    margin: 10px 0 4px;
     text-align: center;
     position: relative;
   }
@@ -123,17 +137,8 @@
   }
   .poster-qr-frame img, .poster-qr-frame canvas { display: block; width: 260px; height: 260px; }
 
-  .poster-footer {
-    font-family: "Shippori Mincho B1", serif;
-    font-size: 0.95rem;
-    color: #d4af6a;
-    margin-top: 22px;
-    text-align: center;
-    letter-spacing: 0.15em;
-    position: relative;
-  }
   .poster-seal {
-    margin-top: 26px;
+    margin-top: 30px;
     width: 54px; height: 54px;
     border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
     background: radial-gradient(circle at 35% 30%, #e0687e, #a52a45 55%, #741428 100%);
@@ -267,13 +272,16 @@
     poster.className = "poster";
     poster.innerHTML =
       '<div class="poster-stars">' + starsHtml() + '</div>' +
-      '<div class="poster-eyebrow">－Xからの挑戦状－</div>' +
-      '<div class="poster-title">応中の封印を解け！</div>' +
+      '<div class="poster-corner tl">◆</div>' +
+      '<div class="poster-corner tr">◆</div>' +
+      '<div class="poster-corner bl">◆</div>' +
+      '<div class="poster-corner br">◆</div>' +
+      '<div class="poster-title">応中の封印を解け</div>' +
+      '<div class="poster-eyebrow">―新入生Xからの挑戦状―</div>' +
       '<div class="poster-ornament">✦ ── ◆ ── ✦</div>' +
       magicCircleSvg +
-      '<div class="poster-lead">この札に、封印の欠片が眠る。<br>QRコードを読み取り、封を破れ。</div>' +
+      '<div class="poster-lead">この札に、封印の欠片が眠る。<br>読み取り、解き明かせ。</div>' +
       '<div class="poster-qr-frame"><div id="' + qrId + '"></div></div>' +
-      '<div class="poster-footer">封　―　解</div>' +
       '<div class="poster-seal">X</div>' +
       '<div class="poster-tab">' +
         '<span class="scissors">✂️ ―――――――――――――――――――――――――――――― ✂️</span><br>' +
