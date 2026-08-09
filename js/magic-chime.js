@@ -15,20 +15,24 @@
 //   鳴らないので、必ず封蝋クリックなどのイベント内で呼ぶこと。
 //
 // ▼ 狙い（世界観）
-//   「かわいい鈴の音」ではなく、「手紙を開いた瞬間、学校全体に
-//   壮大な魔法がかかり、参加者が魔法の世界に招き入れられる」という
-//   没入感を音だけで作る。約6秒、ふわっと長く伸びる構成にしてある。
+//   「かわいい鈴の音」ではなく、「手紙を開いた瞬間、ふわーっと
+//   魔法にかけられ、そのまま魔法の世界へ連れて行かれる」という
+//   没入感を音だけで作る。約7秒、切れ目なく伸び続ける構成。
 //
-// ▼ 音の構成（すべて合成音。約6秒）
-//   1. 低い持続音（ドローン）がゆっくり立ち上がる＝学校全体を包む気配
-//   2. 風のうねり（フィルターをかけたノイズ、低くこもった音から始まる）
-//   3. 深く低い鐘（銅鑼に近い、複数の非整数倍音を重ねたベル）が一度、
-//      重く鳴る＝封印の起動
-//   4. あやしい旋律（長調ではなく全音音階＝調性のはっきりしない
-//      浮遊した並び）がゆっくり立ちのぼる
-//   5. まばらな煌めき（きらきら粒。数を減らし間隔を広げ、星のように）
-//   全体を簡易リバーブ（フィードバック付きディレイ）に薄く通し、
+// ▼ 音の構成（すべて合成音。約7秒）
+//   1. 低い持続音（ドローン）がゆっくり立ち上がる＝空気が変わる気配
+//   2. ふわーっと立ちのぼる風（ピンクノイズのローパスをゆっくり開く）
+//   3. 深く低い鐘（銅鑼に近い、非整数倍音を重ねたもの）が一度だけ重く鳴る
+//      ＝魔法がかかる瞬間
+//   4. 浮遊した和音（全音音階＝調性のはっきりしない並び）が、
+//      ひと粒ずつではなく重なったまま「ゆっくり咲く」ように膨らむ
+//   5. ゆっくり上へ滑っていく音＝どこかへ連れて行かれる感じ
+//   全体を簡易リバーブ（フィードバック付きディレイ）に通し、
 //   広い空間で鳴っているような奥行きを出している。
+//
+//   ※ かつて入れていた「まばらな煌めき（sparkle）」は、高い音が
+//     短く跳ねるせいで鳥のさえずりのように聞こえてしまったため廃止。
+//     単発の粒を鳴らさず、すべて「伸びる音」で構成すること。
 (function (global) {
   "use strict";
 
@@ -90,11 +94,14 @@
     });
   }
 
-  // あやしい旋律の1音。sine + デチューンtriangleで、余韻の長いベル。
-  function bell(c, t0, dry, wet, freq, dur, gain) {
+  // 浮遊した和音の1音。あえて立ち上がりを遅くして（dur の35%かけて
+  // 膨らむ）、弾いた音ではなく「ふくらむ音」にする。
+  // 微妙にずらした2つのsineが干渉してゆっくり揺れ、生きた響きになる。
+  function pad(c, t0, dry, wet, freq, dur, gain) {
     [
       { type: "sine", detune: 0, mix: 1.0 },
-      { type: "triangle", detune: -7, mix: 0.35 },
+      { type: "sine", detune: 7, mix: 0.7 },
+      { type: "triangle", detune: -6, mix: 0.26 },
     ].forEach(function (layer) {
       var osc = c.createOscillator();
       var g = c.createGain();
@@ -102,14 +109,31 @@
       osc.frequency.setValueAtTime(freq, t0);
       osc.detune.setValueAtTime(layer.detune, t0);
       g.gain.setValueAtTime(0, t0);
-      g.gain.linearRampToValueAtTime(gain * layer.mix, t0 + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.0007, t0 + dur);
+      g.gain.linearRampToValueAtTime(gain * layer.mix, t0 + dur * 0.35);
+      g.gain.linearRampToValueAtTime(0, t0 + dur);
       osc.connect(g);
       g.connect(dry);
       g.connect(wet);
       osc.start(t0);
       osc.stop(t0 + dur + 0.1);
     });
+  }
+
+  // ゆっくり上へ滑っていく音。「連れて行かれる」感じを作る。
+  function glide(c, t0, dry, wet, fromFreq, toFreq, dur, gain) {
+    var osc = c.createOscillator();
+    var g = c.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(fromFreq, t0);
+    osc.frequency.exponentialRampToValueAtTime(toFreq, t0 + dur * 0.85);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + dur * 0.45);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
+    osc.connect(g);
+    g.connect(dry);
+    g.connect(wet);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.1);
   }
 
   // 低いドローン（学校全体を包む気配）。2音を五度で重ね、
@@ -131,59 +155,41 @@
     });
   }
 
-  // 風のうねり。低くこもった帯域からゆっくり開けていく、長めのノイズ。
-  function windSwell(c, t0, dry, wet, dur) {
+  // ふわーっと立ちのぼる風。
+  // 白色ノイズだと「シャーッ」と耳につくので、ピンクノイズ寄りに
+  // 整えてから、ローパスをゆっくり開いて（低い→抜ける→また沈む）
+  // 息を吸って吐くような大きなうねりを作る。
+  function riser(c, t0, dry, wet, dur) {
     var bufSize = Math.max(1, Math.floor(c.sampleRate * dur));
     var buf = c.createBuffer(1, bufSize, c.sampleRate);
     var data = buf.getChannelData(0);
-    for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    var b0 = 0, b1 = 0, b2 = 0;
+    for (var i = 0; i < bufSize; i++) {
+      var w = Math.random() * 2 - 1;
+      b0 = 0.99765 * b0 + w * 0.0990460;
+      b1 = 0.96300 * b1 + w * 0.2965164;
+      b2 = 0.57000 * b2 + w * 1.0526913;
+      data[i] = (b0 + b1 + b2 + w * 0.1848) * 0.25;
+    }
 
     var src = c.createBufferSource();
     src.buffer = buf;
-    var filter = c.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.Q.setValueAtTime(0.7, t0);
-    filter.frequency.setValueAtTime(180, t0);
-    filter.frequency.exponentialRampToValueAtTime(1600, t0 + dur * 0.75);
-    filter.frequency.exponentialRampToValueAtTime(500, t0 + dur);
+    var lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.Q.setValueAtTime(1.1, t0);
+    lp.frequency.setValueAtTime(220, t0);
+    lp.frequency.exponentialRampToValueAtTime(4200, t0 + dur * 0.72);
+    lp.frequency.exponentialRampToValueAtTime(700, t0 + dur);
     var g = c.createGain();
     g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(0.06, t0 + dur * 0.3);
-    g.gain.linearRampToValueAtTime(0.02, t0 + dur * 0.7);
+    g.gain.linearRampToValueAtTime(0.085, t0 + dur * 0.6);
     g.gain.linearRampToValueAtTime(0, t0 + dur);
 
-    src.connect(filter).connect(g);
+    src.connect(lp).connect(g);
     g.connect(dry);
     g.connect(wet);
     src.start(t0);
     src.stop(t0 + dur + 0.1);
-  }
-
-  // 星のようにまばらな煌めき。数を絞り、間隔を広くとる。
-  function sparkle(c, t0, dry, wet, gain) {
-    var freq = 1400 + Math.random() * 1800;
-    var osc = c.createOscillator();
-    var g = c.createGain();
-    var pan = c.createStereoPanner ? c.createStereoPanner() : null;
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(freq, t0);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.3, t0 + 0.1);
-    g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(gain, t0 + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.9);
-    var node = osc;
-    if (pan) {
-      pan.pan.setValueAtTime(Math.random() * 2 - 1, t0);
-      osc.connect(g).connect(pan);
-      pan.connect(dry);
-      pan.connect(wet);
-    } else {
-      osc.connect(g);
-      g.connect(dry);
-      g.connect(wet);
-    }
-    osc.start(t0);
-    osc.stop(t0 + 1.0);
   }
 
   function play() {
@@ -196,24 +202,24 @@
     dry.connect(c.destination);
     var wet = makeReverbSend(c);
 
-    // 1. 低いドローンと風のうねりが、同時にゆっくり立ち上がる
-    drone(c, t0, dry, wet, 5.6);
-    windSwell(c, t0, dry, wet, 2.6);
+    // 1. 低いドローン＝空気が変わる気配。最後まで敷き続ける
+    drone(c, t0, dry, wet, 7.0);
 
-    // 2. 少し間を置いて、深く重い鐘が一度鳴る＝封印が起動する瞬間
-    deepGong(c, t0 + 0.55, dry, wet, 98, 4.4, 0.16);
+    // 2. ふわーーーっと立ちのぼる風
+    riser(c, t0 + 0.1, dry, wet, 3.6);
 
-    // 3. あやしい旋律（全音音階＝調性感の薄い、浮遊した並び）が
-    //    ゆっくり立ちのぼる
-    var notes = [196.0, 220.0, 246.94, 277.18, 311.13, 370.0];
-    notes.forEach(function (f, i) {
-      bell(c, t0 + 1.1 + i * 0.34, dry, wet, f, 2.3, 0.075);
+    // 3. 深く重い響きが一度だけ＝魔法がかかる瞬間
+    deepGong(c, t0 + 0.7, dry, wet, 87, 5.0, 0.13);
+
+    // 4. 浮遊した和音（全音音階）が、重なったままゆっくり咲く。
+    //    ずらし方を小さくして、旋律ではなく「ひとかたまりの響き」にする
+    var chord = [196.0, 246.94, 311.13, 392.0];
+    chord.forEach(function (f, i) {
+      pad(c, t0 + 1.0 + i * 0.26, dry, wet, f, 4.8, 0.055);
     });
 
-    // 4. まばらな星の煌めき。手紙が開いたあとも余韻として残す
-    for (var i = 0; i < 10; i++) {
-      sparkle(c, t0 + 1.4 + Math.random() * 3.6, dry, wet, 0.045 + Math.random() * 0.025);
-    }
+    // 5. ゆっくり上へ滑っていく音＝魔法の世界へ連れて行かれる
+    glide(c, t0 + 1.5, dry, wet, 261.63, 523.25, 4.2, 0.038);
   }
 
   global.MagicChime = { play: play };
