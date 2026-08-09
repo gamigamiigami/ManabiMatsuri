@@ -505,14 +505,33 @@
     100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15); opacity: 0; }
   }
 
+  /* ボタンは大きさが違う2つを横に並べるので、inline-block（ベースライン
+     揃え）だと高さの差の分だけ上下にずれる。flexで中央に揃える。
+     画面が狭いときは wrap で素直に2段になるようにしておく。 */
   .letter-cta {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 0.7s ease 1s, transform 0.7s ease 1s;
   }
   .letter-cta.show { opacity: 1; transform: translateY(0); }
   .letter-cta .btn { display: inline-block; width: auto; padding: 8px 30px; margin: 0; }
+
+  /* スマホを横向きにすると高さが足りず、手紙とボタンがぶつかって
+     ボタンが画面の外へはみ出していた。横向きで背の低い画面のときだけ
+     手紙を一回り小さくし、ボタンの分の高さを確保する。 */
+  @media (orientation: landscape) and (max-height: 540px) {
+    .stage-frame {
+      width: min(86vw, calc(62vh * 4 / 3));
+      height: min(62vh, calc(86vw * 3 / 4));
+    }
+    .letter-cta .btn { padding: 6px 20px; font-size: 0.88rem; }
+    .letter-cta .btn.small { font-size: 0.8rem; }
+  }
 </style>
 </head>
 <body class="letter-page">
@@ -573,7 +592,7 @@
        読み終わったあとに全員へ見せる注意事項への導線だけ。 -->
   <div class="letter-cta" id="letterCta">
     <a class="btn gold" href="notice.html">次へ（注意事項）</a>
-    <button type="button" class="btn ghost small" id="replayBtn" style="margin-left:12px;">🔁 もう一度、はじめから見せる</button>
+    <button type="button" class="btn ghost small" id="replayBtn">🔁 もう一度、はじめから見せる</button>
   </div>
 </div>
 
