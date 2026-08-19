@@ -690,8 +690,18 @@
     }
     const player = document.getElementById("playerName").value.trim();
     team = Store.register(name, player);
-    if (assignedRoute) {
-      team.startRoute = assignedRoute;
+    // route=A/B の入口QRを経由していれば assignedRoute で決まる。
+    // だがそれを経由せず、いきなり設置QR（point.html?p=N）を読んで
+    // 「index.html?next=N」から登録に来たチーム（別ルートの参加者が
+    // 自分の最初の地点のQRを直接読んだ場合など）は assignedRoute が
+    // 空のまま。その場合はこれから向かう next の地点を出発点として扱う
+    // （＝そこがこのチームにとっての「ルートの起点」になる）。
+    // これをしないと巡回順チェックが常にルートA（①始まり）を前提にして
+    // しまい、①以外から始めたチームが「ここじゃないよ」エラーになる
+    // （本番で実際に発生した不具合）。
+    var effectiveStartRoute = assignedRoute || (next && PUZZLES[next] ? Number(next) : null);
+    if (effectiveStartRoute) {
+      team.startRoute = effectiveStartRoute;
       Store.save(team);
     }
     FX.circle();
