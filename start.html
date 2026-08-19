@@ -97,9 +97,14 @@
   }
 
   // スタート地点を記録（現在地はまだ動かさない。最初のQRを読んだ時点で更新される）
+  // startRoute は「次に向かう場所」表示（index.html）と巡回順チェック（point.html）が
+  // 参照する値。ここで必ず一緒にセットしておかないと、両方とも既定値（①=A）に
+  // フォールバックしてしまい、①以外からスタートしたチームが「ここじゃないよ」に
+  // ハマる（実際に本番で発生した不具合）。
   if (!isDebug) {
     if (!team.startPoint) {
       team.startPoint = Number(s);
+      team.startRoute = Number(s);
       Store.save(team);
     }
     Store.send(team, "start", s, {});
