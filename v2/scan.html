@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>資料の符牒を寫す</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-scan .frame {
+    background-color: #131007;
+    background-image: radial-gradient(ellipse 58% 32% at 50% 30%, rgba(176,130,60,.15), transparent 70%), var(--noise);
+  }
+  .scan-topline { position: absolute; left: 0; right: 0; top: 0; height: 14px; background: repeating-linear-gradient(90deg, rgba(212,176,112,.22) 0 1px, transparent 1px 11px); z-index: 1; }
+  .scan-body { text-align: center; color: #ded0ac; }
+  .scan-title { margin: 22px 0 7px; }
+  .scan-lead { font-family: var(--font-body); font-size: var(--fs-body); color: #96835d; letter-spacing: .06em; }
+</style>
+</head>
+<body class="dark scr-scan">
+<div class="frame screen">
+  <div class="scan-topline"></div>
+  <div class="vignette-dark"></div>
+  <div class="screen-body scan-body" style="padding-top:42px">
+    <div id="header"></div>
+
+    <div class="room-tabs" id="room-tabs" style="margin-top:15px"></div>
+
+    <h4 class="scan-title">資料の符牒を寫す</h4>
+    <div class="scan-lead">室に貼られた符牒を讀み、紙の資料を受け取る</div>
+
+    <div class="scan-frame">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="scan-view" id="scan-view">
+        <video id="scan-video" playsinline muted autoplay></video>
+        <canvas id="scan-canvas"></canvas>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="crosshair-v"></div><div class="crosshair-h"></div><div class="crosshair-ring"></div>
+        <div class="sweep" id="sweep"></div>
+        <div class="tag bl">Lens · f/3.5</div>
+        <div class="tag tr">35°41′N</div>
+        <div class="status" id="scan-status" hidden></div>
+      </div>
+    </div>
+
+    <div class="manual-entry-hint">讀み取れぬときは、符牒の下の番號を記せ</div>
+    <div class="manual-entry">
+      <input type="text" inputmode="numeric" id="manual-code" data-testid="manual-code" placeholder="201 — 210" autocomplete="off">
+      <button type="button" id="manual-code-go" data-testid="manual-code-go">照合</button>
+    </div>
+    <div class="pid-error" id="manual-error" data-testid="pid-error" hidden></div>
+    <div class="staff-hint" id="staff-hint" hidden>カメラが使へないときは、係の者へ聲をかけよ。</div>
+
+    <div style="flex:1"></div>
+    <div id="footer"></div>
+  </div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script src="js/vendor/jsQR.min.js"></script>
+<script type="module">
+import { CONFIG, roomName, otherTeam } from "./js/config.js";
+import { totalPoints } from "./js/rules.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href } from "./js/nav.js";
+import { mountHeader, mountFooter, applyTeamTheme, offlineMark, toast } from "./js/ui.js";
+import { createScanner, classifyQr } from "./js/qr-scan.js";
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  const { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  // --- 室タブ（?room が有効なときだけ強調。推測はしない） ---
+  const roomTabsEl = document.getElementById("room-tabs");
+  const p = params();
+  const ownRoomKey = state.team + "room";
+  const otherRoomKey = otherTeam(state.team) + "room";
+  roomTabsEl.innerHTML = "";
+  CONFIG.ROOM_ORDER.forEach((key) => {
+    const b = document.createElement("div");
+    b.className =
+      "room-tab" +
+      (p.room === key ? " active" : "") +
+      (key === otherRoomKey ? " dashed" : "");
+    b.textContent = roomName(key);
+    roomTabsEl.appendChild(b);
+  });
+
+  const roomIndex = CONFIG.ROOM_ORDER.indexOf(p.room);
+  const roman = ["i", "ii", "iii", "iv"];
+  const roomSub = "Room " + (roomIndex >= 0 ? roman[roomIndex] : "—") + " of " + roman[CONFIG.ROOM_ORDER.length - 1];
+
+  mountHeader(document.getElementById("header"), { teamKey: state.team, subtitle: roomSub });
+  mountFooter(document.getElementById("footer"), {
+    points: totalPoints(state),
+    next: { label: "Folio", href: "folio.html" },
+  });
+
+  // --- 符牒（設置QR／個人QR）の分岐 ---
+  function openPuzzle(q, room) {
+    go(href("sheet.html", { q, room }));
+  }
+  function openPartner(otherPid) {
+    if (otherPid === pid) {
+      toast("これは自分自身の符牒だ。相手の符牒を讀み込むこと。");
+      return;
+    }
+    go(href("together.html", { with: otherPid }));
+  }
+
+  const statusEl = document.getElementById("scan-status");
+  function setStatus(text, kind) {
+    if (!text) {
+      statusEl.hidden = true;
+      return;
+    }
+    statusEl.hidden = false;
+    statusEl.textContent = text;
+    statusEl.className = "status" + (kind === "err" ? " err" : "");
+  }
+
+  const scanner = createScanner({
+    video: document.getElementById("scan-video"),
+    canvas: document.getElementById("scan-canvas"),
+    onDecode(text) {
+      const c = classifyQr(text);
+      if (c.kind === "puzzle") {
+        openPuzzle(c.q, c.room);
+      } else if (c.kind === "pid") {
+        openPartner(c.pid);
+      } else {
+        setStatus("見慣れぬ符牒だ。もう一度試すか、番號を記せ。", "err");
+        window.setTimeout(() => scanner.start(), 900);
+      }
+    },
+    onStatus: setStatus,
+    onDenied() {
+      document.getElementById("scan-view").style.display = "none";
+      document.getElementById("staff-hint").hidden = false;
+      document.getElementById("manual-code").focus();
+    },
+  });
+  scanner.start();
+  window.addEventListener("pagehide", () => scanner.stop());
+
+  // --- 符牒番號の手入力 ---
+  const errEl = document.getElementById("manual-error");
+  function lookupCode(raw) {
+    const n = parseInt(String(raw).trim(), 10);
+    const entry = CONFIG.MANUAL_CODES && CONFIG.MANUAL_CODES[n];
+    if (!entry) {
+      errEl.hidden = false;
+      errEl.textContent = "その番號は見つからない。もう一度確かめよ。";
+      return;
+    }
+    errEl.hidden = true;
+    openPuzzle(entry.q, entry.room);
+  }
+  document.getElementById("manual-code-go").addEventListener("click", () => {
+    lookupCode(document.getElementById("manual-code").value);
+  });
+  document.getElementById("manual-code").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") lookupCode(e.currentTarget.value);
+  });
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

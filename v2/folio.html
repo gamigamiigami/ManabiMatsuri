@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>調査員 資料綴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-folio .frame {
+    background-image: linear-gradient(180deg, #7a6941, #54482e), var(--noise);
+  }
+  .folio-topbar { padding: 32px 24px 0; display: flex; justify-content: space-between; align-items: flex-end; }
+  .folio-topbar h1 { margin-top: 5px; color: var(--parchment-100); }
+  .folio-tabs-wrap { margin: 18px 20px 0; }
+  .folio-panel {
+    flex: 1;
+    margin: 0 20px;
+    position: relative;
+    overflow: hidden;
+    padding: 24px 22px 0;
+    background-color: var(--parchment-500);
+    background-image:
+      radial-gradient(circle at 84% 11%, rgba(126,92,44,.16), transparent 7%),
+      radial-gradient(circle at 14% 62%, rgba(112,80,38,.14), transparent 7%),
+      radial-gradient(ellipse 120% 50% at 50% -6%, rgba(255,251,238,.46), transparent 58%),
+      linear-gradient(102deg, rgba(255,251,238,.3), rgba(255,251,238,0) 44%),
+      var(--noise);
+    color: var(--ink);
+    box-shadow: inset 0 8px 14px -8px rgba(0,0,0,.5);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .folio-panel-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 9px; border-bottom: 1px solid rgba(74,54,22,.32); }
+  .folio-panel-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 22px 0 24px; }
+  .folio-locked { text-align: center; padding: 40px 12px; color: var(--ink-soft); }
+  .folio-bottombar { padding: 13px 24px 22px; display: flex; justify-content: space-between; align-items: baseline; }
+</style>
+</head>
+<body class="dark scr-folio">
+<div class="frame screen">
+  <div class="folio-topbar">
+    <div>
+      <div class="label" style="color:var(--parchment-300)">Folio</div>
+      <h1 id="folio-title"></h1>
+    </div>
+    <div class="folio-points">
+      <span class="label">Points</span>
+      <div class="points-badge" id="points-value" data-testid="points-badge"></div>
+    </div>
+  </div>
+
+  <div class="folio-tabs-wrap folio-tabs" id="tabs"></div>
+
+  <div class="folio-panel" id="panel">
+    <div class="punch-holes"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="folio-bottombar">
+    <a class="folio-resolve" id="resolve-link" data-testid="resolve-link" hidden>解いた符を開き直す</a>
+    <a class="label" id="scan-link" style="color:var(--parchment-100)" href="scan.html">Scan →</a>
+  </div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script type="module">
+import { team, otherTeam } from "./js/config.js";
+import { totalPoints } from "./js/rules.js";
+import { renderCrest } from "./js/crest.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href } from "./js/nav.js";
+import { applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  const { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const other = otherTeam(state.team);
+  const p = params();
+  const tab = p.tab === "other" ? "other" : "own";
+  const ownKey = state.team;
+  const kindFor = { own: ownKey, other: other };
+
+  document.getElementById("folio-title").textContent = "調査員 資料綴";
+  document.getElementById("points-value").textContent = String(totalPoints(state));
+
+  // --- タブ（own/other）。切替は必ず実ページ読込にする ---
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  ["own", "other"].forEach((kind) => {
+    const has = !!(state.seals && state.seals[kind]);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "folio-tab";
+    b.setAttribute("aria-selected", String(tab === kind));
+    b.setAttribute("data-testid", kind === "own" ? "folio-tab-own" : "folio-tab-other");
+    let crestHtml = "";
+    try {
+      crestHtml = renderCrest({ team: kindFor[kind], variant: "own", size: 22, locked: !has });
+    } catch (e) {}
+    b.innerHTML =
+      '<span class="crest-dot">' + crestHtml + "</span><span>" +
+      escapeHtml(teamText(kindFor[kind], "{name}の證")) +
+      "</span>";
+    b.addEventListener("click", () => {
+      go(href("folio.html", { tab: kind }));
+    });
+    tabsEl.appendChild(b);
+  });
+
+  // --- パネル本体 ---
+  const panel = document.getElementById("panel");
+  const has = !!(state.seals && state.seals[tab]);
+  const certTeamKey = kindFor[tab];
+
+  if (has) {
+    let crestSvg = "";
+    try {
+      crestSvg = renderCrest({ team: certTeamKey, variant: "own", size: 178 });
+    } catch (e) {}
+    panel.innerHTML =
+      '<div class="punch-holes"><span></span><span></span><span></span></div>' +
+      '<div class="folio-panel-head label" style="color:var(--gold-700)">' +
+      "<span>Certificate of Membership</span><span>" + escapeHtml(team(certTeamKey).short) + "</span></div>" +
+      '<div class="folio-panel-body">' +
+      '<div class="cert-crest" style="width:178px;height:178px">' + crestSvg + "</div>" +
+      '<div class="cert-title" style="margin-top:16px">' + escapeHtml(teamText(certTeamKey, "{name} 研究員 之證")) + "</div>" +
+      '<div class="cert-desc">' + escapeHtml(teamText(certTeamKey, "この證を示す者は{name}の一員なり。")) + "</div>" +
+      '<div class="cert-issued">issued 9. i. 2027</div>' +
+      "</div>";
+  } else {
+    let lockedSvg = "";
+    try {
+      lockedSvg = renderCrest({ team: certTeamKey, variant: "own", size: 96, locked: true });
+    } catch (e) {}
+    panel.innerHTML =
+      '<div class="punch-holes"><span></span><span></span><span></span></div>' +
+      '<div class="folio-panel-head label" style="color:var(--gold-700)"><span>Certificate of Membership</span><span>—</span></div>' +
+      '<div class="folio-locked">' +
+      '<div class="crest-frame crest-locked" style="width:96px;height:96px;margin:0 auto">' + lockedSvg + "</div>" +
+      '<p class="body-text" style="margin-top:14px">まだ此の證は得てゐない。</p>' +
+      "</div>";
+  }
+
+  // --- 解き直しリンク（相手チームの存在を匂わせない文言のみ） ---
+  const resolveEl = document.getElementById("resolve-link");
+  const crosswordSolved = !!(state.solved && state.solved.crossword);
+  const otherSealMissing = !(state.seals && state.seals.other);
+  if (crosswordSolved && otherSealMissing) {
+    resolveEl.hidden = false;
+    resolveEl.href = href("sheet.html", { q: "crossword", as: "other" });
+    resolveEl.addEventListener("click", (e) => {
+      e.preventDefault();
+      go(href("sheet.html", { q: "crossword", as: "other" }));
+    });
+  }
+
+  document.getElementById("scan-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    go("scan.html");
+  });
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

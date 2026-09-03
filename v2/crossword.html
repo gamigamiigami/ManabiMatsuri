@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>盤面に書き寫す</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-crossword .frame {
+    background-color: var(--parchment-300);
+    background-image:
+      radial-gradient(circle at 8% 5%, rgba(126,92,44,.1), transparent 6%),
+      linear-gradient(98deg, rgba(255,253,246,.5), rgba(255,253,246,0) 48%),
+      var(--noise);
+  }
+  .cw-body { color: var(--ink); padding-top: 30px; }
+  .cw-title { margin: 14px 0 14px; }
+  .cw-answer-head { margin-top: 16px; font-family: var(--font-body); font-size: var(--fs-small); letter-spacing: .1em; color: var(--gold-700); margin-bottom: 8px; }
+</style>
+</head>
+<body class="paper scr-crossword">
+<div class="frame screen">
+  <div class="vignette-paper"></div>
+  <div class="screen-body cw-body graph-paper" id="content"></div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script type="module">
+import { CROSSWORD } from "./js/puzzles.js";
+import { totalPoints } from "./js/rules.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href } from "./js/nav.js";
+import { mountHeader, applyTeamTheme, offlineMark } from "./js/ui.js";
+
+function normalizeBlocks(cols, blocks) {
+  const set = new Set();
+  (blocks || []).forEach((b) => {
+    if (Array.isArray(b)) set.add(b[0] + "," + b[1]);
+    else if (typeof b === "string" && b.indexOf(",") !== -1) set.add(b);
+    else if (typeof b === "number") set.add(Math.floor(b / cols) + "," + (b % cols));
+  });
+  return set;
+}
+
+function normalizePrefilled(cols, prefilled) {
+  const map = {};
+  if (!prefilled) return map;
+  if (Array.isArray(prefilled)) {
+    prefilled.forEach((e) => {
+      if (e && typeof e === "object") {
+        const r = "r" in e ? e.r : e[0];
+        const c = "c" in e ? e.c : e[1];
+        map[r + "," + c] = e.ch || e.char || "";
+      }
+    });
+  } else if (typeof prefilled === "object") {
+    Object.keys(prefilled).forEach((k) => {
+      let key = k;
+      if (/^\d+$/.test(k)) {
+        const idx = parseInt(k, 10);
+        key = Math.floor(idx / cols) + "," + (idx % cols);
+      }
+      map[key] = prefilled[k];
+    });
+  }
+  return map;
+}
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  const { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const p = params();
+  const asOther = p.as === "other";
+
+  const puzzle =
+    (CROSSWORD && (CROSSWORD[state.team] || CROSSWORD.common)) || {
+      cols: 5,
+      rows: 5,
+      blocks: [],
+      prefilled: {},
+      clue: "",
+      answerLength: 4,
+    };
+
+  const content = document.getElementById("content");
+  content.innerHTML =
+    '<div id="header"></div>' +
+    '<h4 class="cw-title h1">盤面に書き寫す</h4>' +
+    '<div class="crossword-grid" id="grid" style="grid-template-columns:repeat(' + puzzle.cols + ',1fr)"></div>' +
+    '<div class="crossword-clue"><div class="clue-label">Clue</div><div class="clue-text" id="clue-text"></div></div>' +
+    '<div class="cw-answer-head">浮かび上がつた言葉</div>' +
+    '<div class="answer-strip" id="answer-strip"></div>' +
+    '<div style="flex:1"></div>' +
+    '<div class="btn-row"><button type="button" class="btn btn-primary" id="solve-btn" data-testid="solve-btn">解答を送る</button></div>';
+
+  mountHeader(document.getElementById("header"), { title: "Cipher Grid", teamKey: state.team });
+  document.getElementById("clue-text").textContent = puzzle.clue || "";
+
+  const blocks = normalizeBlocks(puzzle.cols, puzzle.blocks);
+  const prefilled = normalizePrefilled(puzzle.cols, puzzle.prefilled);
+  const gridEl = document.getElementById("grid");
+  gridEl.innerHTML = "";
+  for (let r = 0; r < puzzle.rows; r++) {
+    for (let c = 0; c < puzzle.cols; c++) {
+      const key = r + "," + c;
+      const cell = document.createElement("div");
+      if (blocks.has(key)) {
+        cell.className = "crossword-cell block";
+      } else {
+        cell.className = "crossword-cell" + (prefilled[key] ? " prefilled" : "");
+        cell.textContent = prefilled[key] || "";
+      }
+      gridEl.appendChild(cell);
+    }
+  }
+
+  const stripEl = document.getElementById("answer-strip");
+  stripEl.innerHTML = "";
+  const len = puzzle.answerLength || 4;
+  for (let i = 0; i < len; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    stripEl.appendChild(cell);
+  }
+
+  document.getElementById("solve-btn").addEventListener("click", () => {
+    go(href("submit.html", asOther ? { q: "crossword", as: "other" } : { q: "crossword" }));
+  });
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

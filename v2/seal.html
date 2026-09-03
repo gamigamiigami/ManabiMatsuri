@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>證書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-seal .frame {
+    background-color: #0f0b09;
+    background-image:
+      radial-gradient(ellipse 64% 38% at 50% 42%, rgba(150,52,34,.4), transparent 64%),
+      radial-gradient(ellipse 90% 50% at 50% 106%, rgba(74,22,14,.44), transparent 70%),
+      var(--noise);
+  }
+  .seal-body { align-items: center; text-align: center; color: #ecdcbc; padding-top: 52px; }
+  .seal-title { margin: 12px 0 0; }
+  .seal-sub { margin-top: 9px; font-family: var(--font-body); font-size: var(--fs-small); letter-spacing: .14em; color: #b1875f; }
+  .seal-desc { margin: 22px 0 0; font-size: var(--fs-body); line-height: 2.05; color: #d2bd99; }
+</style>
+</head>
+<body class="dark scr-seal">
+<div class="frame screen">
+  <div class="vignette-dark"></div>
+  <div class="screen-body seal-body" id="content"></div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script type="module">
+import { team, otherTeam } from "./js/config.js";
+import { totalPoints } from "./js/rules.js";
+import { renderCrest } from "./js/crest.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go } from "./js/nav.js";
+import { mountFooter, applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  const { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const p = params();
+  const kind = p.kind === "other" ? "other" : p.kind === "own" ? "own" : null;
+
+  // 證を持たぬのに直接開かれたら（URL 直打ちなど）、静かに帳面へ。
+  if (!kind || !state.seals || !state.seals[kind]) {
+    go("folio.html");
+    return;
+  }
+
+  const certTeamKey = kind === "own" ? state.team : otherTeam(state.team);
+  const grantsEntryTo = kind === "own" ? otherTeam(state.team) : state.team;
+
+  const content = document.getElementById("content");
+  content.innerHTML =
+    '<div class="label" style="color:#c98a62">' +
+    "Verified · " + escapeHtml(teamText(state.team, "Team {romaji}")) +
+    "</div>" +
+    '<h4 class="seal-title h1">' + escapeHtml(teamText(certTeamKey, "{name}の證")) + "</h4>" +
+    '<div class="seal-sub">' +
+    escapeHtml(
+      kind === "own"
+        ? teamText(grantsEntryTo, "{roomName}への入場を許す")
+        : "二つの記録を照らし合はせる資格を得たり"
+    ) +
+    "</div>" +
+    '<div class="certificate" id="seal-cert" data-testid="seal-cert" style="margin-top:32px"></div>' +
+    '<p class="seal-desc">この畫面を係の者に示し、<br>次の資料を受け取ること。</p>' +
+    '<div style="flex:1"></div>' +
+    '<div id="footer" style="width:100%"></div>';
+
+  const cert = document.getElementById("seal-cert");
+  let crestSvg = "";
+  try {
+    crestSvg = renderCrest({ team: certTeamKey, variant: "own", size: 178 });
+  } catch (e) {
+    /* crest.js 未接続でも證書自体は表示できる */
+  }
+  cert.innerHTML =
+    '<div class="cert-no">No. 1 / ' + escapeHtml(kind === "own" ? "II" : "VII") + "</div>" +
+    '<div class="cert-date">9. i. 2027</div>' +
+    '<div class="cert-crest">' + crestSvg + "</div>" +
+    '<div class="cert-title">' + escapeHtml(teamText(certTeamKey, "{name} 研究員 之證")) + "</div>" +
+    '<div class="cert-sub">入場許可</div>';
+
+  mountFooter(document.getElementById("footer"), {
+    points: totalPoints(state),
+    next: { label: "Folio", href: "folio.html" },
+  });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

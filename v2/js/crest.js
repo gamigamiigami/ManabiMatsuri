@@ -175,7 +175,9 @@ export function renderCrest({ team, variant = 'own', size = 150, locked = false,
     ? (t1 && t2 ? `${t1.name}・${t2.name}` : '')
     : (self ? self.name : '');
   const cls = className ? ` class="${esc(className)}"` : '';
-  const dim = locked ? ' opacity="0.45"' : '';
+  // 灰の證は薄くする。ただし薄くし過ぎると、24px の小紋（帳面の見出し）で
+  // 何も無いのと見分けが付かなくなる。0.55 は実機大で試して決めた値。
+  const dim = locked ? ' opacity="0.55"' : '';
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB} ${VB}"` +

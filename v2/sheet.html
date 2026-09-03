@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>資料の案内</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-sheet .frame {
+    background-color: #1b140d;
+    background-image: radial-gradient(ellipse 70% 40% at 50% 8%, rgba(150,110,54,.15), transparent 66%), var(--noise);
+  }
+  .sheet-topline { position: absolute; left: 0; right: 0; top: 0; height: 14px; background: repeating-linear-gradient(90deg, rgba(212,176,112,.18) 0 1px, transparent 1px 12px); z-index: 1; }
+  .sheet-body { color: var(--ink); padding-top: 30px; }
+  .sheet-paper {
+    position: relative;
+    margin-top: 10px;
+    padding: 20px 20px 24px;
+    background-color: var(--parchment-500);
+    background-image: radial-gradient(ellipse 120% 55% at 50% -8%, rgba(255,251,238,.5), transparent 58%), linear-gradient(103deg, rgba(255,251,238,.32), rgba(255,251,238,0) 44%), var(--noise);
+    box-shadow: 0 16px 30px -8px rgba(0,0,0,.7), inset 0 0 60px 14px rgba(96,68,30,.28);
+    color: var(--ink);
+  }
+  .sheet-title { margin: 6px 0 0; padding-bottom: 11px; border-bottom: 1px solid #4a3616; }
+  .sheet-desc { margin: 18px 0 0; font-size: var(--fs-body); line-height: 2.05; letter-spacing: .02em; }
+  .sheet-warn { margin: 16px 6px 0 0; font-family: var(--font-head); font-size: 15px; line-height: 1.85; color: var(--shu-700); transform: rotate(-1.2deg); }
+  .sheet-done { text-align: center; padding: 40px 0; }
+</style>
+</head>
+<body class="paper scr-sheet">
+<div class="frame screen">
+  <div class="sheet-topline"></div>
+  <div class="vignette-paper"></div>
+  <div class="screen-body sheet-body" id="content"></div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script type="module">
+import { PUZZLES } from "./js/puzzles.js";
+import { totalPoints } from "./js/rules.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href } from "./js/nav.js";
+import { mountHeader, mountFooter, applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  const { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const p = params();
+  const q = p.q;
+  const puzzle = q ? PUZZLES[q] : null;
+
+  // 見慣れぬ／存在しない ?q は帳面へ。謎の正誤や進捗を URL に頼らない。
+  if (!puzzle) {
+    go("folio.html");
+    return;
+  }
+
+  const asOther = p.as === "other";
+  const solvedKey = asOther ? q + ":other" : q;
+  const alreadySolved = !!(state.solved && state.solved[solvedKey]);
+
+  const content = document.getElementById("content");
+  content.innerHTML =
+    '<div id="header"></div>' +
+    '<div class="sheet-paper" id="paper"></div>' +
+    '<div id="footer" style="margin-top:auto"></div>';
+
+  mountHeader(document.getElementById("header"), {
+    title: "Field Note",
+    teamKey: asOther ? undefined : state.team,
+    subtitle: asOther ? teamText(state.team, "Team {romaji}") : undefined,
+  });
+  mountFooter(document.getElementById("footer"), {
+    points: totalPoints(state),
+    next: { label: "Folio", href: "folio.html" },
+  });
+
+  const paper = document.getElementById("paper");
+
+  if (alreadySolved) {
+    paper.innerHTML =
+      '<div class="sheet-done">' +
+      '<h4 class="sheet-title" style="border:none">解答済</h4>' +
+      '<div class="body-text">この資料はすでに解き終へてゐる。</div>' +
+      '<div class="btn-row" style="margin-top:20px">' +
+      '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
+      "</div></div>";
+    return;
+  }
+
+  const isCrossword = q === "crossword";
+  const nextHref = isCrossword
+    ? href("crossword.html", asOther ? { as: "other" } : {})
+    : href("submit.html", asOther ? { q, as: "other" } : { q });
+  const btnLabel = isCrossword ? "盤面を開く" : "解答する";
+
+  paper.innerHTML =
+    '<div style="display:flex;justify-content:space-between" class="label"><span>Field Note</span><span>' +
+    teamText(state.team, "Team {romaji}") +
+    "</span></div>" +
+    '<h4 class="sheet-title">' + escapeHtml(puzzle.title || q) + "</h4>" +
+    '<p class="sheet-desc">' +
+    escapeHtml(
+      puzzle.guidance ||
+        "謎は手元の紙の資料にある。この畫面に問は出さない。資料を廣げ、組の者と讀み合はせて解き、答を得たら畫面から送ること。"
+    ) +
+    "</p>" +
+    '<div class="sheet-warn">資料は室から持ち出さぬこと</div>' +
+    '<div class="btn-row" style="margin-top:22px">' +
+    '<button type="button" class="btn btn-primary" id="solve-btn" data-testid="solve-btn">' +
+    escapeHtml(btnLabel) +
+    "</button></div>";
+
+  document.getElementById("solve-btn").addEventListener("click", () => {
+    go(nextHref);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

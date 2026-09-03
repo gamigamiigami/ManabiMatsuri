@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<title>答を記す</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-submit .frame {
+    background-color: var(--bg-paper);
+    background-image:
+      radial-gradient(circle at 86% 9%, rgba(126,92,44,.16), transparent 7%),
+      radial-gradient(circle at 10% 88%, rgba(112,84,42,.18), transparent 8%),
+      radial-gradient(ellipse 120% 55% at 50% -8%, rgba(255,251,238,.5), transparent 58%),
+      linear-gradient(100deg, rgba(255,252,240,.34), rgba(255,252,240,0) 46%),
+      var(--noise);
+  }
+  .submit-topline { position: absolute; left: 0; right: 0; top: 0; height: 13px; background: repeating-linear-gradient(90deg, rgba(74,54,22,.3) 0 1px, transparent 1px 11px); z-index: 1; }
+  .submit-body { color: var(--ink); padding-top: 30px; }
+  .submit-title { margin: 18px 0 3px; }
+  .submit-lead { font-family: var(--font-body); font-size: var(--fs-small); color: var(--ink-soft); letter-spacing: .04em; }
+  .submit-meta { margin-top: 9px; display: flex; justify-content: space-between; align-items: baseline; }
+  .submit-recorded { margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(74,54,22,.28); display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+  .submit-warn { font-family: var(--font-italic); font-style: italic; font-size: var(--fs-small); color: var(--ink-soft); text-align: center; margin: 16px 0 12px; }
+</style>
+</head>
+<body class="paper scr-submit">
+<div class="frame screen">
+  <div class="submit-topline"></div>
+  <div class="vignette-paper"></div>
+  <div class="screen-body submit-body" id="content"></div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script type="module">
+import { PUZZLES } from "./js/puzzles.js";
+import { checkAnswer, applyWrong, applySolve, totalPoints, canResolveAsOther } from "./js/rules.js";
+import { renderCrest } from "./js/crest.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href } from "./js/nav.js";
+import { mountHeader, applyTeamTheme, offlineMark, teamText, toast } from "./js/ui.js";
+import { mountKanaInput } from "./js/kana-input.js";
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  let { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const p = params();
+  const q = p.q;
+  const puzzle = q ? PUZZLES[q] : null;
+  if (!puzzle) {
+    go("folio.html");
+    return;
+  }
+
+  const asOther = p.as === "other";
+  // 相手チームの存在を匂わせず、静かに帳面へ戻す（資格が無ければ）。
+  if (asOther && !canResolveAsOther(state)) {
+    go("folio.html");
+    return;
+  }
+
+  const length = puzzle.length || 4;
+  const content = document.getElementById("content");
+  content.innerHTML =
+    '<div id="header"></div>' +
+    '<h4 class="submit-title h1">' + escapeHtml((puzzle.title || "資料") + "の答") + "</h4>" +
+    '<div class="submit-lead">紙で得た答を、ひらがな' + length + "文字で入れる</div>" +
+    '<div id="kana-mount" style="margin-top:24px"></div>' +
+    '<div class="wrong-msg" id="wrong-msg" data-testid="wrong-msg" hidden></div>' +
+    '<div class="submit-recorded">' +
+    '<div><div class="label" style="color:var(--gold-700);margin-bottom:6px">Recorded by</div>' +
+    '<div class="h2" style="font-size:15px;color:var(--shu-700)">' + escapeHtml(teamText(state.team, "{name} 調査員")) + "</div></div>" +
+    '<div class="crest-frame crest-locked" style="width:56px;height:56px" id="mini-crest"></div>' +
+    "</div>" +
+    '<div style="flex:1"></div>' +
+    '<div class="submit-warn">Once entered, it cannot be withdrawn.</div>' +
+    '<div class="btn-row"><button type="button" class="btn btn-primary" id="submit-btn" data-testid="submit-btn">送り出す</button></div>';
+
+  mountHeader(document.getElementById("header"), { title: "Answer Sheet", teamKey: state.team });
+
+  try {
+    document.getElementById("mini-crest").innerHTML = renderCrest({ team: state.team, variant: "own", size: 56 });
+  } catch (e) {
+    /* crest.js 未接続でも submit 自体は動く */
+  }
+
+  const kana = mountKanaInput(document.getElementById("kana-mount"), { length });
+  const wrongMsgEl = document.getElementById("wrong-msg");
+  const submitBtn = document.getElementById("submit-btn");
+
+  let submitting = false;
+  submitBtn.addEventListener("click", () => {
+    if (submitting) return;
+    const val = kana.value();
+    if (val.length < length) {
+      toast("すべての枠を埋めてから送ること");
+      return;
+    }
+    submitting = true;
+    submitBtn.setAttribute("aria-disabled", "true");
+
+    const ok = checkAnswer(puzzle, state.team, val);
+    if (!ok) {
+      state = applyWrong(state, q);
+      store.saveState(state);
+      kana.shake();
+      wrongMsgEl.hidden = false;
+      wrongMsgEl.textContent = "誤り（" + ((state.wrong && state.wrong[q]) || 1) + "回目）。今一度、資料を讀み合はせよ。";
+      submitting = false;
+      submitBtn.removeAttribute("aria-disabled");
+      return;
+    }
+
+    wrongMsgEl.hidden = true;
+    const res = applySolve(state, { puzzleId: q, asOther, via: "kana", now: new Date().toISOString() });
+    state = res.state;
+    store.saveState(state);
+    if (res.seal) {
+      go(href("seal.html", { kind: res.seal }));
+    } else {
+      go("folio.html");
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>
