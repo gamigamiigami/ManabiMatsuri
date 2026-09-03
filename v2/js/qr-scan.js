@@ -45,7 +45,7 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
     if (found) return;
     found = true;
     stopCamera();
-    setStatus("読み取ったよ！ひらいています…", "ok");
+    setStatus("符牒を讀み取つた。今ひらく…", "ok");
 
     if (onDecode) onDecode(text);
   }
@@ -79,11 +79,11 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
 
   function startCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setStatus("この端末はカメラに対応していません。", "err");
+      setStatus("この端末ではカメラが使へぬ。下の番號から進め。", "err");
       if (onDenied) onDenied();
       return;
     }
-    setStatus("カメラを起動しています…");
+    setStatus("カメラを起こしてゐる…");
     navigator.mediaDevices
       .getUserMedia({
         video: { facingMode: { ideal: "environment" } },
@@ -92,11 +92,11 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
       .then(function (s) {
         stream = s;
         video.srcObject = s;
-        setStatus("QRコードを枠の中に映してね");
+        setStatus("符牒を枠の中に入れよ");
         rafId = requestAnimationFrame(tick);
       })
       .catch(function () {
-        setStatus("カメラを使う許可がありません。", "err");
+        setStatus("カメラを使ふ許しが無い。下の番號から進め。", "err");
         if (onDenied) onDenied();
       });
   }

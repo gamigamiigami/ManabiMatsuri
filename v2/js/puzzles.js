@@ -131,10 +131,10 @@ export const PUZZLES = {
   crossword: {
     id: 'crossword',
     kind: 'grid',
-    title: '方眼の書き寫し',
+    title: '方眼の書き写し',
     subtitle: '二の一',
     room: 'library',
-    guidance: '盤面に書き寫し、色の付いた四つの枡を上から讀む。',
+    guidance: '盤面に書き写し、色の付いた四つの枡を上から讀む。',
     length: 4,
     answers: { team1: 'ひかりの', team2: 'かげろふ' },
     // 一度目は證を出さない。folio の目立たぬリンクから解き直したときだけ
@@ -190,12 +190,12 @@ export const TOGETHER = {
   ],
   cross: [
     { id: 'c01', halves: { A: '朔の夜に一つ', B: '望の夜に十五' }, answer: 'つきよみ' },
-    { id: 'c02', halves: { A: '左の柱の彫り', B: '右の柱の缺け' }, answer: 'ついたち' },
-    { id: 'c03', halves: { A: '古井戸の底に', B: '空を映す圓' }, answer: 'みなわそ' },
+    { id: 'c02', halves: { A: '左の柱の彫り', B: '右の柱の欠け' }, answer: 'ついたち' },
+    { id: 'c03', halves: { A: '古井戸の底に', B: '空を映す円' }, answer: 'みなわそ' },
     { id: 'c04', halves: { A: '第一の扉は西', B: '第二の扉は東' }, answer: 'ひがしに' },
     { id: 'c05', halves: { A: '筆は硯に伏せ', B: '紙は風に伏す' }, answer: 'すずりば' },
     { id: 'c06', halves: { A: '數へ歌の三', B: '數へ歌の八' }, answer: 'とをあま' },
-    { id: 'c07', halves: { A: '燈は北に置け', B: '影は南に伸ぶ' }, answer: 'ほくしん' },
+    { id: 'c07', halves: { A: '灯は北に置け', B: '影は南に伸ぶ' }, answer: 'ほくしん' },
     { id: 'c08', halves: { A: '標本の第七', B: '書庫の第七' }, answer: 'ななふし' },
     { id: 'c09', halves: { A: '春の字を一つ', B: '秋の字を一つ' }, answer: 'はるあき' },
     { id: 'c10', halves: { A: '鍵は二本ある', B: '錠は一つしかない' }, answer: 'あはせか' },

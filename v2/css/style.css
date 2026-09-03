@@ -6,7 +6,7 @@
    components.css 側に置く。ここは全画面で使う「土台」だけを持つ。
 
    ■ 分かったこと（第1回サイトからの教訓／このファイルへの反映）
-   ・見出しと本文の文字サイズは「はっきり」差をつけないと、燈明かりの
+   ・見出しと本文の文字サイズは「はっきり」差をつけないと、灯明かりの
      下で読みにくい（前回、差が小さくて事故った）。ここでは見出し
      28px・本文14px を基準にし、比率がおよそ2倍になるよう固定した。
    ・ボタンを横に並べるとき inline-block を使うと、フォントの行送りの
@@ -115,7 +115,7 @@ input { font: inherit; }
 }
 
 /* ---------------------------------------------------------------------
-   2つの気分（燈明かりの暗さ／羊皮紙の明るさ）
+   2つの気分（灯明かりの暗さ／羊皮紙の明るさ）
    --------------------------------------------------------------------- */
 body.dark {
   background-color: var(--bg-dark);
@@ -133,7 +133,7 @@ body.paper .frame {
   background-image: var(--noise);
 }
 
-/* 燈明かりの周辺減光（画面端を暗く落とす） */
+/* 灯明かりの周辺減光（画面端を暗く落とす） */
 .vignette-dark {
   position: absolute;
   inset: 0;
@@ -238,7 +238,7 @@ h2, .h2 {
   box-shadow: 0 10px 18px -4px rgba(90, 28, 16, 0.5), inset 0 1px 0 rgba(255, 190, 160, 0.28);
 }
 
-/* 燈下（暗い画面）向けの、地味だが確実な主要ボタン */
+/* 灯下（暗い画面）向けの、地味だが確実な主要ボタン */
 .btn-lamp {
   border-top: 1px solid rgba(184, 150, 88, 0.42);
   border-bottom: 1px solid rgba(184, 150, 88, 0.42);
@@ -416,7 +416,7 @@ body.dark .ftr-bar { color: #a4805c; border-top-color: rgba(180, 140, 100, 0.24)
 .screen-body.no-scroll { overflow: hidden; }
 
 /* ---------------------------------------------------------------------
-   横向き（landscape）対応：燈の大きな装飾を控えめにして本文を確保する */
+   横向き（landscape）対応：灯の大きな装飾を控えめにして本文を確保する */
 @media (orientation: landscape) and (max-height: 540px) {
   .hero-title { font-size: 26px; }
   h1, .h1 { font-size: 20px; }
@@ -424,7 +424,7 @@ body.dark .ftr-bar { color: #a4805c; border-top-color: rgba(180, 140, 100, 0.24)
   .crest-frame { width: 96px !important; height: 96px !important; }
 }
 
-/* prefers-reduced-motion への配慮：燈のちらつき等は自動アニメ扱いなので止める */
+/* prefers-reduced-motion への配慮：灯のちらつき等は自動アニメ扱いなので止める */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
 }

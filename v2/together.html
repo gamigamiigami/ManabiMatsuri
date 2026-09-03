@@ -80,7 +80,7 @@ async function main() {
     return (
       '<div class="tg-lead">Phase III — Together</div>' +
       '<h4 class="tg-title h1">二つの記録は、元は一つ</h4>' +
-      '<div class="tg-sub">まだ解いてゐなくても大丈夫。<br>相手の端末と符牒を讀み合ひ、聲に出して讀み上げること。</div>'
+      '<div class="tg-sub">まだ解いてゐなくても大丈夫。<br>相手の端末と符牒を讀み合ひ、声に出して讀み上げること。</div>'
     );
   }
 
@@ -168,7 +168,7 @@ async function main() {
     }
     const partnerTeam = teamOf(partnerPid);
     if (!partnerTeam) {
-      pairErr("その符牒は見當たらない。");
+      pairErr("その符牒は見当たりません。番號を確かめるか、受付の者へ尋ねよ。");
       return;
     }
     const res = applyLink(state, { partnerPid, partnerTeam, now: new Date().toISOString() });
@@ -180,7 +180,7 @@ async function main() {
   function renderBlocked(partnerPid) {
     content.innerHTML =
       baseHeader() +
-      '<div class="together-blocked" data-testid="together-blocked">この二人の調査は、すでに濟んでゐる。</div>' +
+      '<div class="together-blocked" data-testid="together-blocked">この二人の調査は、すでに済んでゐる。</div>' +
       '<div class="btn-row" style="margin-top:16px">' +
       '<button type="button" class="btn" id="another">別の相手と</button>' +
       '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
@@ -210,7 +210,7 @@ async function main() {
       '<div class="half-value" data-testid="together-my-half">' + escapeHtml(myHalf) + "</div>" +
       "</div>" +
       '<div class="half-panel theirs">' +
-      '<div class="half-label">聲を合はせて出た答へ</div>' +
+      '<div class="half-label">声を合はせて出た答へ</div>' +
       '<div id="answer-mount" data-testid="together-answer"></div>' +
       "</div>" +
       "</div>" +
@@ -242,7 +242,7 @@ async function main() {
       if (!ok) {
         kana.shake();
         wrongEl.hidden = false;
-        wrongEl.textContent = "合はぬ。もう一度、聲に出して確かめよ。";
+        wrongEl.textContent = "合はぬ。もう一度、声に出して確かめよ。";
         return;
       }
       wrongEl.hidden = true;
