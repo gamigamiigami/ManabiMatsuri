@@ -71,17 +71,16 @@ async function main() {
   const solvedKey = asOther ? q + ":other" : q;
   const alreadySolved = !!(state.solved && state.solved[solvedKey]);
 
+  // この画面は貼紙そのものが主役で、紙の上端に既に
+  // 「Field Note ／ 組の名」が刷つてある。
+  // 画面側にも同じ見出しを置くと、同じ文字列が一画面に二度出る。
+  // 第一回の反省（同じ語が二度出てゐたら片方は消せないか疑ふ）に従ひ、
+  // ここでは画面側の見出しを持たせず、紙に語らせる。
   const content = document.getElementById("content");
   content.innerHTML =
-    '<div id="header"></div>' +
     '<div class="sheet-paper" id="paper"></div>' +
     '<div id="footer" style="margin-top:auto"></div>';
 
-  mountHeader(document.getElementById("header"), {
-    title: "Field Note",
-    teamKey: asOther ? undefined : state.team,
-    subtitle: asOther ? teamText(state.team, "{romaji}") : undefined,
-  });
   mountFooter(document.getElementById("footer"), {
     points: totalPoints(state),
     next: { label: "Folio", href: "folio.html" },
