@@ -214,6 +214,18 @@
     <button onclick="generateAll()">生成する</button>
   </div>
 
+  <!-- 教室の入口QR。参加者が番号を手打ちしないための本筋の入口。
+       画面へ投影し、教卓と壁にも貼る。読めばその組の未使用の札が
+       一つ自動で渡るので、受付で一人ずつ札を配る手間も要らない。 -->
+  <div class="output-section" id="entrySection">
+    <h2>教室の入口QR（各教室に貼る・投影する）</h2>
+    <p class="note">
+      これを読むと、その教室の組として自動で番号が割り当てられます。
+      参加者は何も入力しません。組ごとに一枚ずつ、教室の画面と壁に。
+    </p>
+    <div id="entryQrs" style="display:flex;gap:24px;flex-wrap:wrap"></div>
+  </div>
+
   <div class="output-section" id="csvSection" style="display:none;">
     <h2>CSV（コピペ用）</h2>
     <div class="copy-box" id="csvOutput"></div>
@@ -259,6 +271,29 @@
       '<input type="number" id="count-' + t.key + '" min="1" max="1000" value="30">' +
     '</div>'
   )).join('');
+
+  // 入口QRは人数と関係なく決まるので、開いた時点で描いておく。
+  function baseUrlNow() {
+    const typed = document.getElementById('baseUrl').value.trim();
+    if (typed) return typed.endsWith('/') ? typed : typed + '/';
+    return window.location.origin + window.location.pathname.replace(/tools\/.*$/, '');
+  }
+
+  function renderEntryQrs() {
+    const base = baseUrlNow();
+    document.getElementById('entryQrs').innerHTML = TEAMS.map((t) => {
+      const url = base + 'index.html?team=' + t.key;
+      return (
+        '<div style="text-align:center">' +
+          '<div style="background:#fff;padding:12px;display:inline-block">' + qrSvg(url, { cell: 6, margin: 24 }) + '</div>' +
+          '<div style="margin-top:8px;font-weight:700">' + t.name + '</div>' +
+          '<div style="font-size:12px;color:#555;word-break:break-all;max-width:220px">' + url + '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+  renderEntryQrs();
+  document.getElementById('baseUrl').addEventListener('change', renderEntryQrs);
 
   window.generateAll = async function() {
     const counts = TEAMS.map((t) => ({

@@ -180,6 +180,18 @@
   font-size: 16px;
   letter-spacing: 0.08em;
 }
+/* 見出しが一つしか無いとき（相手の組の證をまだ得てゐない間）。
+   帳面の耳を一枚だけ出す形にして、
+   「隣にもう一枚あるが空いてゐる」と見えないやうにする。
+   横幅を張らせないのは、二枚目の席が空いて見えるのを避けるため。 */
+.folio-tab.folio-tab-only {
+  flex: 0 0 auto;
+  min-width: 148px;
+  padding-left: 20px;
+  padding-right: 20px;
+  cursor: default;
+}
+
 .folio-tab[aria-selected="true"] {
   background: var(--parchment-500);
   color: var(--ink);

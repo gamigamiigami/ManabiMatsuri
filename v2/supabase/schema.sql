@@ -30,8 +30,18 @@ create table if not exists public.participants (
   pid         text primary key,
   team        text not null check (team in ('team1', 'team2')),
   label       text,
+  -- 受付で誰かの手に渡つた刻。null なら、まだ誰も名乗つてゐない札。
+  -- claim_pid() がこの列を立てて一人に割り当てる。
+  claimed_at  timestamptz,
   created_at  timestamptz not null default now()
 );
+
+-- 既に表がある所へ後から足す場合の面倒を見る（二度実行しても平気）。
+alter table public.participants add column if not exists claimed_at timestamptz;
+
+-- 未割当の札を組ごとに素早く引くための索引。
+create index if not exists participants_unclaimed_idx
+  on public.participants (team, pid) where claimed_at is null;
 
 -- 状態文書。参加者一人につき一行。
 create table if not exists public.participant_state (
@@ -100,6 +110,52 @@ revoke all on public.pair_links        from anon, authenticated;
 -- 片方だけ変へると「関数が見つからない」で静かに落ちるので注意。
 
 -- 状態を読む。参加者が居なければ null（＝端末側は「知らない ID」と判断する）。
+-- 参加者に番号を自動で割り当てる。
+--
+-- ■ なぜ要るのか
+--   参加者に「K017」と手で打たせたくない。打ち間違へれば別人になり、
+--   受付で列が止まる。教室の壁に貼る一枚の QR
+--   （index.html?team=team1）を読めば、その組の未使用の札が
+--   一つ自動で渡る形にする。
+--
+-- ■ 同時に何十人が読んでも重ならないやうにする
+--   for update skip locked を使ふ。二人が同じ瞬間に読んでも、
+--   後の一人は「今その行は誰かが押さへてゐる」ので飛ばして次を取る。
+--   これを使はずに「未割当の最小を取る」と書くと、
+--   教室で一斉に読み取つた瞬間に同じ番号が二人に渡る。
+create or replace function public.claim_pid(p_team text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_pid text;
+begin
+  if p_team is null or p_team not in ('team1', 'team2') then
+    raise exception 'unknown_team';
+  end if;
+
+  select pid into v_pid
+    from participants
+   where team = p_team and claimed_at is null
+   order by pid
+   for update skip locked
+   limit 1;
+
+  if v_pid is null then
+    -- 札が尽きた。受付で刷り足すまで待つ事になるので、
+    -- 画面側は「受付の者へ」と出す。黙つて誰かの札を
+    -- 使ひ回させてはならない（進捗が混ざる）。
+    return jsonb_build_object('pid', null, 'team', p_team, 'exhausted', true);
+  end if;
+
+  update participants set claimed_at = now() where pid = v_pid;
+
+  return jsonb_build_object('pid', v_pid, 'team', p_team, 'exhausted', false);
+end;
+$$;
+
 create or replace function public.get_state(p_pid text)
 returns jsonb
 language plpgsql
@@ -295,12 +351,14 @@ $$;
 -- 4. 権限（関数だけを anon に開ける）
 -- ---------------------------------------------------------------------------
 
+revoke all on function public.claim_pid(text)                                         from public;
 revoke all on function public.get_state(text)                                        from public;
 revoke all on function public.save_state(text, jsonb)                                from public;
 revoke all on function public.log_attempt(text, text, text, text, boolean, text, timestamptz) from public;
 revoke all on function public.link_pair(text, text, text, text)                      from public;
 revoke all on function public.verify_pair(text, text)                                from public;
 
+grant execute on function public.claim_pid(text)                                         to anon, authenticated;
 grant execute on function public.get_state(text)                                        to anon, authenticated;
 grant execute on function public.save_state(text, jsonb)                                to anon, authenticated;
 grant execute on function public.log_attempt(text, text, text, text, boolean, text, timestamptz) to anon, authenticated;

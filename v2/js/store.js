@@ -22,13 +22,14 @@
 //   複数の ID を試しても互ひの進捗を潰さない。
 // ============================================================================
 
-import { CONFIG, normalizePid, teamOf } from './config.js';
+import { CONFIG, normalizePid, team, teamOf } from './config.js';
 import { emptyState, mergeState } from './rules.js';
 import { api, isConfigured } from './supabase.js';
 
 const K_PID = 'oc2_pid';
 const kState = (pid) => 'oc2_state_' + pid;
 const kPending = (pid) => 'oc2_pending_' + pid;
+const K_LOCAL_SEQ = 'oc2_local_seq';
 
 // --- localStorage の薄い包み（決して throw しない） -------------------------
 function lsGet(key) {
@@ -66,6 +67,48 @@ export function setPid(pid) {
   if (!p) return '';
   lsSet(K_PID, p);
   return p;
+}
+
+/**
+ * 組を指定して番号を自動で受け取る。
+ *
+ * ■ なぜ手打ちを避けるのか
+ *   受付で参加者に「K017」と打たせると、打ち間違へがそのまま
+ *   別人の記録になる。中学生も保護者も、慣れない端末で
+ *   英字と数字の混じつた四文字を正しく打つとは限らない。
+ *   教室の壁に貼つた一枚の QR（index.html?team=team1）を読めば
+ *   済むやうにしておけば、そもそも打つ場面が無い。
+ *
+ * ■ サーバが無いとき（ローカルモード）
+ *   予行演習や設定前の確認のために、その端末だけで通る番号を作る。
+ *   本番の名簿と混ざらないやう、接頭辞の後を九百番台にしてある。
+ *
+ * @returns {Promise<{ok:boolean, pid:string, team:string, reason?:string}>}
+ */
+export async function claimPid(teamKey) {
+  const t = team(teamKey);
+  if (!t) return { ok: false, pid: '', team: '', reason: 'unknown-team' };
+
+  if (!isConfigured()) {
+    // その端末のなかだけで数へる。二台目には同じ番号が出るが、
+    // ローカルモードは一台で確かめるための姿なので差し支へない。
+    let n = 900;
+    try {
+      n = Math.max(900, parseInt(lsGet(K_LOCAL_SEQ) || '900', 10) || 900);
+      lsSet(K_LOCAL_SEQ, String(n + 1));
+    } catch (_) { /* 記憶できなくても進む */ }
+    return { ok: true, pid: t.idPrefix + String(n).slice(-3), team: t.key, reason: 'local' };
+  }
+
+  const res = await api.claimPid(t.key);
+  if (!res.ok) return { ok: false, pid: '', team: t.key, reason: 'offline' };
+  const row = Array.isArray(res.data) ? res.data[0] : res.data;
+  if (!row || !row.pid) {
+    // 名簿の札が尽きた。誰かの札を使ひ回させると進捗が混ざるので、
+    // 黙つて代用は作らず、受付へ回す。
+    return { ok: false, pid: '', team: t.key, reason: 'exhausted' };
+  }
+  return { ok: true, pid: normalizePid(row.pid), team: row.team || t.key };
 }
 
 /** 識別だけ消す（進捗は残す。別人が同じ端末を使ふときの受付操作）。 */

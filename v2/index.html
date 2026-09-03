@@ -130,6 +130,43 @@ function renderConfirm(pid, teamKey, continuing) {
   });
 }
 
+// 教室の壁に貼つた QR（index.html?team=team1）から来た人に見せる画面。
+// 番号は押した時にサーバから受け取る。参加者は何も打たない。
+function renderJoin(teamKey) {
+  const t = team(teamKey);
+  statusEl.innerHTML =
+    '<div class="start-crest-wrap"><div class="crest-frame" style="width:150px;height:150px;margin:0 auto">' +
+    crestHtml(teamKey, 150) +
+    "</div></div>" +
+    '<button type="button" class="btn-lamp" style="width:100%" data-testid="start-btn">調査を開始する</button>' +
+    '<div class="italic-en start-caption" style="color:#75623f">' +
+    teamText(teamKey, "for the eyes of {romaji} alone") +
+    "</div>";
+
+  const btn = statusEl.querySelector('[data-testid="start-btn"]');
+  btn.addEventListener("click", async () => {
+    // 二度押しで札を二つ取つてしまふのを防ぐ。
+    // 通信の往復があるので、待つ間に指が滑る事は普通に起きる。
+    if (btn.getAttribute("aria-disabled") === "true") return;
+    btn.setAttribute("aria-disabled", "true");
+    btn.textContent = "名を記してゐる…";
+
+    const res = await store.claimPid(teamKey);
+    if (!res.ok) {
+      // 札が尽きた／通信が届かない。いづれも参加者では直せないので受付へ。
+      // ここで適当な番号を作つて進ませると、後で進捗が混ざる。
+      renderError(
+        res.reason === "exhausted"
+          ? "この組の札が尽きた。受付の者へ知らせよ。"
+          : "受付の帳面に繋がらない。少し待つて、もう一度押すか、受付の者へ尋ねよ。"
+      );
+      return;
+    }
+    store.setPid(res.pid);
+    go(nextTarget());
+  });
+}
+
 function renderError(message) {
   statusEl.innerHTML =
     '<div class="pid-error" data-testid="pid-error">' + message + "</div>" +
@@ -209,6 +246,14 @@ function main() {
     return;
   }
 
+  // 教室の壁の QR から来た場合。番号は押した時に自動で渡る。
+  if (p.team && CONFIG.TEAMS[p.team]) {
+    renderJoin(p.team);
+    return;
+  }
+
+  // どちらの入口も通らずに素で開かれた場合だけ、手入力を出す。
+  // 当日ここに辿り着くのは、係の者が端末を直しに来た時くらい。
   renderManualEntry();
 }
 

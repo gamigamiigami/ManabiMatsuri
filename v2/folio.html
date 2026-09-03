@@ -94,7 +94,17 @@ async function main() {
 
   const other = otherTeam(state.team);
   const p = params();
-  const tab = p.tab === "other" ? "other" : "own";
+
+  // ■ 相手の組の證は、手に入れるまで存在ごと伏せる。
+  //   物語の運びは「自分の組の證をもらふ → 途中で、
+  //   もう一つ在るのではと気づく → 解き直して手に入れる」。
+  //   まだ得てゐない段階で見出しに「相手の組の證」が並んでゐると、
+  //   気づく前に答が割れる。だから見出しそのものを出さない。
+  //   （URL に ?tab=other と直に打たれた場合も、
+  //     まだ得てゐなければ自分の組の側を見せる。伏せ物を
+  //     URL から覗けてしまへば、伏せた意味がない。）
+  const hasOther = !!(state.seals && state.seals.other);
+  const tab = p.tab === "other" && hasOther ? "other" : "own";
   const ownKey = state.team;
   const kindFor = { own: ownKey, other: other };
 
@@ -104,11 +114,12 @@ async function main() {
   // --- タブ（own/other）。切替は必ず実ページ読込にする ---
   const tabsEl = document.getElementById("tabs");
   tabsEl.innerHTML = "";
-  ["own", "other"].forEach((kind) => {
+  const kinds = hasOther ? ["own", "other"] : ["own"];
+  kinds.forEach((kind) => {
     const has = !!(state.seals && state.seals[kind]);
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "folio-tab";
+    b.className = "folio-tab" + (kinds.length === 1 ? " folio-tab-only" : "");
     b.setAttribute("aria-selected", String(tab === kind));
     b.setAttribute("data-testid", kind === "own" ? "folio-tab-own" : "folio-tab-other");
     let crestHtml = "";

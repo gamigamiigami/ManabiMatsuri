@@ -108,6 +108,15 @@ export async function rpc(name, args, opts = {}) {
  * Supabase の RPC は名前付き引数なので、綴りが違ふと関数未検出で落ちる。
  */
 export const api = {
+  /**
+   * 組を指定して、未使用の番号を一つ受け取る
+   * → {ok, data:{pid, team, exhausted}}
+   * 参加者に番号を手で打たせないための入口（教室の壁に貼る QR から呼ぶ）。
+   */
+  claimPid(team) {
+    return rpc('claim_pid', { p_team: team });
+  },
+
   /** 状態文書を読む → {ok, data:{state, version, team}|null} */
   getState(pid) {
     return rpc('get_state', { p_pid: pid });

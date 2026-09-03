@@ -85,7 +85,9 @@ async function main() {
   const asOther = p.as === "other";
 
   const puzzle =
-    (CROSSWORD && (CROSSWORD[state.team] || CROSSWORD.common)) || {
+    // 盤面は二組で共通の一枚。組で切り替へてはならない
+    // （切り替へると解き直しが別の謎に見える。puzzles.js の註を見よ）。
+    (CROSSWORD && CROSSWORD.common) || {
       cols: 5,
       rows: 5,
       blocks: [],

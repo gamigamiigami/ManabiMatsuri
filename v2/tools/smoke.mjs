@@ -244,16 +244,21 @@ try {
   console.log('\n[4] 資料綴 — 相手の證はまだ取れず、解き直しの導線も出ない');
   await main.page.goto(BASE + 'folio.html');
   check('自組の綴が見える', await visible(main.page, 'folio-tab-own'));
-  await clickAndNavigate(main.page, 'folio-tab-other');
-  check('相手の證は伏せられてゐる', await visible(main.page, 'folio-locked', 6000));
-  check('伏せられてゐる間は證書を出さない', !(await visible(main.page, 'folio-cert', 1200)));
+  check('相手の組の見出しは出てゐない', !(await visible(main.page, 'folio-tab-other', 1500)));
+  // URL を直に打つても覗けない事を確かめる。
+  // 伏せ物が URL から見えるなら、伏せた事にならない。
+  await main.page.goto(BASE + 'folio.html?tab=other');
+  check('URL を直に打つても伏せられてゐる', !(await visible(main.page, 'folio-tab-other', 1500)));
+  const shownTeam = await main.page.locator(sel('folio-tab-own')).first().innerText();
+  check('自分の組の側が見えてゐる', shownTeam.length > 0, shownTeam.replace(/\s+/g, ' '));
   await shot(main.page, 'folio-other-locked');
   await main.page.goto(BASE + 'folio.html');
   check('この時点で解き直しの導線は出ない', !(await visible(main.page, 'resolve-link', 1200)));
 
   // ---- 5. クロスワードと解き直し ------------------------------------------
   console.log('\n[5] 解き直し — 同じ盤面を相手の手掛かりで解く');
-  await main.page.goto(BASE + 'sheet.html?q=crossword');
+  await main.page.goto(BASE + 'crossword.html');
+  const boardOwn = await main.page.locator('#grid').first().innerText();
   check('盤面から解答画面へ辿り着く', await reachSubmit(main.page), main.page.url());
   await typeKana(main.page, answerOf('crossword', TEAM1));
   await main.page.locator(sel('submit-btn')).first().click();
@@ -265,14 +270,22 @@ try {
   check('解き直しは相手の手掛かりで開く', /as=other/.test(main.page.url()), main.page.url());
   check('解き直しの解答画面まで辿り着く', await reachSubmit(main.page), main.page.url());
   check('解答画面も相手側のまま', /as=other/.test(main.page.url()), main.page.url());
+  // 二組で全く同じ一枚を使ふ約束。盤面が違へば、解き直しが
+  // 「二問目」に見えてしまひ、物語の要が崩れる。
+  await main.page.goto(BASE + 'crossword.html?as=other');
+  const boardOther = await main.page.locator('#grid').first().innerText();
+  check('解き直しでも同じ一枚', boardOther === boardOwn, boardOther === boardOwn ? '' : '盤面が違ふ');
+  await main.page.goto(BASE + 'submit.html?q=crossword&as=other');
   await typeKana(main.page, answerOf('crossword', TEAM2));
   await main.page.locator(sel('submit-btn')).first().click();
   await main.page.waitForURL(/seal\.html/, { timeout: 8000 }).catch(() => {});
   check('相手の證が出る', /kind=other/.test(main.page.url()), main.page.url());
   await shot(main.page, 'seal-other');
-  await main.page.goto(BASE + 'folio.html?tab=other');
+  await main.page.goto(BASE + 'folio.html');
+  check('相手の組の見出しがここで現れる', await visible(main.page, 'folio-tab-other'));
+  await clickAndNavigate(main.page, 'folio-tab-other');
   check('相手の證が綴に収まる', await visible(main.page, 'folio-cert'));
-  check('施錠の表示は消える', !(await visible(main.page, 'folio-locked', 1200)));
+  check('二つの證を切り替へられる', await visible(main.page, 'folio-tab-own'));
   await shot(main.page, 'folio-other-unlocked');
 
   // ---- 6. 協力フェーズ ----------------------------------------------------
@@ -318,6 +331,22 @@ try {
   await shot(other.page, 'together-partner-side');
   other.bag.forEach((e) => check('相手側の画面に誤りなし', false, e));
   await other.ctx.close();
+
+  // ---- 8.5 教室の壁の QR から、何も打たずに始める -------------------------
+  console.log('\n[8.5] 教室の入口 — 番号は自動で渡る');
+  const joiner = await newPage();
+  await joiner.page.goto(BASE + 'index.html?team=' + TEAM1);
+  check('開始ボタンが出る（入口QR）', await visible(joiner.page, 'start-btn'));
+  const typeBox = await joiner.page.locator('#manual-pid').count();
+  check('打ち込み欄は出てゐない', typeBox === 0, String(typeBox));
+  await joiner.page.locator(sel('start-btn')).first().click();
+  await joiner.page.waitForURL(/folio\.html/, { timeout: 10000 }).catch(() => {});
+  const gotPid = await joiner.page.evaluate(() => { try { return localStorage.getItem('oc2_pid'); } catch (_) { return null; } });
+  check('番号が自動で割り当てられる', !!gotPid && gotPid.startsWith(CONFIG.TEAMS[TEAM1].idPrefix), gotPid || 'なし');
+  check('割り当て後は記録の画面へ進む', /folio\.html/.test(joiner.page.url()), joiner.page.url());
+  await shot(joiner.page, 'join-by-room-qr');
+  joiner.bag.forEach((e) => check('入口の画面に誤りなし', false, e));
+  await joiner.ctx.close();
 
   // ---- 9. 知らないIDと、入口を飛ばした場合 --------------------------------
   console.log('\n[9] 端の場合 — 知らないID、入口を飛ばした来訪');
