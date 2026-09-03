@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>調査員 資料綴</title>
+<title>調査員の記録</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
@@ -62,7 +62,7 @@
   </div>
 
   <div class="folio-bottombar">
-    <a class="folio-resolve" id="resolve-link" data-testid="resolve-link" hidden>解いた符を開き直す</a>
+    <a class="folio-resolve" id="resolve-link" data-testid="resolve-link" hidden>解いた資料を開き直す</a>
     <a class="label" id="scan-link" style="color:var(--parchment-100)" href="scan.html">Scan →</a>
   </div>
 </div>
@@ -98,7 +98,7 @@ async function main() {
   const ownKey = state.team;
   const kindFor = { own: ownKey, other: other };
 
-  document.getElementById("folio-title").textContent = "調査員 資料綴";
+  document.getElementById("folio-title").textContent = "調査員の記録";
   document.getElementById("points-value").textContent = String(totalPoints(state));
 
   // --- タブ（own/other）。切替は必ず実ページ読込にする ---
@@ -141,7 +141,7 @@ async function main() {
       "<span>Certificate of Membership</span><span>" + escapeHtml(team(certTeamKey).short) + "</span></div>" +
       '<div class="folio-panel-body" data-testid="folio-cert">' +
       '<div class="cert-crest" style="width:178px;height:178px">' + crestSvg + "</div>" +
-      '<div class="cert-title" style="margin-top:16px">' + escapeHtml(teamText(certTeamKey, "{name} 研究員 之證")) + "</div>" +
+      '<div class="cert-title" style="margin-top:16px">' + escapeHtml(teamText(certTeamKey, "{name} 研究員の證")) + "</div>" +
       '<div class="cert-desc">' + escapeHtml(teamText(certTeamKey, "この證を示す者は{name}の一員なり。")) + "</div>" +
       '<div class="cert-issued">issued 9. i. 2027</div>' +
       "</div>";
@@ -155,7 +155,7 @@ async function main() {
       '<div class="folio-panel-head label" style="color:var(--gold-700)"><span>Certificate of Membership</span><span>—</span></div>' +
       '<div class="folio-locked" data-testid="folio-locked">' +
       '<div class="crest-frame crest-locked" style="width:96px;height:96px;margin:0 auto">' + lockedSvg + "</div>" +
-      '<p class="body-text" style="margin-top:14px">まだ此の證は得てゐない。</p>' +
+      '<p class="body-text" style="margin-top:14px">まだこの證は得てゐない。</p>' +
       "</div>";
   }
 

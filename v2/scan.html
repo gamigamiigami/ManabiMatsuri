@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>資料の符牒を写す</title>
+<title>資料の印を写す</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
@@ -30,8 +30,8 @@
 
     <div class="room-tabs" id="room-tabs" style="margin-top:15px"></div>
 
-    <h4 class="scan-title">資料の符牒を写す</h4>
-    <div class="scan-lead">室に貼られた符牒を讀み、紙の資料を受け取る</div>
+    <h4 class="scan-title">資料の印を写す</h4>
+    <div class="scan-lead">室に貼られた印を讀み、紙の資料を受け取る</div>
 
     <div class="scan-frame">
       <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div class="manual-entry-hint">讀み取れぬときは、符牒の下の番號を記せ</div>
+    <div class="manual-entry-hint">讀み取れぬときは、印の下の番号を記せ</div>
     <div class="manual-entry">
       <input type="text" inputmode="numeric" id="manual-code" data-testid="manual-code" placeholder="201 — 210" autocomplete="off">
       <button type="button" id="manual-code-go" data-testid="manual-code-go">照合</button>
@@ -106,13 +106,13 @@ async function main() {
     next: { label: "Folio", href: "folio.html" },
   });
 
-  // --- 符牒（設置QR／個人QR）の分岐 ---
+  // --- 印（設置QR／個人QR）の分岐 ---
   function openPuzzle(q, room) {
     go(href("sheet.html", { q, room }));
   }
   function openPartner(otherPid) {
     if (otherPid === pid) {
-      toast("これは自分自身の符牒だ。相手の符牒を讀み込むこと。");
+      toast("これは自分自身の印だ。相手の印を讀み込むこと。");
       return;
     }
     go(href("together.html", { with: otherPid }));
@@ -139,7 +139,7 @@ async function main() {
       } else if (c.kind === "pid") {
         openPartner(c.pid);
       } else {
-        setStatus("見慣れぬ符牒だ。もう一度試すか、番號を記せ。", "err");
+        setStatus("見慣れぬ印だ。もう一度試すか、番号を記せ。", "err");
         window.setTimeout(() => scanner.start(), 900);
       }
     },
@@ -153,14 +153,14 @@ async function main() {
   scanner.start();
   window.addEventListener("pagehide", () => scanner.stop());
 
-  // --- 符牒番號の手入力 ---
+  // --- 印の番号の手入力 ---
   const errEl = document.getElementById("manual-error");
   function lookupCode(raw) {
     const n = parseInt(String(raw).trim(), 10);
     const entry = CONFIG.MANUAL_CODES && CONFIG.MANUAL_CODES[n];
     if (!entry) {
       errEl.hidden = false;
-      errEl.textContent = "その番號は見つからない。もう一度確かめよ。";
+      errEl.textContent = "その番号は見つからない。もう一度確かめよ。";
       return;
     }
     errEl.hidden = true;

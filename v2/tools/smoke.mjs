@@ -213,8 +213,8 @@ try {
   check('URLから pid が消える', !main.page.url().includes('pid='), main.page.url());
   await shot(main.page, 'folio-after-start');
 
-  // ---- 2. 符牒番号の手入力（カメラが使へないときの逃げ道） ----------------
-  console.log('\n[2] 逃げ道 — カメラが使へないときの符牒番号');
+  // ---- 2. 印の番号の手入力（カメラが使へないときの逃げ道） ----------------
+  console.log('\n[2] 逃げ道 — カメラが使へないときの印の番号');
   await main.page.goto(BASE + 'scan.html');
   check('番号入力欄が出る', await visible(main.page, 'manual-code'));
   await main.page.locator(sel('manual-code')).first().fill(String(FIRST_CODE));
@@ -276,7 +276,7 @@ try {
   await shot(main.page, 'folio-other-unlocked');
 
   // ---- 6. 協力フェーズ ----------------------------------------------------
-  console.log('\n[6] 協力 — 符牒を読み合ふ');
+  console.log('\n[6] 協力 — 印を読み合ふ');
   await main.page.goto(BASE + 'together.html?with=' + PARTNER);
   check('自分の半分が出る', await visible(main.page, 'together-my-half'));
   const picked = rules.pickTogether(ME, PARTNER, TEAM1, TEAM2);

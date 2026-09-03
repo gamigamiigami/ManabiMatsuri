@@ -45,7 +45,7 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
     if (found) return;
     found = true;
     stopCamera();
-    setStatus("符牒を讀み取つた。今ひらく…", "ok");
+    setStatus("印を讀み取った。今ひらく…", "ok");
 
     if (onDecode) onDecode(text);
   }
@@ -79,7 +79,7 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
 
   function startCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setStatus("この端末ではカメラが使へぬ。下の番號から進め。", "err");
+      setStatus("この端末ではカメラが使へぬ。下の番号から進め。", "err");
       if (onDenied) onDenied();
       return;
     }
@@ -92,11 +92,11 @@ export function createScanner({ video, canvas, onDecode, onStatus, onDenied }) {
       .then(function (s) {
         stream = s;
         video.srcObject = s;
-        setStatus("符牒を枠の中に入れよ");
+        setStatus("印を枠の中に入れよ");
         rafId = requestAnimationFrame(tick);
       })
       .catch(function () {
-        setStatus("カメラを使ふ許しが無い。下の番號から進め。", "err");
+        setStatus("カメラを使ふ許しが無い。下の番号から進め。", "err");
         if (onDenied) onDenied();
       });
   }

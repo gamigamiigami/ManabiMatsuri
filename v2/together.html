@@ -80,7 +80,7 @@ async function main() {
     return (
       '<div class="tg-lead">Phase III — Together</div>' +
       '<h4 class="tg-title h1">二つの記録は、元は一つ</h4>' +
-      '<div class="tg-sub">まだ解いてゐなくても大丈夫。<br>相手の端末と符牒を讀み合ひ、声に出して讀み上げること。</div>'
+      '<div class="tg-sub">まだ解いてゐなくても大丈夫。<br>互ひの端末の半分を讀み合ひ、声に出して讀み上げること。</div>'
     );
   }
 
@@ -102,8 +102,8 @@ async function main() {
       '<div class="status" id="scan-status" hidden></div>' +
       "</div></div>" +
       '<div class="manual-entry" style="margin-top:14px">' +
-      '<input type="text" id="partner-pid" placeholder="相手の符牒（例：O042）" autocomplete="off">' +
-      '<button type="button" id="partner-pid-go">連結</button>' +
+      '<input type="text" id="partner-pid" placeholder="相手の番号（例：O042）" autocomplete="off">' +
+      '<button type="button" id="partner-pid-go">つなぐ</button>' +
       "</div>" +
       '<div class="pid-error" id="pairing-error" data-testid="pid-error" hidden></div>';
 
@@ -124,7 +124,7 @@ async function main() {
           if (c.kind === "pid") {
             tryLink(c.pid);
           } else {
-            setStatus("これは相手の符牒ではないやうだ。", "err");
+            setStatus("これは相手の印ではないようだ。", "err");
             window.setTimeout(() => scanner.start(), 900);
           }
         },
@@ -159,16 +159,16 @@ async function main() {
 
   function tryLink(partnerPid) {
     if (!partnerPid) {
-      pairErr("符牒を正しく讀み取れなかった。番號を確かめよ。");
+      pairErr("印を正しく讀み取れなかった。番号を確かめよ。");
       return;
     }
     if (partnerPid === pid) {
-      pairErr("それは自分自身の符牒だ。相手の符牒を讀み込むこと。");
+      pairErr("それは自分自身の印だ。相手の印を讀み込むこと。");
       return;
     }
     const partnerTeam = teamOf(partnerPid);
     if (!partnerTeam) {
-      pairErr("その符牒は見当たりません。番號を確かめるか、受付の者へ尋ねよ。");
+      pairErr("その番号は見当たりません。番号を確かめるか、受付の者へ尋ねよ。");
       return;
     }
     const res = applyLink(state, { partnerPid, partnerTeam, now: new Date().toISOString() });
@@ -217,7 +217,7 @@ async function main() {
       '<div class="wrong-msg" id="together-wrong" data-testid="wrong-msg" hidden></div>' +
       '<div style="flex:1"></div>' +
       '<div class="btn-row">' +
-      '<button type="button" class="btn btn-outline" id="show-mine">符牒を示す</button>' +
+      '<button type="button" class="btn btn-outline" id="show-mine">自分の印を示す</button>' +
       '<button type="button" class="btn" id="check-btn" data-testid="together-check" style="background:linear-gradient(90deg,#8c3623,#25406a);border:none;color:#fff">答へ合はせ</button>' +
       "</div>";
 
@@ -252,7 +252,7 @@ async function main() {
       store.saveState(state);
       content.innerHTML =
         baseHeader() +
-        '<div class="together-blocked">記録は、一つに繋がつた。<br>Points +' + res.delta + " → " + totalPoints(state) + "</div>" +
+        '<div class="together-blocked">記録は、一つに繋がった。<br>Points +' + res.delta + " → " + totalPoints(state) + "</div>" +
         '<div class="btn-row" style="margin-top:16px">' +
         '<button type="button" class="btn" id="another2">別の相手と</button>' +
         '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
@@ -273,7 +273,7 @@ async function main() {
     stripParam("with");
     const partnerTeam = teamOf(withPid);
     if (!partnerTeam || withPid === pid) {
-      content.innerHTML = baseHeader() + '<div class="pid-error" data-testid="pid-error" style="margin-top:20px">その符牒では連結できない。</div>';
+      content.innerHTML = baseHeader() + '<div class="pid-error" data-testid="pid-error" style="margin-top:20px">その番号ではつなげない。</div>';
       return;
     }
     const pk = pairKey(pid, withPid);

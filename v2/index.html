@@ -140,7 +140,7 @@ function renderError(message) {
 function manualFormHtml() {
   return (
     '<div class="start-manual">' +
-    '<input type="text" id="manual-pid" placeholder="符牒（例：K017）を入れる" autocomplete="off">' +
+    '<input type="text" id="manual-pid" placeholder="番号（例：K017）を入れる" autocomplete="off">' +
     '<button type="button" class="btn-lamp" data-testid="start-btn">調査を開始する</button>' +
     "</div>"
   );
@@ -154,7 +154,7 @@ function wireManualForm() {
     const pid = normalizePid(raw);
     const t = pid ? teamOf(pid) : null;
     if (!pid || !t) {
-      renderError("その符牒は見当たりません。綴りを確かめるか、受付の者へ尋ねよ。");
+      renderError("その番号は見当たりません。文字を確かめるか、受付の者へ尋ねよ。");
       return;
     }
     renderConfirm(pid, t, false);
@@ -170,7 +170,7 @@ function renderOtherPersonChoice(savedPid, otherPid) {
   const otherTeam = teamOf(otherPid);
   statusEl.innerHTML =
     '<div class="start-choice">' +
-    '<div class="body-text" style="color:#d2bd99">これは別の調査員の符牒のやうだ。<br>共同調査の相手として讀み込むか？</div>' +
+    '<div class="body-text" style="color:#d2bd99">これは別の調査員の印のようだ。<br>共同調査の相手として讀み込むか？</div>' +
     '<div class="btn-row">' +
     '<button type="button" class="btn" id="as-partner">相手として進む</button>' +
     '<button type="button" class="btn" id="keep-own">自分の記録を續ける</button>' +
@@ -202,7 +202,7 @@ function main() {
   if (p.pid) {
     const t = qPid ? teamOf(qPid) : null;
     if (!qPid || !t) {
-      renderError("その符牒は讀み取れません。受付にお申し出ください。");
+      renderError("その印は讀み取れません。受付にお申し出ください。");
       return;
     }
     renderConfirm(qPid, t, false);

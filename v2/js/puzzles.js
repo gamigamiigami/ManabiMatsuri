@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // ■ ここに置く物／置かぬ物
-//   置く: 謎の見出し・畳面（スマホ画面）に出す案内・答へ・方眼の形・符牒の半分。
+//   置く: 謎の見出し・畳面（スマホ画面）に出す案内・答へ・方眼の形・印の半分。
 //   置かぬ: 組の名（config.js の TEAMS から引く）、点数（config.js の POINTS）、
 //           正誤の判定方法（rules.js）。答へ合はせの規則をここに書いてはならない。
 //
@@ -56,7 +56,7 @@
 //        answerLength … 4（PUZZLES.crossword.length と揃へる）
 //      組ごとに別の盤面を置く（team1 / team2）。
 //
-// 【3】TOGETHER … 協力フェーズの符牒。
+// 【3】TOGETHER … 協力フェーズの印。
 //      same  … 同じ組どうしで組んだとき引く札。ちょうど 5 枚。
 //      cross … 異なる組どうしで組んだとき引く札。ちょうど 10 枚。
 //      一枚は { id, halves:{ A:'…', B:'…' }, answer:'…' }。
@@ -82,7 +82,7 @@ export const PUZZLES = {
     title: '最初の一枚',
     subtitle: '一の一',
     room: 'team1room',
-    guidance: '配られた紙の隅に、薄く番號が振つてある。順に讀めば四文字。',
+    guidance: '配られた紙の隅に、薄く番号が振ってある。順に讀めば四文字。',
     length: 4,
     answers: { team1: 'ひらきど', team2: 'ひらきど' },
     grantsSeal: 'own',
@@ -92,12 +92,12 @@ export const PUZZLES = {
   solo1: {
     id: 'solo1',
     kind: 'sheet',
-    title: '書架の隙',
+    title: '本棚の隙',
     subtitle: '一の二',
     room: 'library',
     guidance: '背表紙の一字づつが、貸出票の數字の順に並ぶ。',
     length: 4,
-    answers: { team1: 'あかつき', team2: 'ゆふぐれ' },
+    answers: { team1: 'あかつき', team2: 'ゆうぐれ' },
     grantsSeal: null,
     points: CONFIG.POINTS.solo,
   },
@@ -108,7 +108,7 @@ export const PUZZLES = {
     title: '標本の札',
     subtitle: '一の三',
     room: 'specimen',
-    guidance: '硝子瓶の札は、學名の頭字だけが墨で濃い。',
+    guidance: 'ガラス瓶の札は、學名の頭字だけが墨で濃い。',
     length: 4,
     answers: { team1: 'とりのは', team2: 'とりのは' },
     grantsSeal: null,
@@ -134,9 +134,9 @@ export const PUZZLES = {
     title: '方眼の書き写し',
     subtitle: '二の一',
     room: 'library',
-    guidance: '盤面に書き写し、色の付いた四つの枡を上から讀む。',
+    guidance: '盤面に書き写し、色の付いた四つのマスを上から讀む。',
     length: 4,
-    answers: { team1: 'ひかりの', team2: 'かげろふ' },
+    answers: { team1: 'ひかりの', team2: 'かげろう' },
     // 一度目は證を出さない。folio の目立たぬリンクから解き直したときだけ
     // 「相手の組の證」が出る。この二段構へが第三フェーズへの入口になる。
     grantsSeal: null,
@@ -158,7 +158,7 @@ export const CROSSWORD = {
     blocks: [[0, 4], [1, 1], [2, 3], [3, 0], [4, 2]],
     prefilled: { '0,0': 'ほ', '1,3': 'く', '2,1': 'ら', '3,2': 'の', '4,4': 'み' },
     answerCells: ['0,2', '1,4', '3,3', '4,1'],
-    clue: '校舎で最も古い木の下に、印がある。',
+    clue: '校舎で最も古い木の下に、目じるしがある。',
     answerLength: 4,
   },
   team2: {
@@ -173,31 +173,31 @@ export const CROSSWORD = {
 };
 
 // ---------------------------------------------------------------------------
-// 協力フェーズの符牒
+// 協力フェーズの印
 //   same  … 5 枚（増減厳禁）
 //   cross … 10 枚（増減厳禁）
 // ---------------------------------------------------------------------------
 export const TOGETHER = {
-  // 符牒の答へも四文字で揃へてある（かな枠の数がぶれると入力欄が作り直しになるため）。
+  // 印の答へも四文字で揃へてある（かな枠の数がぶれると入力欄が作り直しになるため）。
   answerLength: 4,
 
   same: [
-    { id: 's1', halves: { A: '三　七　？', B: '？　は　五の倍' }, answer: 'じゆうご' },
-    { id: 's2', halves: { A: '北の窓　二つ目', B: '硝子に映る字を逆に' }, answer: 'かがみど' },
-    { id: 's3', halves: { A: '鐘は三度鳴る', B: '三度目の後の一字' }, answer: 'ゆふぐれ' },
-    { id: 's4', halves: { A: '階を上る數だけ', B: '書架の段を下る' }, answer: 'つりあひ' },
-    { id: 's5', halves: { A: '雨の日は閉づ', B: '晴れの日は開く扉' }, answer: 'あまどい' },
+    { id: 's1', halves: { A: '三　七　？', B: '？　は　五の倍' }, answer: 'じゅうご' },
+    { id: 's2', halves: { A: '北の窓　二つ目', B: 'ガラスに映る字を逆に' }, answer: 'かがみど' },
+    { id: 's3', halves: { A: '鐘は三度鳴る', B: '三度目の後の一字' }, answer: 'ゆうぐれ' },
+    { id: 's4', halves: { A: '階を上る數だけ', B: '本棚の段を下る' }, answer: 'つりあい' },
+    { id: 's5', halves: { A: '雨の日は閉じる', B: '晴れの日は開く扉' }, answer: 'あまどい' },
   ],
   cross: [
-    { id: 'c01', halves: { A: '朔の夜に一つ', B: '望の夜に十五' }, answer: 'つきよみ' },
+    { id: 'c01', halves: { A: '新月の夜に一つ', B: '満月の夜に十五' }, answer: 'つきよみ' },
     { id: 'c02', halves: { A: '左の柱の彫り', B: '右の柱の欠け' }, answer: 'ついたち' },
     { id: 'c03', halves: { A: '古井戸の底に', B: '空を映す円' }, answer: 'みなわそ' },
     { id: 'c04', halves: { A: '第一の扉は西', B: '第二の扉は東' }, answer: 'ひがしに' },
-    { id: 'c05', halves: { A: '筆は硯に伏せ', B: '紙は風に伏す' }, answer: 'すずりば' },
-    { id: 'c06', halves: { A: '數へ歌の三', B: '數へ歌の八' }, answer: 'とをあま' },
-    { id: 'c07', halves: { A: '灯は北に置け', B: '影は南に伸ぶ' }, answer: 'ほくしん' },
+    { id: 'c05', halves: { A: '筆はすずりに伏せ', B: '紙は風に伏す' }, answer: 'すずりば' },
+    { id: 'c06', halves: { A: '數へ歌の三', B: '數へ歌の八' }, answer: 'とおあま' },
+    { id: 'c07', halves: { A: '灯は北に置け', B: '影は南に伸びる' }, answer: 'ほくしん' },
     { id: 'c08', halves: { A: '標本の第七', B: '書庫の第七' }, answer: 'ななふし' },
     { id: 'c09', halves: { A: '春の字を一つ', B: '秋の字を一つ' }, answer: 'はるあき' },
-    { id: 'c10', halves: { A: '鍵は二本ある', B: '錠は一つしかない' }, answer: 'あはせか' },
+    { id: 'c10', halves: { A: '鍵は二本ある', B: '錠は一つしかない' }, answer: 'あわせか' },
   ],
 };
