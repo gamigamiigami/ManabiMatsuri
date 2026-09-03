@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>資料の案内</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +28,7 @@
   }
   .sheet-title { margin: 6px 0 0; padding-bottom: 11px; border-bottom: 1px solid #4a3616; }
   .sheet-desc { margin: 18px 0 0; font-size: var(--fs-body); line-height: 2.05; letter-spacing: .02em; }
-  .sheet-warn { margin: 16px 6px 0 0; font-family: var(--font-head); font-size: 15px; line-height: 1.85; color: var(--shu-700); transform: rotate(-1.2deg); }
+  .sheet-warn { margin: 16px 6px 0 0; font-family: var(--font-head); font-size: 15px; line-height: 1.85; color: var(--team1-700); transform: rotate(-1.2deg); }
   .sheet-done { text-align: center; padding: 40px 0; }
 </style>
 </head>
@@ -45,6 +46,7 @@ import { totalPoints } from "./js/rules.js";
 import * as store from "./js/store.js";
 import { requirePid, params, go, href } from "./js/nav.js";
 import { mountHeader, mountFooter, applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
 
 async function main() {
   const pid = requirePid();
@@ -78,7 +80,7 @@ async function main() {
   mountHeader(document.getElementById("header"), {
     title: "Field Note",
     teamKey: asOther ? undefined : state.team,
-    subtitle: asOther ? teamText(state.team, "Team {romaji}") : undefined,
+    subtitle: asOther ? teamText(state.team, "{romaji}") : undefined,
   });
   mountFooter(document.getElementById("footer"), {
     points: totalPoints(state),
@@ -95,6 +97,7 @@ async function main() {
       '<div class="btn-row" style="margin-top:20px">' +
       '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
       "</div></div>";
+    mountDebug(state);
     return;
   }
 
@@ -106,7 +109,7 @@ async function main() {
 
   paper.innerHTML =
     '<div style="display:flex;justify-content:space-between" class="label"><span>Field Note</span><span>' +
-    teamText(state.team, "Team {romaji}") +
+    teamText(state.team, "{romaji}") +
     "</span></div>" +
     '<h4 class="sheet-title">' + escapeHtml(puzzle.title || q) + "</h4>" +
     '<p class="sheet-desc">' +
@@ -124,6 +127,8 @@ async function main() {
   document.getElementById("solve-btn").addEventListener("click", () => {
     go(nextHref);
   });
+
+  mountDebug(state);
 }
 
 function escapeHtml(s) {

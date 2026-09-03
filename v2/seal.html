@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>證書</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +38,7 @@ import { renderCrest } from "./js/crest.js";
 import * as store from "./js/store.js";
 import { requirePid, params, go } from "./js/nav.js";
 import { mountFooter, applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
 
 async function main() {
   const pid = requirePid();
@@ -62,7 +64,7 @@ async function main() {
   const content = document.getElementById("content");
   content.innerHTML =
     '<div class="label" style="color:#c98a62">' +
-    "Verified · " + escapeHtml(teamText(state.team, "Team {romaji}")) +
+    "Verified · " + escapeHtml(teamText(state.team, "{romaji}")) +
     "</div>" +
     '<h4 class="seal-title h1">' + escapeHtml(teamText(certTeamKey, "{name}の證")) + "</h4>" +
     '<div class="seal-sub">' +
@@ -72,7 +74,7 @@ async function main() {
         : "二つの記録を照らし合はせる資格を得たり"
     ) +
     "</div>" +
-    '<div class="certificate" id="seal-cert" data-testid="seal-cert" style="margin-top:32px"></div>' +
+    '<div class="certificate certificate-plate" id="seal-cert" data-testid="seal-cert" style="margin-top:32px"></div>' +
     '<p class="seal-desc">この畫面を係の者に示し、<br>次の資料を受け取ること。</p>' +
     '<div style="flex:1"></div>' +
     '<div id="footer" style="width:100%"></div>';
@@ -95,6 +97,8 @@ async function main() {
     points: totalPoints(state),
     next: { label: "Folio", href: "folio.html" },
   });
+
+  mountDebug(state);
 }
 
 function escapeHtml(s) {

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>共同調査</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=IM+Fell+DW+Pica:ital@0;1&family=IM+Fell+English+SC&family=New+Tegomin&family=Yuji+Mai&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body.scr-together .frame { background: #13121a; }
+  .tg-glow-a { position: absolute; inset: -12%; background: radial-gradient(circle at 30% 30%, rgba(160,58,37,.5), transparent 55%); pointer-events: none; }
+  .tg-glow-b { position: absolute; inset: -12%; background: radial-gradient(circle at 70% 66%, rgba(37,64,122,.5), transparent 55%); pointer-events: none; }
+  .tg-body { text-align: center; color: #f2e8dc; padding-top: 40px; }
+  .tg-lead { font-family: var(--font-label); font-size: 14px; letter-spacing: .22em; color: #e2bdae; }
+  .tg-title { margin: 11px 0 0; }
+  .tg-sub { margin-top: 12px; font-family: var(--font-body); font-size: 14px; line-height: 2; color: #dcccc3; }
+  .tg-crest { width: 176px; height: 176px; margin: 18px auto 0; }
+</style>
+</head>
+<body class="dark scr-together">
+<div class="frame screen">
+  <div class="tg-glow-a"></div>
+  <div class="tg-glow-b"></div>
+  <div class="vignette-dark"></div>
+  <div class="screen-body tg-body" id="content"></div>
+</div>
+
+<script src="js/vendor/supabase.js"></script>
+<script src="js/vendor/jsQR.min.js"></script>
+<script src="js/vendor/qrcode-generator.js"></script>
+<script type="module">
+import { CONFIG, teamOf, normalizePid } from "./js/config.js";
+import { TOGETHER } from "./js/puzzles.js";
+import {
+  pairKey,
+  applyLink,
+  checkTogether,
+  applyTogetherVerified,
+  totalPoints,
+} from "./js/rules.js";
+import { renderCrest } from "./js/crest.js";
+import { qrSvg } from "./js/qr-gen.js";
+import { createScanner, classifyQr } from "./js/qr-scan.js";
+import * as store from "./js/store.js";
+import { requirePid, params, go, href, stripParam } from "./js/nav.js";
+import { mountKanaInput } from "./js/kana-input.js";
+import { applyTeamTheme, offlineMark, teamText, toast } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+function findQuestion(link) {
+  if (!link) return null;
+  const pool = TOGETHER && TOGETHER[link.pool];
+  if (!pool) return null;
+  return pool.find((q) => q.id === link.questionId) || pool[link.index] || null;
+}
+
+async function main() {
+  const pid = requirePid();
+  if (!pid) return;
+
+  let { state, online } = await store.loadState();
+  applyTeamTheme(state.team);
+  offlineMark(online);
+  store.flushPending();
+
+  const p = params();
+  const content = document.getElementById("content");
+
+  function baseHeader() {
+    return (
+      '<div class="tg-lead">Phase III — Together</div>' +
+      '<h4 class="tg-title h1">二つの記録は、元は一つ</h4>' +
+      '<div class="tg-sub">まだ解いてゐなくても大丈夫。<br>相手の端末と符牒を讀み合ひ、聲に出して讀み上げること。</div>'
+    );
+  }
+
+  function renderPairing() {
+    let qrSvgStr = "";
+    try {
+      qrSvgStr = qrSvg(location.origin + location.pathname.replace(/together\.html$/, "index.html") + "?pid=" + encodeURIComponent(pid), { cell: 5, margin: 20 });
+    } catch (e) {
+      /* qrcode-generator 未接続でも pid の手渡しは文字で出来る */
+    }
+    content.innerHTML =
+      baseHeader() +
+      '<div class="my-qr-panel">' + qrSvgStr + '<div class="pid-label">' + escapeHtml(pid) + "</div></div>" +
+      '<div class="scan-frame" style="margin-top:18px">' +
+      '<div class="scan-view" id="scan-view" style="height:200px">' +
+      '<video id="scan-video" playsinline muted autoplay></video>' +
+      '<canvas id="scan-canvas"></canvas>' +
+      '<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>' +
+      '<div class="status" id="scan-status" hidden></div>' +
+      "</div></div>" +
+      '<div class="manual-entry" style="margin-top:14px">' +
+      '<input type="text" id="partner-pid" placeholder="相手の符牒（例：O042）" autocomplete="off">' +
+      '<button type="button" id="partner-pid-go">連結</button>' +
+      "</div>" +
+      '<div class="pid-error" id="pairing-error" data-testid="pid-error" hidden></div>';
+
+    const statusEl = document.getElementById("scan-status");
+    function setStatus(text, kind) {
+      if (!text) { statusEl.hidden = true; return; }
+      statusEl.hidden = false;
+      statusEl.textContent = text;
+      statusEl.className = "status" + (kind === "err" ? " err" : "");
+    }
+    let scanner = null;
+    try {
+      scanner = createScanner({
+        video: document.getElementById("scan-video"),
+        canvas: document.getElementById("scan-canvas"),
+        onDecode(text) {
+          const c = classifyQr(text);
+          if (c.kind === "pid") {
+            tryLink(c.pid);
+          } else {
+            setStatus("これは相手の符牒ではないやうだ。", "err");
+            window.setTimeout(() => scanner.start(), 900);
+          }
+        },
+        onStatus: setStatus,
+        onDenied() {
+          document.getElementById("scan-view").style.display = "none";
+        },
+      });
+      scanner.start();
+      window.addEventListener("pagehide", () => scanner && scanner.stop());
+    } catch (e) {
+      /* qr-scan.js 未接続でも手入力で連結できる */
+    }
+
+    document.getElementById("partner-pid-go").addEventListener("click", () => {
+      const raw = document.getElementById("partner-pid").value;
+      tryLink(normalizePid(raw));
+    });
+
+    mountDebug(state);
+  }
+
+  function pairErr(msg) {
+    const el = document.getElementById("pairing-error");
+    if (el) {
+      el.hidden = false;
+      el.textContent = msg;
+    } else {
+      toast(msg);
+    }
+  }
+
+  function tryLink(partnerPid) {
+    if (!partnerPid) {
+      pairErr("符牒を正しく讀み取れなかった。番號を確かめよ。");
+      return;
+    }
+    if (partnerPid === pid) {
+      pairErr("それは自分自身の符牒だ。相手の符牒を讀み込むこと。");
+      return;
+    }
+    const partnerTeam = teamOf(partnerPid);
+    if (!partnerTeam) {
+      pairErr("その符牒は見當たらない。");
+      return;
+    }
+    const res = applyLink(state, { partnerPid, partnerTeam, now: new Date().toISOString() });
+    state = res.state;
+    store.saveState(state);
+    renderLinked(res.link, partnerPid, partnerTeam);
+  }
+
+  function renderBlocked(partnerPid) {
+    content.innerHTML =
+      baseHeader() +
+      '<div class="together-blocked" data-testid="together-blocked">この二人の調査は、すでに濟んでゐる。</div>' +
+      '<div class="btn-row" style="margin-top:16px">' +
+      '<button type="button" class="btn" id="another">別の相手と</button>' +
+      '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
+      "</div>";
+    document.getElementById("another").addEventListener("click", () => {
+      go("together.html");
+    });
+    mountDebug(state);
+  }
+
+  function renderLinked(link, partnerPid, partnerTeamKey) {
+    const q = findQuestion(link);
+    const myRole = link.role;
+    const myHalf = q ? q.halves[myRole] : "？";
+    // 答へは常に TOGETHER.answerLength（今回は4字固定）。
+    // 「聞き取つた半分」は文字どほりの断片ではなく、二人の手掛かりを
+    // 声で読み合はせて初めて出る「一つの答へ」全体をここへ打ち込む
+    // （rules.checkTogether は q.answer と丸ごと突き合はせる仕様のため）。
+    const answerLen = (TOGETHER && TOGETHER.answerLength) || (q ? q.answer.length : 4);
+
+    content.innerHTML =
+      baseHeader() +
+      '<div class="tg-crest" id="combined-crest"></div>' +
+      '<div class="halves-wrap">' +
+      '<div class="half-panel mine">' +
+      '<div class="half-label">手元の半分</div>' +
+      '<div class="half-value" data-testid="together-my-half">' + escapeHtml(myHalf) + "</div>" +
+      "</div>" +
+      '<div class="half-panel theirs">' +
+      '<div class="half-label">聲を合はせて出た答へ</div>' +
+      '<div id="answer-mount" data-testid="together-answer"></div>' +
+      "</div>" +
+      "</div>" +
+      '<div class="wrong-msg" id="together-wrong" data-testid="wrong-msg" hidden></div>' +
+      '<div style="flex:1"></div>' +
+      '<div class="btn-row">' +
+      '<button type="button" class="btn btn-outline" id="show-mine">符牒を示す</button>' +
+      '<button type="button" class="btn" id="check-btn" data-testid="together-check" style="background:linear-gradient(90deg,#8c3623,#25406a);border:none;color:#fff">答へ合はせ</button>' +
+      "</div>";
+
+    try {
+      document.getElementById("combined-crest").innerHTML = renderCrest({
+        team: state.team,
+        variant: "combined",
+        size: 176,
+      });
+    } catch (e) {}
+
+    const kana = mountKanaInput(document.getElementById("answer-mount"), { length: answerLen });
+    const wrongEl = document.getElementById("together-wrong");
+
+    document.getElementById("show-mine").addEventListener("click", () => {
+      toast("手元の半分を、相手に讀み上げよ：" + myHalf);
+    });
+
+    document.getElementById("check-btn").addEventListener("click", () => {
+      const typed = kana.value();
+      const ok = checkTogether(link, typed);
+      if (!ok) {
+        kana.shake();
+        wrongEl.hidden = false;
+        wrongEl.textContent = "合はぬ。もう一度、聲に出して確かめよ。";
+        return;
+      }
+      wrongEl.hidden = true;
+      const pk = pairKey(pid, partnerPid);
+      const res = applyTogetherVerified(state, pk, new Date().toISOString());
+      state = res.state;
+      store.saveState(state);
+      content.innerHTML =
+        baseHeader() +
+        '<div class="together-blocked">記録は、一つに繋がつた。<br>Points +' + res.delta + " → " + totalPoints(state) + "</div>" +
+        '<div class="btn-row" style="margin-top:16px">' +
+        '<button type="button" class="btn" id="another2">別の相手と</button>' +
+        '<a class="btn btn-outline" href="folio.html">Folio へ →</a>' +
+        "</div>";
+      document.getElementById("another2").addEventListener("click", () => {
+        go("together.html");
+      });
+      mountDebug(state);
+    });
+
+    mountDebug(state);
+  }
+
+  // --- 入口の分岐 ---
+  const withPid = p.with ? normalizePid(p.with) : null;
+
+  if (withPid) {
+    stripParam("with");
+    const partnerTeam = teamOf(withPid);
+    if (!partnerTeam || withPid === pid) {
+      content.innerHTML = baseHeader() + '<div class="pid-error" data-testid="pid-error" style="margin-top:20px">その符牒では連結できない。</div>';
+      return;
+    }
+    const pk = pairKey(pid, withPid);
+    const existing = state.links && state.links[pk];
+    if (existing && existing.verifiedAt) {
+      renderBlocked(withPid);
+      return;
+    }
+    if (existing) {
+      renderLinked(existing, withPid, partnerTeam);
+      return;
+    }
+    tryLink(withPid);
+    return;
+  }
+
+  renderPairing();
+}
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) location.reload();
+});
+
+main();
+</script>
+</body>
+</html>

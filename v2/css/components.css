@@ -46,6 +46,22 @@
   text-align: center;
   box-sizing: border-box;
 }
+/* 證書を單體で大きく掲げる場面（V. Seal）。
+   周囲が暗いので、紙そのものを敷かないと墨の文字が沈んで読めない。
+   資料綴（VI. Folio）では既に紙の上に在るので、この修飾は付けない。 */
+.certificate.certificate-plate {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255, 250, 230, 0.5), transparent 62%),
+    linear-gradient(158deg, var(--parchment-300), var(--parchment-500));
+  color: var(--ink);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(122, 95, 48, 0.14);
+}
+.certificate.certificate-plate .cert-title { color: var(--ink); }
+.certificate.certificate-plate .cert-desc,
+.certificate.certificate-plate .cert-no,
+.certificate.certificate-plate .cert-date,
+.certificate.certificate-plate .cert-issued { color: var(--ink-soft); }
+
 .certificate::before {
   content: "";
   position: absolute;
@@ -330,7 +346,7 @@
   color: var(--parchment-100);
   z-index: 3;
 }
-.scan-view .status.err { color: var(--shu-300); }
+.scan-view .status.err { color: var(--team1-300); }
 .scan-view .status[hidden] { display: none; }
 
 .manual-entry {
@@ -428,7 +444,7 @@
 .kana-boxes {
   display: grid;
   grid-template-columns: repeat(var(--kana-len, 4), 1fr);
-  border: 1.5px solid var(--shu-700);
+  border: 1.5px solid var(--team1-700);
   background: rgba(255, 253, 246, 0.36);
 }
 body.dark .kana-boxes { background: rgba(255, 253, 246, 0.08); }
@@ -440,7 +456,7 @@ body.dark .kana-boxes { background: rgba(255, 253, 246, 0.08); }
   border-right: 1px solid rgba(141, 55, 34, 0.55);
   font-family: var(--font-head);
   font-size: 40px;
-  color: var(--ai-700);
+  color: var(--team2-700);
 }
 body.dark .kana-box { color: var(--parchment-100); }
 .kana-box:last-child { border-right: none; }
@@ -455,7 +471,7 @@ body.dark .kana-box { color: var(--parchment-100); }
 }
 .kana-box.filled { font-size: 40px; }
 .kana-box.current {
-  box-shadow: inset 0 0 0 2px var(--shu-300);
+  box-shadow: inset 0 0 0 2px var(--team1-300);
 }
 
 .kana-keyboard {
@@ -503,7 +519,7 @@ body.dark .kana-key {
   color: var(--ink);
 }
 .crossword-cell.block { background: var(--sumi-800); }
-.crossword-cell.prefilled { color: var(--shu-700); }
+.crossword-cell.prefilled { color: var(--team1-700); }
 
 .crossword-clue {
   margin-top: 18px;
@@ -527,7 +543,7 @@ body.dark .kana-key {
 .answer-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border: 1.5px solid var(--shu-700);
+  border: 1.5px solid var(--team1-700);
   background: rgba(255, 253, 246, 0.32);
 }
 .answer-strip .cell {
@@ -573,9 +589,14 @@ body.dark .kana-key {
 .half-panel .half-value {
   margin-top: 8px;
   font-family: var(--font-head);
-  font-size: 34px;
-  letter-spacing: 0.3em;
+  /* 手掛かりは短い数字とは限らず、一行の文（例：北の窓　二つ目）のことも
+     多いので、34px 固定ではなく箱の幅に収まる可変サイズにして折り返す。 */
+  font-size: clamp(17px, 6.2vw, 26px);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
   color: #fff3ea;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 .half-panel.theirs .kana-boxes {
   margin-top: 10px;

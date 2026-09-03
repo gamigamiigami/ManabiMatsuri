@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>盤面に書き寫す</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +36,7 @@ import { totalPoints } from "./js/rules.js";
 import * as store from "./js/store.js";
 import { requirePid, params, go, href } from "./js/nav.js";
 import { mountHeader, applyTeamTheme, offlineMark } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
 
 function normalizeBlocks(cols, blocks) {
   const set = new Set();
@@ -136,6 +138,8 @@ async function main() {
   document.getElementById("solve-btn").addEventListener("click", () => {
     go(href("submit.html", asOther ? { q: "crossword", as: "other" } : { q: "crossword" }));
   });
+
+  mountDebug(state);
 }
 
 window.addEventListener("pageshow", (e) => {

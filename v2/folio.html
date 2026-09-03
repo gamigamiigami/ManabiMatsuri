@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>調査員 資料綴</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,6 +75,7 @@ import { renderCrest } from "./js/crest.js";
 import * as store from "./js/store.js";
 import { requirePid, params, go, href } from "./js/nav.js";
 import { applyTeamTheme, offlineMark, teamText } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
 
 function escapeHtml(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
@@ -137,7 +139,7 @@ async function main() {
       '<div class="punch-holes"><span></span><span></span><span></span></div>' +
       '<div class="folio-panel-head label" style="color:var(--gold-700)">' +
       "<span>Certificate of Membership</span><span>" + escapeHtml(team(certTeamKey).short) + "</span></div>" +
-      '<div class="folio-panel-body">' +
+      '<div class="folio-panel-body" data-testid="folio-cert">' +
       '<div class="cert-crest" style="width:178px;height:178px">' + crestSvg + "</div>" +
       '<div class="cert-title" style="margin-top:16px">' + escapeHtml(teamText(certTeamKey, "{name} 研究員 之證")) + "</div>" +
       '<div class="cert-desc">' + escapeHtml(teamText(certTeamKey, "この證を示す者は{name}の一員なり。")) + "</div>" +
@@ -151,7 +153,7 @@ async function main() {
     panel.innerHTML =
       '<div class="punch-holes"><span></span><span></span><span></span></div>' +
       '<div class="folio-panel-head label" style="color:var(--gold-700)"><span>Certificate of Membership</span><span>—</span></div>' +
-      '<div class="folio-locked">' +
+      '<div class="folio-locked" data-testid="folio-locked">' +
       '<div class="crest-frame crest-locked" style="width:96px;height:96px;margin:0 auto">' + lockedSvg + "</div>" +
       '<p class="body-text" style="margin-top:14px">まだ此の證は得てゐない。</p>' +
       "</div>";
@@ -174,6 +176,8 @@ async function main() {
     e.preventDefault();
     go("scan.html");
   });
+
+  mountDebug(state);
 }
 
 window.addEventListener("pageshow", (e) => {

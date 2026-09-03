@@ -4,7 +4,7 @@
 // チーム固有の見た目・文言をここに集約する。
 //
 // ■ 分かったこと（なぜ teamText を通すのか）
-// 「甲組」「乙組」「Team Kō」のような固有名詞をページの中に直書きすると、
+// 組の名・略称・羅馬字・部屋の名といつた固有名詞をページの中に直書きすると、
 // 受付でチームの組替えが起きたり、来年また別の紋・呼び名で使い回すときに
 // 全画面を検索置換する羽目になる（第1回はこれで苦労した）。
 // なのでチームに関する文言は必ずこの teamText() か config.js の team() を
@@ -14,6 +14,7 @@
 
 import { team } from "./config.js";
 import { go } from "./nav.js";
+import { isConfigured } from "./supabase.js";
 
 // --- 内部ユーティリティ -------------------------------------------------
 
@@ -104,7 +105,7 @@ export function applyTeamTheme(teamKey) {
  */
 export function mountHeader(el, { title = "", subtitle = "", teamKey } = {}) {
   if (!el) return;
-  const right = subtitle || (teamKey ? teamText(teamKey, "Team {romaji}") : "");
+  const right = subtitle || (teamKey ? teamText(teamKey, "{romaji}") : "");
   el.innerHTML =
     '<div class="hdr-bar">' +
     '<span class="hdr-title">' +
@@ -192,6 +193,14 @@ let offlineEl = null;
  * @param {boolean} online
  */
 export function offlineMark(online) {
+  // 設定にサーバが入つてゐないとき（ローカルモード）は、通信してゐないのが
+  // 正しい状態であつて不具合ではない。ここで「通信なし」を出すと、
+  // 予行演習や設定前の確認のたびに、直すべき異常が起きてゐるやうに見える。
+  // 出すのは「繋ぐつもりなのに繋がらないとき」だけにする。
+  if (!isConfigured()) {
+    if (offlineEl) offlineEl.hidden = true;
+    return;
+  }
   if (!offlineEl) {
     offlineEl = document.createElement("div");
     offlineEl.className = "offline-mark";

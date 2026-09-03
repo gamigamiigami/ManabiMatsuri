@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>應中秘寶調査録</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +36,10 @@
   .dossier-rule { margin: 12px 0 0; width: 1px; height: 52px; background: linear-gradient(180deg, rgba(160,132,80,.5), transparent); }
   .start-col-right { width: 176px; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
   .start-sub-jp { font-family: var(--font-body); font-size: 12.5px; letter-spacing: .34em; color: #96804f; height: 130px; }
-  .start-title-jp { margin: 0; font-family: var(--font-head); font-size: 48px; font-weight: 400; line-height: 1.26; letter-spacing: .06em; color: var(--parchment-100); text-shadow: 0 2px 22px rgba(0,0,0,.92), 0 0 44px rgba(196,142,62,.2); }
+  /* 縦書きの表題には高さを持たせておく。書體が落ちた環境では
+     縦組みの字送りが得られず、七字が数 px に潰れて重なつて見える。
+     会場の通信が死んで Google Fonts が届かない場合への備へでもある。 */
+  .start-title-jp { min-height: 336px; margin: 0; font-family: var(--font-head); font-size: 48px; font-weight: 400; line-height: 1.26; letter-spacing: .06em; color: var(--parchment-100); text-shadow: 0 2px 22px rgba(0,0,0,.92), 0 0 44px rgba(196,142,62,.2); }
   .start-desc-jp { margin-top: 12px; font-family: var(--font-body); font-size: 13px; line-height: 2.3; color: #b9a780; height: 190px; letter-spacing: .08em; }
   .start-actions { position: absolute; left: 30px; right: 30px; bottom: 30px; z-index: 2; }
   .start-crest-wrap { text-align: center; margin-bottom: 20px; }
@@ -85,6 +89,7 @@ import { renderCrest } from "./js/crest.js";
 import * as store from "./js/store.js";
 import { go, href, params } from "./js/nav.js";
 import { teamText } from "./js/ui.js";
+import { mountDebug } from "./js/debug.js";
 
 document.getElementById("site-title").textContent = CONFIG.SITE.title;
 document.getElementById("site-subtitle").textContent = CONFIG.SITE.subtitle;
@@ -100,8 +105,10 @@ function crestHtml(teamKey, size) {
 }
 
 function nextTarget() {
+  // params() は URLSearchParams で既に一度デコード済みなので、ここで
+  // 二重にデコードしない（next の中身に % を含む値があると壊れるため）。
   const p = params();
-  return p.next ? decodeURIComponent(p.next) : "folio.html";
+  return p.next || "folio.html";
 }
 
 function renderConfirm(pid, teamKey, continuing) {
@@ -114,7 +121,7 @@ function renderConfirm(pid, teamKey, continuing) {
     (continuing ? "調査を續ける" : "調査を開始する") +
     "</button>" +
     '<div class="italic-en start-caption" style="color:#75623f">' +
-    teamText(teamKey, "for the eyes of Team {romaji} alone") +
+    teamText(teamKey, "for the eyes of {romaji} alone") +
     "</div>";
 
   statusEl.querySelector('[data-testid="start-btn"]').addEventListener("click", () => {
@@ -150,7 +157,7 @@ function wireManualForm() {
       renderError("その符牒は見当たりません。綴りを確かめるか、受付の者へ尋ねよ。");
       return;
     }
-    renderConfirm(pid, t.key, false);
+    renderConfirm(pid, t, false);
   });
 }
 
@@ -188,7 +195,7 @@ function main() {
       return;
     }
     const t = teamOf(savedPid);
-    renderConfirm(savedPid, t ? t.key : CONFIG.TEAM_ORDER[0], true);
+    renderConfirm(savedPid, t || CONFIG.TEAM_ORDER[0], true);
     return;
   }
 
@@ -198,7 +205,7 @@ function main() {
       renderError("その符牒は讀み取れません。受付にお申し出ください。");
       return;
     }
-    renderConfirm(qPid, t.key, false);
+    renderConfirm(qPid, t, false);
     return;
   }
 
@@ -212,6 +219,7 @@ window.addEventListener("pageshow", (e) => {
 
 store.flushPending();
 main();
+mountDebug();
 </script>
 </body>
 </html>

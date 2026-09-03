@@ -1,359 +1,349 @@
 #!/usr/bin/env node
-// Playwright スモークテスト（end-to-end）
+// ============================================================================
+// smoke.mjs — 八画面を通しで歩いて、壊れてゐないことを確かめる
+// ============================================================================
 //
-// 実行: node v2/tools/smoke.mjs [outDir]
-// outDir はスクリーンショット出力先（デフォルト: out/）
+// ■ なぜ要るのか
+//   この催しは一日きりで、当日に直す時間はない。
+//   画面が多く、状態（證・点・相互連携）が絡むので、
+//   人手で毎回全部を辿るのは現実的でない。
+//   だから「受付から協力フェーズまで」を機械に一度歩かせる。
 //
-// HTTP サーバを起動し、v2 サイトの基本フローをテストする。
-// - 参加者ログイン
-// - 謎解き（スキャン・手入力・解答）
-// - クロスワード謎
-// - 協力謎（Together）
-// などをカバーする。
+// ■ 前提
+//   ・ローカルモード（config.js の SUPABASE.url が空）でのみ走る。
+//     本番の Supabase へ書き込んでしまふ事故を防ぐため、
+//     設定が入つてゐたら何もせず落ちる。
+//   ・ES modules は file:// では読めないので、必ず HTTP で配る。
+//
+// 使ひ方:  node v2/tools/smoke.mjs [出力先ディレクトリ]
+// ============================================================================
 
-import { chromium } from "/opt/node22/lib/node_modules/playwright/index.mjs";
-import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-import fs from "node:fs";
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.join(__dirname, "..", "..");
-const v2Root = path.join(repoRoot, "v2");
-const outDir = process.argv[2] || "out";
+const v2Root = path.join(path.dirname(__filename), '..');
+const repoRoot = path.join(v2Root, '..');
+const outDir = process.argv[2] || path.join(repoRoot, 'out');
+const PORT = 8765;
+const BASE = `http://127.0.0.1:${PORT}/v2/`;
 
-// ディレクトリ作成
-if (!fs.existsSync(outDir)) {
-  fs.mkdirSync(outDir, { recursive: true });
+const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+
+// --- 前提の確認 -------------------------------------------------------------
+const { CONFIG } = await import(path.join(v2Root, 'js/config.js'));
+if (CONFIG.SUPABASE.url) {
+  console.error('中止: config.js に Supabase の URL が入つてゐます。');
+  console.error('この試験は localStorage だけのローカルモード専用です。');
+  process.exit(1);
 }
+const { PUZZLES } = await import(path.join(v2Root, 'js/puzzles.js'));
+const rules = await import(path.join(v2Root, 'js/rules.js'));
 
-const baseUrl = "http://127.0.0.1:8765/v2/";
-const httpPort = 8765;
+const TEAM1 = CONFIG.TEAM_ORDER[0];
+const TEAM2 = CONFIG.TEAM_ORDER[1];
+const ME = CONFIG.TEAMS[TEAM1].idPrefix + '017';
+const PARTNER = CONFIG.TEAMS[TEAM2].idPrefix + '042';
+const FIRST_CODE = Object.keys(CONFIG.MANUAL_CODES)[0];
+const FIRST_Q = CONFIG.MANUAL_CODES[FIRST_CODE].q;
 
-let server = null;
-let browser = null;
+const answerOf = (qid, teamKey) => rules.answerFor(PUZZLES[qid], teamKey);
 
-// 健全性チェック：LOCAL MODE の確認
-async function checkLocalMode() {
-  try {
-    const configModule = await import(
-      new URL("../js/config.js", import.meta.url).href
-    );
-    const { CONFIG } = configModule;
-    if (CONFIG.SUPABASE && CONFIG.SUPABASE.url !== "") {
-      console.error("❌ FATAL: Supabase が設定されています。ローカルテストで実データを上書きすることはできません。");
-      process.exit(1);
-    }
-  } catch (err) {
-    console.error("⚠ config.js のロードに失敗: " + err.message);
-    console.error("(Track A が config.js を作成していない可能性があります)");
-    process.exit(1);
+fs.mkdirSync(outDir, { recursive: true });
+
+// --- 配信サーバ -------------------------------------------------------------
+const server = spawn('python3', ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1'], {
+  cwd: repoRoot, stdio: ['ignore', 'ignore', 'ignore'],
+});
+const stopServer = () => { try { server.kill('SIGTERM'); } catch (_) {} };
+process.on('exit', stopServer);
+
+async function waitForServer() {
+  for (let i = 0; i < 60; i++) {
+    try {
+      const r = await fetch(BASE + 'index.html');
+      if (r.ok) return;
+    } catch (_) { /* まだ起きてゐない */ }
+    await new Promise((r) => setTimeout(r, 250));
   }
+  throw new Error('配信サーバが起動しませんでした');
+}
+await waitForServer();
+
+// --- 試験の道具 -------------------------------------------------------------
+const results = [];
+let failed = 0;
+let stepNo = 0;
+
+function check(name, ok, detail) {
+  results.push({ name, ok, detail });
+  if (!ok) failed++;
+  console.log(`${ok ? '  ○' : '  ×'} ${name}${detail ? '  … ' + detail : ''}`);
 }
 
-// HTTPサーバー起動
-async function startHttpServer() {
-  return new Promise((resolve, reject) => {
-    server = spawn("python3", ["-m", "http.server", String(httpPort)], {
-      cwd: repoRoot,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+const browser = await chromium.launch({ executablePath: CHROME });
 
-    server.on("error", reject);
-
-    // サーバーが起動するまで待つ
-    let ready = false;
-    const timeout = setTimeout(() => {
-      if (!ready) {
-        reject(new Error("HTTP server failed to start"));
-      }
-    }, 5000);
-
-    server.stdout.on("data", () => {
-      if (!ready) {
-        ready = true;
-        clearTimeout(timeout);
-        resolve();
-      }
-    });
-
-    server.stderr.on("data", (data) => {
-      console.error("[server]", data.toString());
-    });
+// 外部フォントの取得失敗は、この箱庭に外へ出る経路が無いためであつて
+// サイトの誤りではない。会場の通信が死んでも同じことが起きるが、
+// その場合も端末側の代替書体で読める（font-display:swap）。
+// よつて自サイト由来の誤りだけを数へる。
+function watch(page, bag) {
+  page.on('pageerror', (e) => bag.push('pageerror: ' + e.message));
+  page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    const t = m.text();
+    if (/fonts\.(googleapis|gstatic)\.com/.test(t)) return;
+    if (/ERR_CONNECTION_RESET|ERR_TUNNEL|ERR_NAME_NOT_RESOLVED|ERR_BLOCKED/.test(t)) return;
+    bag.push('console: ' + t);
   });
 }
 
-// ブラウザ起動
-async function startBrowser() {
-  const { chromeLaunchOptions } = await import("./chrome-path.mjs");
-  browser = await chromium.launch({
-    ...chromeLaunchOptions(),
-    headless: true,
-  });
+async function newPage() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+  const bag = [];
+  watch(page, bag);
+  return { ctx, page, bag };
 }
 
-// スクリーンショット
-async function screenshot(page, name) {
-  const filepath = path.join(outDir, name + ".png");
-  await page.screenshot({ path: filepath });
-  console.log(`  📸 ${filepath}`);
+async function shot(page, label) {
+  stepNo++;
+  const file = path.join(outDir, `${String(stepNo).padStart(2, '0')}-${label}.png`);
+  await page.screenshot({ path: file });
 }
 
-// テスト実行
-async function runTests() {
-  const results = [];
+const sel = (id) => `[data-testid="${id}"]`;
 
-  try {
-    // ========== Test 1: ログイン ==========
-    console.log("\n=== Test 1: index.html?pid=K017 でログイン ===");
-    const context1 = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const page1 = await context1.newPage();
+// isVisible() は「今この瞬間」を返すだけで待たない。
+// この site は各画面が保存済みの状態を読んでから描くので、
+// 待たずに見ると、在るはずの物を無いと誤判定する。
+// 従つて必ず waitFor で待つ（無いことを確かめる場合は、
+// その timeout ぶん待つてから false が返る）。
+const visible = (page, id, timeout = 5000) =>
+  page.locator(sel(id)).first().waitFor({ state: 'visible', timeout }).then(() => true, () => false);
 
-    // エラーハンドリング
-    const errors1 = [];
-    page1.on("pageerror", (err) => errors1.push(err));
-    page1.on("console", (msg) => {
-      if (msg.type() === "error") errors1.push(new Error(msg.text()));
-    });
+// 押すと実ページ読込が起きる要素は、URL が変はり切るまで待つ。
+// 固定の待ち時間で済ませると、遷移の途中を覗いて誤判定する。
+async function clickAndNavigate(page, testid) {
+  const before = page.url();
+  await Promise.all([
+    page.waitForURL((u) => String(u) !== before, { timeout: 10000 }).catch(() => {}),
+    page.locator(sel(testid)).first().click(),
+  ]);
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+}
 
-    await page1.goto(baseUrl + "index.html?pid=K017", { waitUntil: "load" });
-    await screenshot(page1, "01-login");
+// 案内の画面（sheet）や盤面の画面（crossword）を挟むことがあるので、
+// 「解答する」を押し継いで解答画面まで辿り着く。
+async function reachSubmit(page) {
+  for (let hop = 0; hop < 4; hop++) {
+    if (/submit\.html/.test(page.url())) return true;
+    const btn = page.locator(sel('solve-btn')).first();
+    if (!(await btn.waitFor({ state: 'visible', timeout: 6000 }).then(() => true, () => false))) break;
+    const before = page.url();
+    // 画面遷移は実ページ読み込み（nav.go）なので、URL が変はるまで待つ。
+    // 固定の待ち時間だと、読み込みの遅い回に取りこぼす。
+    await Promise.all([
+      page.waitForURL((u) => String(u) !== before, { timeout: 10000 }).catch(() => {}),
+      btn.click(),
+    ]);
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
+  }
+  return /submit\.html/.test(page.url());
+}
 
-    // スタートボタンクリック
-    const startBtn = page1.locator("[data-testid='start-btn'], button:has-text('始める')").first();
-    if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await startBtn.click();
-    } else {
-      console.warn("  ⚠ スタートボタンが見つかりません");
-    }
+// かなキーボードで一語を打ち込む。
+// 画面は「行を選ぶ」→「段を選ぶ」の二段構へで、一字入れると行の画面に戻る。
+// 濁点・半濁点は直前の一字を変へる働きなので、清音を入れてから押す。
+const GYO = [
+  ['あ', 'あいうえお'], ['か', 'かきくけこ'], ['さ', 'さしすせそ'], ['た', 'たちつてと'],
+  ['な', 'なにぬねの'], ['は', 'はひふへほ'], ['ま', 'まみむめも'], ['や', 'やゆよ'],
+  ['ら', 'らりるれろ'], ['わ', 'わをん'],
+];
+const DAKUTEN = { 'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ','ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ',
+  'だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と','ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ' };
+const HANDAKUTEN = { 'ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ' };
 
-    await page1.waitForNavigation({ timeout: 3000 }).catch(() => {});
-    await screenshot(page1, "02-folio");
+function gyoBaseOf(ch) {
+  for (const [base, dan] of GYO) if (dan.includes(ch)) return base;
+  return null;
+}
 
-    // localStorage をチェック
-    const pid = await page1.evaluate(() => localStorage.getItem("oc2_pid"));
-    if (pid === "K017") {
-      console.log("  ✓ localStorage.oc2_pid = K017");
-      results.push({ test: "Login", status: "PASS" });
-    } else {
-      console.error(`  ✗ localStorage.oc2_pid = ${pid} (expected K017)`);
-      results.push({ test: "Login", status: "FAIL" });
-    }
+async function typeKana(page, word) {
+  for (const ch of word) {
+    let plain = ch;
+    let mod = null;
+    if (DAKUTEN[ch]) { plain = DAKUTEN[ch]; mod = 'dakuten'; }
+    else if (HANDAKUTEN[ch]) { plain = HANDAKUTEN[ch]; mod = 'handakuten'; }
 
-    if (errors1.length > 0) {
-      console.error("  ✗ Console errors detected:", errors1);
-      results.push({ test: "Login-Console", status: "FAIL" });
-    }
+    const base = gyoBaseOf(plain);
+    if (!base) throw new Error(`かな「${ch}」は五十音表に見当たりません`);
 
-    await context1.close();
-
-    // ========== Test 2: スキャン（手入力）==========
-    console.log("\n=== Test 2: scan.html で手入力 ===");
-    const context2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const page2 = await context2.newPage();
-
-    const errors2 = [];
-    page2.on("pageerror", (err) => errors2.push(err));
-    page2.on("console", (msg) => {
-      if (msg.type() === "error") errors2.push(new Error(msg.text()));
-    });
-
-    await page2.goto(baseUrl + "scan.html", { waitUntil: "load" });
-    await screenshot(page2, "03-scan");
-
-    // 手入力ボックスを探して最初の MANUAL_CODES キーを入力
-    const manualInput = page2.locator("[data-testid='manual-input'], input[placeholder*='番号']").first();
-    if (await manualInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // MANUAL_CODES の最初のキーを取得（デフォルト値は 201 を試す）
-      await manualInput.fill("201");
-      const manualBtn = page2
-        .locator("[data-testid='manual-btn'], button:has-text('ひらく')")
-        .first();
-      if (await manualBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await manualBtn.click();
-      }
-    } else {
-      console.warn("  ⚠ 手入力ボックスが見つかりません");
-    }
-
-    await page2.waitForNavigation({ timeout: 3000 }).catch(() => {});
-    await screenshot(page2, "04-sheet");
-
-    results.push({ test: "Manual-Input", status: "PASS" });
-    if (errors2.length > 0) {
-      console.error("  ✗ Console errors:", errors2);
-      results.push({ test: "Manual-Input-Console", status: "FAIL" });
-    }
-
-    await context2.close();
-
-    // ========== Test 3: 謎解き（解答） ==========
-    console.log("\n=== Test 3: 謎解き（解答） ===");
-    const context3 = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const page3 = await context3.newPage();
-
-    const errors3 = [];
-    page3.on("pageerror", (err) => errors3.push(err));
-    page3.on("console", (msg) => {
-      if (msg.type() === "error") errors3.push(new Error(msg.text()));
-    });
-
-    // 最初に K017 でログインしておく
-    await page3.goto(baseUrl + "index.html?pid=K017", { waitUntil: "load" });
-    const startBtn3 = page3.locator("button:has-text('始める')").first();
-    if (await startBtn3.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await startBtn3.click();
-      await page3.waitForNavigation({ timeout: 2000 }).catch(() => {});
-    }
-
-    // sheet.html に遷移（簡単なテスト用の謎）
-    await page3.goto(baseUrl + "sheet.html?q=warmup&room=team1room", { waitUntil: "load" });
-    await screenshot(page3, "05-puzzle");
-
-    // 誤った回答を入力（例："たろう" など）
-    const answerInput = page3.locator("[data-testid='answer-input'], input[placeholder*='こたえ']").first();
-    if (await answerInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await answerInput.fill("ぶぶぶぶ"); // 誤答
-      const submitBtn = page3.locator("button:has-text('送信')").first();
-      if (await submitBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page3.waitForTimeout(500);
-      }
-    }
-
-    await screenshot(page3, "06-wrong-answer");
-
-    // 正答を入力（実装と同じ）
-    if (await answerInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await answerInput.fill("あああ"); // warmup の正答（実装に合わせる）
-      const submitBtn = page3.locator("button:has-text('送信')").first();
-      if (await submitBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page3.waitForNavigation({ timeout: 3000 }).catch(() => {});
-      }
-    }
-
-    await screenshot(page3, "07-seal");
-
-    results.push({ test: "Solve-Puzzle", status: "PASS" });
-    if (errors3.length > 0) {
-      console.error("  ✗ Console errors:", errors3);
-      results.push({ test: "Solve-Puzzle-Console", status: "FAIL" });
-    }
-
-    await context3.close();
-
-    // ========== Test 4: Together 謎 ==========
-    console.log("\n=== Test 4: together.html テスト ===");
-    const context4 = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const page4 = await context4.newPage();
-
-    const errors4 = [];
-    page4.on("pageerror", (err) => errors4.push(err));
-    page4.on("console", (msg) => {
-      if (msg.type() === "error") errors4.push(new Error(msg.text()));
-    });
-
-    // K017 でログイン
-    await page4.goto(baseUrl + "index.html?pid=K017", { waitUntil: "load" });
-    const startBtn4 = page4.locator("button:has-text('始める')").first();
-    if (await startBtn4.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await startBtn4.click();
-      await page4.waitForNavigation({ timeout: 2000 }).catch(() => {});
-    }
-
-    // together.html に遷移
-    await page4.goto(baseUrl + "together.html?with=O042", { waitUntil: "load" });
-    await screenshot(page4, "08-together");
-
-    results.push({ test: "Together", status: "PASS" });
-    if (errors4.length > 0) {
-      console.error("  ✗ Console errors:", errors4);
-      results.push({ test: "Together-Console", status: "FAIL" });
-    }
-
-    await context4.close();
-
-    // ========== Test 5: 無効な PID ==========
-    console.log("\n=== Test 5: 無効な PID (X999) ===");
-    const context5 = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const page5 = await context5.newPage();
-
-    const errors5 = [];
-    page5.on("pageerror", (err) => errors5.push(err));
-    page5.on("console", (msg) => {
-      if (msg.type() === "error") errors5.push(new Error(msg.text()));
-    });
-
-    await page5.goto(baseUrl + "index.html?pid=X999", { waitUntil: "load" });
-    await screenshot(page5, "09-invalid-pid");
-
-    // エラーメッセージが表示されているかチェック
-    const errorMsg = page5.locator("[data-testid='error'], text=エラー").first();
-    if (await errorMsg.isVisible({ timeout: 2000 }).catch(() => false)) {
-      console.log("  ✓ エラーメッセージが表示されました");
-      results.push({ test: "Invalid-PID", status: "PASS" });
-    } else {
-      console.warn("  ⚠ エラーメッセージが見つかりません");
-      results.push({ test: "Invalid-PID", status: "PASS" }); // ページが読めればOK
-    }
-
-    if (errors5.length > 0) {
-      console.error("  ✗ Console errors:", errors5);
-      results.push({ test: "Invalid-PID-Console", status: "FAIL" });
-    }
-
-    await context5.close();
-
-    // ========== Summary ==========
-    console.log("\n========== SMOKE TEST RESULTS ==========");
-    let passCount = 0;
-    let failCount = 0;
-    for (const r of results) {
-      const icon = r.status === "PASS" ? "✓" : "✗";
-      console.log(`${icon} ${r.test}: ${r.status}`);
-      if (r.status === "PASS") passCount++;
-      else failCount++;
-    }
-    console.log(`\nPassed: ${passCount}, Failed: ${failCount}`);
-
-    if (failCount > 0) {
-      process.exit(1);
-    }
-  } catch (err) {
-    console.error("\n❌ テスト実行エラー:", err);
-    process.exit(1);
+    // 行を選ぶ（既に段の画面なら一旦戻る）
+    const back = page.locator(`${sel('kana-key')}[data-action="back-to-gyo"]`).first();
+    if (await back.isVisible({ timeout: 200 }).catch(() => false)) await back.click();
+    await page.locator(`${sel('kana-key')}[data-gyo]:text-is("${base}")`).first().click();
+    // 段を選ぶ
+    await page.locator(`${sel('kana-key')}[data-dan="${plain}"]`).first().click();
+    // 濁点・半濁点（行の画面に戻つてゐるので、そこに在るものを押す）
+    if (mod) await page.locator(`${sel('kana-key')}[data-action="${mod}"]`).first().click();
   }
 }
 
-// メイン処理
-async function main() {
-  console.log("🧪 Smoke Test Started");
-
-  try {
-    console.log("1. ローカルモードの確認...");
-    await checkLocalMode();
-
-    console.log("2. HTTP サーバーを起動...");
-    await startHttpServer();
-    console.log("   HTTP サーバー起動完了: http://127.0.0.1:8765");
-
-    console.log("3. Playwright ブラウザを起動...");
-    await startBrowser();
-
-    console.log("4. テストを実行...");
-    await runTests();
-
-    console.log("\n✓ All done!");
-  } catch (err) {
-    console.error("\n❌ Fatal Error:", err);
-    process.exit(1);
-  } finally {
-    console.log("\nクリーンアップ中...");
-    if (browser) await browser.close();
-    if (server) server.kill();
-  }
+async function readState(page) {
+  return page.evaluate((pid) => {
+    try { return JSON.parse(localStorage.getItem('oc2_state_' + pid)); } catch (_) { return null; }
+  }, ME);
 }
 
-main();
+try {
+  // ---- 1. 受付：個人QRから始める -----------------------------------------
+  console.log('\n[1] 受付 — 個人QRを読んで調査を開始する');
+  const main = await newPage();
+  await main.page.goto(BASE + 'index.html?pid=' + ME);
+  check('開始ボタンが出る', await visible(main.page, 'start-btn'));
+  await shot(main.page, 'start');
+  await main.page.locator(sel('start-btn')).first().click();
+  await main.page.waitForURL(/folio\.html/, { timeout: 8000 }).catch(() => {});
+  const storedPid = await main.page.evaluate(() => { try { return localStorage.getItem('oc2_pid'); } catch (_) { return null; } });
+  check('参加者IDが保存される', storedPid === ME, storedPid || 'なし');
+  check('URLから pid が消える', !main.page.url().includes('pid='), main.page.url());
+  await shot(main.page, 'folio-after-start');
+
+  // ---- 2. 符牒番号の手入力（カメラが使へないときの逃げ道） ----------------
+  console.log('\n[2] 逃げ道 — カメラが使へないときの符牒番号');
+  await main.page.goto(BASE + 'scan.html');
+  check('番号入力欄が出る', await visible(main.page, 'manual-code'));
+  await main.page.locator(sel('manual-code')).first().fill(String(FIRST_CODE));
+  await main.page.locator(sel('manual-code-go')).first().click();
+  await main.page.waitForURL(/sheet\.html/, { timeout: 8000 }).catch(() => {});
+  check('案内の画面へ進む', /sheet\.html/.test(main.page.url()), main.page.url());
+  await shot(main.page, 'sheet');
+
+  // ---- 3. 誤答と正答 ------------------------------------------------------
+  console.log('\n[3] 解答 — 誤答で戻され、正答で證を得る');
+  check('解答画面まで辿り着く', await reachSubmit(main.page), main.page.url());
+  const correct = answerOf(FIRST_Q, TEAM1);
+  const wrong = ('ぬ'.repeat(correct.length) === correct) ? 'ね'.repeat(correct.length) : 'ぬ'.repeat(correct.length);
+  await typeKana(main.page, wrong);
+  await main.page.locator(sel('submit-btn')).first().click();
+  check('誤答が知らされる', await visible(main.page, 'wrong-msg'));
+  await shot(main.page, 'submit-wrong');
+  await main.page.reload();
+  await typeKana(main.page, correct);
+  await main.page.locator(sel('submit-btn')).first().click();
+  await main.page.waitForURL(/seal\.html/, { timeout: 8000 }).catch(() => {});
+  check('自組の證が出る', /seal\.html\?kind=own/.test(main.page.url()), main.page.url());
+  check('證書が描かれる', await visible(main.page, 'seal-cert'));
+  await shot(main.page, 'seal-own');
+
+  // ---- 4. 資料綴：相手の證はまだ伏せられてゐる ----------------------------
+  console.log('\n[4] 資料綴 — 相手の證はまだ取れず、解き直しの導線も出ない');
+  await main.page.goto(BASE + 'folio.html');
+  check('自組の綴が見える', await visible(main.page, 'folio-tab-own'));
+  await clickAndNavigate(main.page, 'folio-tab-other');
+  check('相手の證は伏せられてゐる', await visible(main.page, 'folio-locked', 6000));
+  check('伏せられてゐる間は證書を出さない', !(await visible(main.page, 'folio-cert', 1200)));
+  await shot(main.page, 'folio-other-locked');
+  await main.page.goto(BASE + 'folio.html');
+  check('この時点で解き直しの導線は出ない', !(await visible(main.page, 'resolve-link', 1200)));
+
+  // ---- 5. クロスワードと解き直し ------------------------------------------
+  console.log('\n[5] 解き直し — 同じ盤面を相手の手掛かりで解く');
+  await main.page.goto(BASE + 'sheet.html?q=crossword');
+  check('盤面から解答画面へ辿り着く', await reachSubmit(main.page), main.page.url());
+  await typeKana(main.page, answerOf('crossword', TEAM1));
+  await main.page.locator(sel('submit-btn')).first().click();
+  await main.page.waitForTimeout(1200);
+  await main.page.goto(BASE + 'folio.html');
+  check('解き直しの導線が現れる', await visible(main.page, 'resolve-link'));
+  await shot(main.page, 'folio-resolve-link');
+  await clickAndNavigate(main.page, 'resolve-link');
+  check('解き直しは相手の手掛かりで開く', /as=other/.test(main.page.url()), main.page.url());
+  check('解き直しの解答画面まで辿り着く', await reachSubmit(main.page), main.page.url());
+  check('解答画面も相手側のまま', /as=other/.test(main.page.url()), main.page.url());
+  await typeKana(main.page, answerOf('crossword', TEAM2));
+  await main.page.locator(sel('submit-btn')).first().click();
+  await main.page.waitForURL(/seal\.html/, { timeout: 8000 }).catch(() => {});
+  check('相手の證が出る', /kind=other/.test(main.page.url()), main.page.url());
+  await shot(main.page, 'seal-other');
+  await main.page.goto(BASE + 'folio.html?tab=other');
+  check('相手の證が綴に収まる', await visible(main.page, 'folio-cert'));
+  check('施錠の表示は消える', !(await visible(main.page, 'folio-locked', 1200)));
+  await shot(main.page, 'folio-other-unlocked');
+
+  // ---- 6. 協力フェーズ ----------------------------------------------------
+  console.log('\n[6] 協力 — 符牒を読み合ふ');
+  await main.page.goto(BASE + 'together.html?with=' + PARTNER);
+  check('自分の半分が出る', await visible(main.page, 'together-my-half'));
+  const picked = rules.pickTogether(ME, PARTNER, TEAM1, TEAM2);
+  const myRole = picked.role(ME);
+  const shown = (await main.page.locator(sel('together-my-half')).first().innerText()).replace(/\s/g, '');
+  const expectHalf = picked.question.halves[myRole].replace(/\s/g, '');
+  check('表示された半分が期待どほり', shown.includes(expectHalf), `画面=${shown} / 期待=${expectHalf}`);
+  await shot(main.page, 'together-linked');
+  // 答への欄はかな入力の部品（<input> ではない）なので、鍵盤を叩いて入れる。
+  await typeKana(main.page, picked.question.answer);
+  await main.page.locator(sel('together-check')).first().click();
+  await main.page.waitForTimeout(1200);
+  const st = await readState(main.page);
+  const expectPoints = rules.totalPoints(st);
+  await shot(main.page, 'together-verified');
+  await main.page.goto(BASE + 'folio.html');
+  const badge = (await main.page.locator(sel('points-badge')).first().innerText()).replace(/\D/g, '');
+  check('点が台帳の合計と一致する', Number(badge) === expectPoints, `画面=${badge} / 台帳=${expectPoints}`);
+
+  // ---- 7. 同じ相手とは二度組めない ---------------------------------------
+  console.log('\n[7] 重複 — 同じ二人はもう一度は組めない');
+  await main.page.goto(BASE + 'together.html?with=' + PARTNER);
+  check('済んだ相手だと知らせる', await visible(main.page, 'together-blocked'));
+  await shot(main.page, 'together-blocked');
+
+  // ---- 8. 相手側の端末から見ても同じ設問・逆の役 --------------------------
+  console.log('\n[8] 対称 — 相手の端末でも同じ設問、役だけ入れ替はる');
+  const other = await newPage();
+  await other.page.goto(BASE + 'index.html?pid=' + PARTNER);
+  await other.page.locator(sel('start-btn')).first().click();
+  await other.page.waitForTimeout(800);
+  await other.page.goto(BASE + 'together.html?with=' + ME);
+  const shown2 = (await other.page.locator(sel('together-my-half')).first().innerText()).replace(/\s/g, '');
+  const picked2 = rules.pickTogether(PARTNER, ME, TEAM2, TEAM1);
+  check('同じ設問が選ばれる', picked2.question.id === picked.question.id, `${picked2.question.id} / ${picked.question.id}`);
+  const otherRole = picked2.role(PARTNER);
+  check('役が入れ替はる', otherRole !== myRole, `${otherRole} / ${myRole}`);
+  check('相手の画面には別の半分が出る', shown2.includes(picked2.question.halves[otherRole].replace(/\s/g, '')), shown2);
+  await shot(other.page, 'together-partner-side');
+  other.bag.forEach((e) => check('相手側の画面に誤りなし', false, e));
+  await other.ctx.close();
+
+  // ---- 9. 知らないIDと、入口を飛ばした場合 --------------------------------
+  console.log('\n[9] 端の場合 — 知らないID、入口を飛ばした来訪');
+  const guest = await newPage();
+  await guest.page.goto(BASE + 'index.html?pid=X999');
+  check('知らないIDは断られる', await visible(guest.page, 'pid-error'));
+  const leaked = await guest.page.evaluate(() => { try { return localStorage.getItem('oc2_pid'); } catch (_) { return null; } });
+  check('知らないIDは保存されない', !leaked, leaked || 'なし');
+  await shot(guest.page, 'invalid-pid');
+  await guest.page.goto(BASE + 'folio.html');
+  await guest.page.waitForTimeout(800);
+  check('入口を飛ばすと受付へ戻される', /index\.html/.test(guest.page.url()), guest.page.url());
+  await shot(guest.page, 'redirect-to-start');
+  guest.bag.forEach((e) => check('来訪者側の画面に誤りなし', false, e));
+  await guest.ctx.close();
+
+  main.bag.forEach((e) => check('主たる画面に誤りなし', false, e));
+  await main.ctx.close();
+} catch (err) {
+  check('試験が最後まで走る', false, err.message);
+} finally {
+  await browser.close();
+  stopServer();
+}
+
+console.log('\n===== 結果 =====');
+for (const r of results) console.log(`${r.ok ? '○' : '×'} ${r.name}${r.ok || !r.detail ? '' : '  … ' + r.detail}`);
+console.log(`\n合格 ${results.length - failed} / ${results.length}　画像は ${outDir}`);
+process.exit(failed > 0 ? 1 : 0);

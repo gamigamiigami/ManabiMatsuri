@@ -240,12 +240,17 @@ export function applyWrong(state, key) {
  *   参加者には「解いた」事実（solved）で答へるので、点が 0 でも画面は正しく動く。
  */
 export function applySolve(state, { puzzleId, asOther = false, via = null, now = null } = {}) {
-  if (!state || !puzzleId) return state;
+  // 返り値は必ず { state, seal, delta } の形。
+  // 呼び出し側（submit.html）は seal で次の画面を決め、delta を證書に出す。
+  // 「新しい状態だけ返す」形にすると、どちらへ進むかを呼び出し側が
+  // 謎の定義から組み立て直すことになり、判定の置き場所が二つに割れる。
+  const noop = { state, seal: null, delta: 0 };
+  if (!state || !puzzleId) return noop;
   const puzzle = PUZZLES[puzzleId];
-  if (!puzzle) return state;
+  if (!puzzle) return noop;
 
   const key = asOther ? puzzleId + ':other' : puzzleId;
-  if (state.solved && state.solved[key]) return state; // 既に正解済み。何もしない。
+  if (state.solved && state.solved[key]) return noop; // 既に正解済み。何もしない。
 
   const at = nowIso(now);
   const next = clone(state);
@@ -253,21 +258,25 @@ export function applySolve(state, { puzzleId, asOther = false, via = null, now =
   next.solved[key] = { at, wrong: Number(next.wrong[key]) || 0, via: via || null };
 
   // 台帳（上限を適用）
+  let delta = 0;
   const ref = 'solve:' + key;
   if (!hasRef(next, ref)) {
     const want = Number(puzzle.points) || CONFIG.POINTS.solo;
     const room = Math.max(0, CONFIG.POINTS.soloMax - soloEarned(next));
-    next.ledger.push({ ref, kind: 'solo', delta: Math.min(want, room), at });
+    delta = Math.min(want, room);
+    next.ledger.push({ ref, kind: 'solo', delta, at });
   }
 
   // 證
   const kind = asOther ? (puzzle.reSolveGrantsSeal || null) : (puzzle.grantsSeal || null);
+  let seal = null;
   if (kind === 'own' || kind === 'other') {
     if (!next.seals[kind]) next.seals[kind] = at;
+    seal = kind;
   }
 
   next.updatedAt = at;
-  return next;
+  return { state: next, seal, delta };
 }
 
 /**
@@ -277,9 +286,10 @@ export function applySolve(state, { puzzleId, asOther = false, via = null, now =
  * 既に組んだ二人の出題が変はらないやうにするため。
  */
 export function applyLink(state, { partnerPid, partnerTeam = null, now = null } = {}) {
-  if (!state || !partnerPid) return state;
+  // 返り値は必ず { state, link } の形（together.html が link を直接描く）。
+  if (!state || !partnerPid) return { state, link: null };
   const me = state.pid;
-  if (!me || partnerPid === me) return state; // 自分自身とは組めない
+  if (!me || partnerPid === me) return { state, link: null }; // 自分自身とは組めない
   const key = pairKey(me, partnerPid);
   const at = nowIso(now);
   const next = clone(state);
@@ -300,7 +310,7 @@ export function applyLink(state, { partnerPid, partnerTeam = null, now = null } 
       };
       next.updatedAt = at;
     }
-    return next;
+    return { state: next, link: next.links[key] };
   }
 
   const picked = pickTogether(me, partnerPid, state.team, partnerTeam);
@@ -316,7 +326,7 @@ export function applyLink(state, { partnerPid, partnerTeam = null, now = null } 
     wrong: 0,
   };
   next.updatedAt = at;
-  return next;
+  return { state: next, link: next.links[key] };
 }
 
 /**
@@ -326,27 +336,31 @@ export function applyLink(state, { partnerPid, partnerTeam = null, now = null } 
  * 単独フェーズの上限はここには掛けない（協力フェーズを主役にするため）。
  */
 export function applyTogetherVerified(state, key, now = null) {
-  if (!state || !key) return state;
+  // 返り値は必ず { state, delta } の形（delta は「今回積んだ点」で、成立の演出に使ふ）。
+  if (!state || !key) return { state, delta: 0 };
   const link = state.links && state.links[key];
-  if (!link || link.verifiedAt) return state;
+  if (!link || link.verifiedAt) return { state, delta: 0 };
 
   const at = nowIso(now);
   const next = clone(state);
   next.links[key] = { ...link, verifiedAt: at };
 
+  let gained = 0;
   const ref = 'together:' + key;
   if (!hasRef(next, ref)) {
     const delta = link.pool === 'same' ? CONFIG.POINTS.togetherSame : CONFIG.POINTS.togetherCross;
     next.ledger.push({ ref, kind: 'together', delta, at });
+    gained += delta;
   }
 
   const bonusRef = 'bonus:' + link.partnerPid;
   if (link.partnerPid && !hasRef(next, bonusRef)) {
     next.ledger.push({ ref: bonusRef, kind: 'newPartner', delta: CONFIG.POINTS.newPartnerBonus, at });
+    gained += CONFIG.POINTS.newPartnerBonus;
   }
 
   next.updatedAt = at;
-  return next;
+  return { state: next, delta: gained };
 }
 
 // ---------------------------------------------------------------------------

@@ -107,9 +107,20 @@ export function mountKanaInput(el, { length = 4, onChange, onSubmit } = {}) {
         });
         keyboardEl.appendChild(b);
       });
-      const back = makeKey("⌫ 一字消す", {}, "kana-key-wide");
+      // 濁点・半濁点・小書きは、行を選ぶ画面にも置く。
+      // これらは「直前に入れた一字」を変へる働きなので、
+      // 一字入れた直後＝この画面に居るときにこそ要る。
+      // 段の画面にしか無いと、「ど」を入れるのに
+      // 一旦どこかの行を開き直す羽目になり、実際に手が止まる。
+      const daku = makeKey("゛", { "data-action": "dakuten" }, "kana-key-mod");
+      daku.addEventListener("click", () => doMod(DAKUTEN, DAKUTEN_REV));
+      const handaku = makeKey("゜", { "data-action": "handakuten" }, "kana-key-mod");
+      handaku.addEventListener("click", () => doMod(HANDAKUTEN, HANDAKUTEN_REV));
+      const small = makeKey("小", { "data-action": "small" }, "kana-key-mod");
+      small.addEventListener("click", () => doMod(SMALL, SMALL_REV));
+      const back = makeKey("⌫ 一字消す", { "data-action": "backspace" }, "kana-key-wide");
       back.addEventListener("click", doBackspace);
-      keyboardEl.appendChild(back);
+      [daku, handaku, small, back].forEach((b) => keyboardEl.appendChild(b));
     } else {
       const g = GYO[activeGyo];
       // 5列グリッドを保つため、段が5未満の行は空セルで埋める

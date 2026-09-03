@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>答を記す</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,11 +40,13 @@
 <script type="module">
 import { PUZZLES } from "./js/puzzles.js";
 import { checkAnswer, applyWrong, applySolve, totalPoints, canResolveAsOther } from "./js/rules.js";
+import { otherTeam } from "./js/config.js";
 import { renderCrest } from "./js/crest.js";
 import * as store from "./js/store.js";
 import { requirePid, params, go, href } from "./js/nav.js";
 import { mountHeader, applyTeamTheme, offlineMark, teamText, toast } from "./js/ui.js";
 import { mountKanaInput } from "./js/kana-input.js";
+import { mountDebug } from "./js/debug.js";
 
 async function main() {
   const pid = requirePid();
@@ -79,7 +82,7 @@ async function main() {
     '<div class="wrong-msg" id="wrong-msg" data-testid="wrong-msg" hidden></div>' +
     '<div class="submit-recorded">' +
     '<div><div class="label" style="color:var(--gold-700);margin-bottom:6px">Recorded by</div>' +
-    '<div class="h2" style="font-size:15px;color:var(--shu-700)">' + escapeHtml(teamText(state.team, "{name} 調査員")) + "</div></div>" +
+    '<div class="h2" style="font-size:15px;color:var(--team1-700)">' + escapeHtml(teamText(state.team, "{name} 調査員")) + "</div></div>" +
     '<div class="crest-frame crest-locked" style="width:56px;height:56px" id="mini-crest"></div>' +
     "</div>" +
     '<div style="flex:1"></div>' +
@@ -109,13 +112,21 @@ async function main() {
     submitting = true;
     submitBtn.setAttribute("aria-disabled", "true");
 
-    const ok = checkAnswer(puzzle, state.team, val);
+    // 「解き直し」は相手の組の手掛かりで同じ盤面を解く場面なので、
+    // 照合する答へも相手の組のものでなければならない。
+    // ここを自分の組のままにすると、相手の證＝相手のアジトへの入場許可が
+    // 永久に取れず、物語が先へ進まなくなる。
+    const answerTeam = asOther ? otherTeam(state.team) : state.team;
+    // 誤答の数へも、解き直しは別勘定にする（solved の鍵と揃へる）。
+    const wrongKey = asOther ? q + ":other" : q;
+
+    const ok = checkAnswer(puzzle, answerTeam, val);
     if (!ok) {
-      state = applyWrong(state, q);
+      state = applyWrong(state, wrongKey);
       store.saveState(state);
       kana.shake();
       wrongMsgEl.hidden = false;
-      wrongMsgEl.textContent = "誤り（" + ((state.wrong && state.wrong[q]) || 1) + "回目）。今一度、資料を讀み合はせよ。";
+      wrongMsgEl.textContent = "誤り（" + ((state.wrong && state.wrong[wrongKey]) || 1) + "回目）。今一度、資料を讀み合はせよ。";
       submitting = false;
       submitBtn.removeAttribute("aria-disabled");
       return;
@@ -131,6 +142,8 @@ async function main() {
       go("folio.html");
     }
   });
+
+  mountDebug(state);
 }
 
 function escapeHtml(s) {

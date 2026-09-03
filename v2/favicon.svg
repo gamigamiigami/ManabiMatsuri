@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 頁見出しの小さな印。組の色ではなく金と墨だけで描いてある。
+       組の名も色も当日まで変はり得るので、ここが古びないやうにするため。 -->
+  <rect width="64" height="64" rx="10" fill="#14100c"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#b3924f" stroke-width="3"
+          stroke-dasharray="24 9" stroke-linecap="butt"/>
+  <circle cx="32" cy="32" r="9" fill="none" stroke="#d3b276" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="3" fill="#d3b276"/>
+</svg>

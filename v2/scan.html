@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>資料の符牒を寫す</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,6 +69,7 @@ import * as store from "./js/store.js";
 import { requirePid, params, go, href } from "./js/nav.js";
 import { mountHeader, mountFooter, applyTeamTheme, offlineMark, toast } from "./js/ui.js";
 import { createScanner, classifyQr } from "./js/qr-scan.js";
+import { mountDebug } from "./js/debug.js";
 
 async function main() {
   const pid = requirePid();
@@ -170,6 +172,8 @@ async function main() {
   document.getElementById("manual-code").addEventListener("keydown", (e) => {
     if (e.key === "Enter") lookupCode(e.currentTarget.value);
   });
+
+  mountDebug(state);
 }
 
 window.addEventListener("pageshow", (e) => {

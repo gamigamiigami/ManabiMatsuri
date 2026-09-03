@@ -35,23 +35,26 @@
   --parchment-300: #e3d3a6;
   --parchment-500: #d8c6a0;
 
-  /* 朱（甲組の基準色） */
-  --shu-300: #c04326;
-  --shu-500: #a33520;
-  --shu-700: #7c2b18;
+  /* 一方の組の基準色（config.js の team1 に対応）。
+     変数名に色名や組の名を入れないのは、名も色も当日まで変はり得るから。
+     組の識別子 team1 / team2 だけは不変と決めてあるので、それを使ふ。 */
+  --team1-300: #c04326;
+  --team1-500: #a33520;
+  --team1-700: #7c2b18;
 
-  /* 藍（乙組の基準色） */
-  --ai-300: #3a67a8;
-  --ai-500: #2c5088;
-  --ai-700: #22406e;
+  /* もう一方の組の基準色（config.js の team2 に対応） */
+  --team2-300: #3a67a8;
+  --team2-500: #2c5088;
+  --team2-700: #22406e;
 
-  /* チーム色（ui.js の applyTeamTheme が team() から差し替える。
-     既定は甲組＝朱。config.js 未接続の状態でも見た目が壊れないよう
-     朱をデフォルト値にしておく） */
-  --team: var(--shu-500);
-  --team-ink: var(--shu-700);
-  --team-bright: var(--shu-300);
-  --team-name: "朱";
+  /* 実際に画面へ出る組の色。ui.js の applyTeamTheme() が
+     config.js の値で上書きする。ここに置いてあるのは
+     スクリプトが走る前の一瞬や、設定を読めなかつたときに
+     配色が崩れて見えないやうにするための控への値。 */
+  --team: var(--team1-500);
+  --team-ink: var(--team1-700);
+  --team-bright: var(--team1-300);
+  --team-name: "";
 
   /* 背景・地色 */
   --bg-dark: #0f0d0a;
@@ -224,10 +227,10 @@ h2, .h2 {
   cursor: not-allowed;
 }
 
-/* 儀式的な「主要な次の一手」ボタン（朱の大ボタン） */
+/* 儀式的な「主要な次の一手」ボタン（組の色の大ボタン） */
 .btn-primary {
   border: none;
-  background: linear-gradient(180deg, var(--shu-300), var(--shu-700));
+  background: linear-gradient(180deg, var(--team1-300), var(--team1-700));
   color: #fbebe0;
   font-size: 20px;
   letter-spacing: 0.28em;
@@ -336,7 +339,7 @@ body.dark .ftr-bar { color: #a4805c; border-top-color: rgba(180, 140, 100, 0.24)
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--shu-300);
+  background: var(--team1-300);
 }
 .offline-mark[hidden] { display: none; }
 
@@ -387,7 +390,7 @@ body.dark .ftr-bar { color: #a4805c; border-top-color: rgba(180, 140, 100, 0.24)
   margin-top: 10px;
   font-family: var(--font-body);
   font-size: var(--fs-small);
-  color: var(--shu-300);
+  color: var(--team1-300);
   letter-spacing: 0.04em;
 }
 .wrong-msg[hidden], .pid-error[hidden] { display: none; }
