@@ -1,0 +1,95 @@
+<!doctype html><meta charset="utf-8">
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&amp;family=IM+Fell+DW+Pica:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=New+Tegomin&amp;family=Yuji+Boku&amp;family=Yuji+Mai&amp;display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#0f0d0a; }
+  a { color:#a8482f; text-decoration:none; border-bottom:1px solid rgba(168,72,47,.45); }
+  a:hover { color:#c5663d; }
+  @keyframes lamp { 0%,100% { opacity:.86; } 44% { opacity:.98; } 61% { opacity:.77; } }
+  @keyframes sweep { 0% { top:16%; } 100% { top:78%; } }
+  @keyframes needle { 0%,100% { transform:rotate(-4deg); } 50% { transform:rotate(5deg); } }
+  @keyframes glowA { 0%,100% { transform:translate(-18px,-10px) scale(1); opacity:.6; } 50% { transform:translate(16px,12px) scale(1.12); opacity:.9; } }
+  @keyframes glowB { 0%,100% { transform:translate(18px,12px) scale(1.12); opacity:.9; } 50% { transform:translate(-16px,-10px) scale(1); opacity:.6; } }
+</style>
+<body style="background:#0f0d0a"><div id="7a" style="order:-3;scroll-margin-top:40px;padding:26px 30px 24px;background:#1c1811;border:1px solid #3a3125">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:4px"><span style="font-family:'IM Fell English SC',serif;font-size:13px;letter-spacing:.14em;padding:2px 9px;border:1px solid #7a6a4c;color:#d7c497">7a</span><span style="font-family:'Yuji Mai',serif;font-size:19px;letter-spacing:.08em;color:#f0e2c2">互ひ違ひの四弧</span></div>
+      <div style="margin:0 0 20px;font-family:'IM Fell DW Pica',serif;font-style:italic;font-size:14px;color:#93825f">輪を四つの弧に断つ。甲と乙で弧の位置がずれ、重ねて初めて輪が閉ぢる</div>
+      <div style="display:flex;gap:18px;align-items:center">
+        <div style="width:186px;height:186px;position:relative;background-color:#dccaa4;background-image:linear-gradient(102deg,rgba(255,251,238,.42),rgba(255,251,238,0) 46%),url('data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22&gt;&lt;filter id=%22n%22&gt;&lt;feTurbulence type=%22fractalNoise%22 baseFrequency=%220.6%22 numOctaves=%224%22/&gt;&lt;/filter&gt;&lt;rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%220.22%22/&gt;&lt;/svg&gt;');display:grid;place-items:center;box-shadow:0 14px 24px -10px rgba(0,0,0,.7)">
+          <div style="width:150px;height:150px;position:relative">
+            <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 22.5deg,#a33520 0 45deg,transparent 45deg 90deg,#a33520 90deg 135deg,transparent 135deg 180deg,#a33520 180deg 225deg,transparent 225deg 270deg,#a33520 270deg 315deg,transparent 315deg 360deg)"></div>
+            <div style="position:absolute;inset:10px;border-radius:50%;background:#dccaa4"></div>
+            <div style="position:absolute;left:32px;top:26px;width:60px;height:60px">
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(0deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(72deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(144deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(216deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(288deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:#dccaa4"></div>
+            </div>
+            <div style="position:absolute;left:58px;top:66px;width:60px;height:60px">
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(36deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(108deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(180deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(252deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(324deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:#dccaa4"></div>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:9px;text-align:center;font-family:'New Tegomin',serif;font-size:11px;letter-spacing:.16em;color:#5c4a26">甲組　二輪と四弧</div>
+        </div>
+        <div style="width:186px;height:186px;position:relative;background-color:#dccaa4;background-image:linear-gradient(102deg,rgba(255,251,238,.42),rgba(255,251,238,0) 46%),url('data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22&gt;&lt;filter id=%22n%22&gt;&lt;feTurbulence type=%22fractalNoise%22 baseFrequency=%220.6%22 numOctaves=%224%22/&gt;&lt;/filter&gt;&lt;rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%220.22%22/&gt;&lt;/svg&gt;');display:grid;place-items:center;box-shadow:0 14px 24px -10px rgba(0,0,0,.7)">
+          <div style="width:150px;height:150px;position:relative">
+            <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 22.5deg,transparent 0 45deg,#22406e 45deg 90deg,transparent 90deg 135deg,#22406e 135deg 180deg,transparent 180deg 225deg,#22406e 225deg 270deg,transparent 270deg 315deg,#22406e 315deg 360deg)"></div>
+            <div style="position:absolute;inset:10px;border-radius:50%;background:#dccaa4"></div>
+            <div style="position:absolute;left:50%;top:50%;width:8px;height:120px;margin:-60px 0 0 -4px;background:#22406e;border-radius:4px;transform:rotate(30deg)"></div>
+            <div style="position:absolute;left:50%;top:50%;width:8px;height:120px;margin:-60px 0 0 -4px;background:#22406e;border-radius:4px;transform:rotate(-30deg)"></div>
+            <div style="position:absolute;left:8px;top:30px;width:62px;height:38px;background:#22406e;clip-path:polygon(100% 44%,72% 4%,30% 6%,0 40%,22% 88%,66% 96%)"></div>
+            <div style="position:absolute;right:8px;top:30px;width:62px;height:38px;background:#22406e;clip-path:polygon(0 44%,28% 4%,70% 6%,100% 40%,78% 88%,34% 96%)"></div>
+            <div style="position:absolute;left:14px;bottom:26px;width:62px;height:38px;background:#22406e;clip-path:polygon(100% 56%,72% 96%,30% 94%,0 60%,22% 12%,66% 4%)"></div>
+            <div style="position:absolute;right:14px;bottom:26px;width:62px;height:38px;background:#22406e;clip-path:polygon(0 56%,28% 96%,70% 94%,100% 60%,78% 12%,34% 4%)"></div>
+            <div style="position:absolute;left:20px;top:44px;width:44px;height:2px;background:#dccaa4;transform:rotate(-16deg)"></div>
+            <div style="position:absolute;right:20px;top:44px;width:44px;height:2px;background:#dccaa4;transform:rotate(16deg)"></div>
+            <div style="position:absolute;left:26px;bottom:42px;width:44px;height:2px;background:#dccaa4;transform:rotate(16deg)"></div>
+            <div style="position:absolute;right:26px;bottom:42px;width:44px;height:2px;background:#dccaa4;transform:rotate(-16deg)"></div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:9px;text-align:center;font-family:'New Tegomin',serif;font-size:11px;letter-spacing:.16em;color:#2e4568">乙組　違ひ枝と四弧</div>
+        </div>
+        <div style="font-family:'Yuji Mai',serif;font-size:30px;color:#7a6a4c">＋</div>
+        <div style="width:186px;height:186px;position:relative;background-color:#dccaa4;background-image:linear-gradient(102deg,rgba(255,251,238,.42),rgba(255,251,238,0) 46%),url('data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22&gt;&lt;filter id=%22n%22&gt;&lt;feTurbulence type=%22fractalNoise%22 baseFrequency=%220.6%22 numOctaves=%224%22/&gt;&lt;/filter&gt;&lt;rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%220.22%22/&gt;&lt;/svg&gt;');display:grid;place-items:center;box-shadow:0 18px 30px -10px rgba(0,0,0,.75);outline:1px solid rgba(206,170,102,.4);outline-offset:5px">
+          <div style="width:150px;height:150px;position:relative">
+            <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 22.5deg,#a33520 0 45deg,#22406e 45deg 90deg,#a33520 90deg 135deg,#22406e 135deg 180deg,#a33520 180deg 225deg,#22406e 225deg 270deg,#a33520 270deg 315deg,#22406e 315deg 360deg)"></div>
+            <div style="position:absolute;inset:10px;border-radius:50%;background:#dccaa4"></div>
+            <div style="position:absolute;left:50%;top:50%;width:8px;height:118px;margin:-59px 0 0 -4px;background:#22406e;border-radius:4px;transform:rotate(30deg)"></div>
+            <div style="position:absolute;left:50%;top:50%;width:8px;height:118px;margin:-59px 0 0 -4px;background:#22406e;border-radius:4px;transform:rotate(-30deg)"></div>
+            <div style="position:absolute;left:8px;top:30px;width:62px;height:38px;background:#22406e;clip-path:polygon(100% 44%,72% 4%,30% 6%,0 40%,22% 88%,66% 96%)"></div>
+            <div style="position:absolute;right:8px;top:30px;width:62px;height:38px;background:#22406e;clip-path:polygon(0 44%,28% 4%,70% 6%,100% 40%,78% 88%,34% 96%)"></div>
+            <div style="position:absolute;left:14px;bottom:26px;width:62px;height:38px;background:#22406e;clip-path:polygon(100% 56%,72% 96%,30% 94%,0 60%,22% 12%,66% 4%)"></div>
+            <div style="position:absolute;right:14px;bottom:26px;width:62px;height:38px;background:#22406e;clip-path:polygon(0 56%,28% 96%,70% 94%,100% 60%,78% 12%,34% 4%)"></div>
+            <div style="position:absolute;left:20px;top:44px;width:44px;height:2px;background:#dccaa4;transform:rotate(-16deg)"></div>
+            <div style="position:absolute;right:20px;top:44px;width:44px;height:2px;background:#dccaa4;transform:rotate(16deg)"></div>
+            <div style="position:absolute;left:26px;bottom:42px;width:44px;height:2px;background:#dccaa4;transform:rotate(16deg)"></div>
+            <div style="position:absolute;right:26px;bottom:42px;width:44px;height:2px;background:#dccaa4;transform:rotate(-16deg)"></div>
+            <div style="position:absolute;left:32px;top:26px;width:60px;height:60px">
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(0deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(72deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(144deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(216deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(288deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:#3c2a17"></div>
+            </div>
+            <div style="position:absolute;left:58px;top:66px;width:60px;height:60px">
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(36deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(108deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(180deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(252deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;bottom:50%;width:30px;height:31px;margin-left:-15px;transform-origin:50% 100%;transform:rotate(324deg);background:#a33520;clip-path:polygon(50% 10%,66% 0,80% 14%,92% 48%,76% 82%,50% 100%,24% 82%,8% 48%,20% 14%,34% 0)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:#3c2a17"></div>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:9px;text-align:center;font-family:'New Tegomin',serif;font-size:11px;letter-spacing:.16em;color:#3c2a17">重ねて　八弧輪の躑躅</div>
+        </div>
+      </div>
+    </div>

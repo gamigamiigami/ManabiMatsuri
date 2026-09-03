@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>参加者IDを生成（運営用）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 8px; }
+  .note { font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+
+  .setup-form {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+  .form-group input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .output-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .output-section h2 {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .copy-box {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  button {
+    padding: 8px 16px;
+    margin-right: 8px;
+    margin-top: 12px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  button:hover { background: #0052a3; }
+  button.secondary {
+    background: #666;
+  }
+  button.secondary:hover { background: #555; }
+
+  .status-message {
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .status-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    display: block;
+  }
+  .status-message.error {
+    background: #ffebee;
+    color: #c62828;
+    display: block;
+  }
+
+  /* 印刷用スタイル */
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: white; }
+    .setup-form { display: none; }
+    .output-section { display: none; }
+    .print-only { display: block !important; }
+  }
+
+  .print-only { display: none; }
+  .id-sheet {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 5mm;
+    background: white;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8mm;
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+  }
+
+  .id-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .id-card-qr {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    margin-bottom: 8px;
+  }
+
+  .id-card-qr svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .id-card-text {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .id-card-team {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .id-card-note {
+    font-size: 9px;
+    color: #999;
+    line-height: 1.3;
+  }
+
+  .divider-line {
+    width: 100%;
+    height: 1px;
+    background: #ddd;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>参加者IDを生成（運営用・印刷して配布）</h1>
+  <p class="note">
+    各チームの参加人数を入力すると、IDリスト、CSV、SQL、そして印刷用QRカード一覧が生成されます。
+  </p>
+
+  <div class="setup-form">
+    <div class="form-group">
+      <label for="baseUrl">ベースURL（デフォルト: 現在のページから自動）</label>
+      <input type="text" id="baseUrl" placeholder="https://example.com/ManabiMatsuri/v2/">
+    </div>
+
+    <div class="form-group">
+      <label for="team1Count">甲組の人数</label>
+      <input type="number" id="team1Count" min="1" max="1000" value="30">
+    </div>
+
+    <div class="form-group">
+      <label for="team2Count">乙組の人数</label>
+      <input type="number" id="team2Count" min="1" max="1000" value="30">
+    </div>
+
+    <button onclick="generateAll()">生成する</button>
+  </div>
+
+  <div class="output-section" id="csvSection" style="display:none;">
+    <h2>CSV（コピペ用）</h2>
+    <div class="copy-box" id="csvOutput"></div>
+    <button onclick="copyToClipboard('csvOutput')">クリップボードにコピー</button>
+    <div class="status-message" id="csvStatus"></div>
+  </div>
+
+  <div class="output-section" id="sqlSection" style="display:none;">
+    <h2>SQL INSERT文</h2>
+    <div class="copy-box" id="sqlOutput"></div>
+    <button onclick="copyToClipboard('sqlOutput')">クリップボードにコピー</button>
+    <div class="status-message" id="sqlStatus"></div>
+  </div>
+
+  <div class="output-section" id="idListSection" style="display:none;">
+    <h2>ID一覧</h2>
+    <div class="copy-box" id="idListOutput"></div>
+  </div>
+
+  <div class="output-section" id="printSection" style="display:none;">
+    <button class="secondary" onclick="window.print()">このQRカード一覧を印刷</button>
+    <p class="note">上記のボタンで印刷ダイアログが開きます。用紙サイズA4・余白なしで印刷してください。</p>
+  </div>
+
+  <div class="print-only" id="printContainer"></div>
+</div>
+
+<script src="../js/vendor/qrcode-generator.js"></script>
+<script type="module">
+  import { qrSvg } from "../js/qr-gen.js";
+
+  window.generateAll = async function() {
+    const team1Count = parseInt(document.getElementById('team1Count').value) || 0;
+    const team2Count = parseInt(document.getElementById('team2Count').value) || 0;
+
+    if (team1Count < 1 || team2Count < 1) {
+      alert('各チームの人数を1以上で入力してください');
+      return;
+    }
+
+    // ベースURL
+    let baseUrl = document.getElementById('baseUrl').value.trim();
+    if (!baseUrl) {
+      // デフォルト：現在のページから推測
+      baseUrl = window.location.origin + window.location.pathname.replace(/tools.*$/, '') + 'v2/';
+    }
+    if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+    // IDを生成：甲組 K001〜K{team1Count}, 乙組 O001〜O{team2Count}
+    const ids = [];
+    for (let i = 1; i <= team1Count; i++) {
+      ids.push({ pid: 'K' + String(i).padStart(3, '0'), team: 'K', teamName: '甲組' });
+    }
+    for (let i = 1; i <= team2Count; i++) {
+      ids.push({ pid: 'O' + String(i).padStart(3, '0'), team: 'O', teamName: '乙組' });
+    }
+
+    // CSV生成
+    const csvLines = ids.map(id => `${id.pid},${id.teamName}`);
+    const csvContent = 'id,team\n' + csvLines.join('\n');
+    document.getElementById('csvOutput').textContent = csvContent;
+    document.getElementById('csvSection').style.display = 'block';
+
+    // SQL生成
+    const sqlLines = ids.map(id => `('${id.pid}', '${id.team}')`);
+    const sqlContent = 'insert into participants (pid, team) values\n' + sqlLines.join(',\n') + ';';
+    document.getElementById('sqlOutput').textContent = sqlContent;
+    document.getElementById('sqlSection').style.display = 'block';
+
+    // ID一覧表示
+    document.getElementById('idListOutput').textContent = ids.map(id => id.pid).join(' ');
+    document.getElementById('idListSection').style.display = 'block';
+
+    // 印刷用QRカード生成
+    const printContainer = document.getElementById('printContainer');
+    printContainer.innerHTML = '';
+
+    for (let sheetIdx = 0; sheetIdx < Math.ceil(ids.length / 10); sheetIdx++) {
+      const sheet = document.createElement('div');
+      sheet.className = 'id-sheet';
+
+      const startIdx = sheetIdx * 10;
+      const endIdx = Math.min(startIdx + 10, ids.length);
+
+      for (let i = startIdx; i < endIdx; i++) {
+        const id = ids[i];
+        const url = baseUrl + 'index.html?pid=' + id.pid;
+
+        const card = document.createElement('div');
+        card.className = 'id-card';
+
+        // QR生成（qrcode-generator グローバルを使う）
+        const qr = window.qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+        const svgHtml = qr.createSvgTag(4, 12);
+
+        card.innerHTML = `
+          <div class="id-card-qr">${svgHtml}</div>
+          <div class="id-card-text">${id.pid}</div>
+          <div class="id-card-team">${id.teamName}</div>
+          <div class="id-card-note">このIDは読み取りできます</div>
+        `;
+
+        sheet.appendChild(card);
+      }
+
+      printContainer.appendChild(sheet);
+    }
+
+    document.getElementById('printSection').style.display = 'block';
+  };
+
+  window.copyToClipboard = async function(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      const statusId = elementId.replace('Output', 'Status');
+      const status = document.getElementById(statusId);
+      status.className = 'status-message success';
+      status.textContent = 'コピーしました！';
+      setTimeout(() => { status.style.display = 'none'; }, 2000);
+    } catch (err) {
+      const statusId = elementId.replace('Output', 'Status');
+      const status = document.getElementById(statusId);
+      status.className = 'status-message error';
+      status.textContent = 'コピーに失敗しました';
+    }
+  };
+</script>
+</body>
+</html>
