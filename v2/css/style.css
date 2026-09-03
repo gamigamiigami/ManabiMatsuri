@@ -1,0 +1,427 @@
+/* ========================================================================
+   應中秘寶調査録 v2 — style.css
+   基本トークン・リセット・タイポグラフィ・共通部品（ボタン/カード/
+   ヘッダ・フッタ・オフライン印・shake）。
+   個々の画面の装飾（紋・證書・タブ・スキャン枠・かな入力・盤面など）は
+   components.css 側に置く。ここは全画面で使う「土台」だけを持つ。
+
+   ■ 分かったこと（第1回サイトからの教訓／このファイルへの反映）
+   ・見出しと本文の文字サイズは「はっきり」差をつけないと、燈明かりの
+     下で読みにくい（前回、差が小さくて事故った）。ここでは見出し
+     28px・本文14px を基準にし、比率がおよそ2倍になるよう固定した。
+   ・ボタンを横に並べるとき inline-block を使うと、フォントの行送りの
+     違いでベースラインがズレて見た目が揃わない。必ず flex を使うこと。
+   ・viewport の maximum-scale / user-scalable は絶対に殺さない
+     （zoom-fix.js の教訓＝拡大禁止は年配の保護者や弱視の参加者を
+     締め出すうえ、iOS では効かず固まる原因にもなった）。
+   ======================================================================== */
+
+/* ---------------------------------------------------------------------
+   トークン（デザインのパレットそのまま）
+   --------------------------------------------------------------------- */
+:root {
+  /* 墨（すみ） */
+  --sumi-950: #14100c;
+  --sumi-900: #211809;
+  --sumi-800: #2d2416;
+
+  /* 金 */
+  --gold-300: #d3b276;
+  --gold-500: #8e7548;
+  --gold-700: #7a5f30;
+
+  /* 羊皮紙 */
+  --parchment-100: #fdf0c4;
+  --parchment-300: #e3d3a6;
+  --parchment-500: #d8c6a0;
+
+  /* 朱（甲組の基準色） */
+  --shu-300: #c04326;
+  --shu-500: #a33520;
+  --shu-700: #7c2b18;
+
+  /* 藍（乙組の基準色） */
+  --ai-300: #3a67a8;
+  --ai-500: #2c5088;
+  --ai-700: #22406e;
+
+  /* チーム色（ui.js の applyTeamTheme が team() から差し替える。
+     既定は甲組＝朱。config.js 未接続の状態でも見た目が壊れないよう
+     朱をデフォルト値にしておく） */
+  --team: var(--shu-500);
+  --team-ink: var(--shu-700);
+  --team-bright: var(--shu-300);
+  --team-name: "朱";
+
+  /* 背景・地色 */
+  --bg-dark: #0f0d0a;
+  --bg-paper: #dbcaa6;
+  --ink: var(--sumi-900);
+  --ink-soft: #5c4a26;
+
+  /* 文字 */
+  --font-head: 'Yuji Mai', 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
+  --font-body: 'New Tegomin', 'Hina Mincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
+  --font-label: 'IM Fell English SC', 'Times New Roman', serif;
+  --font-italic: 'IM Fell DW Pica', 'Times New Roman', serif;
+
+  /* 文字サイズ（見出し÷本文がおよそ2倍になるように固定） */
+  --fs-display: 42px;
+  --fs-h1: 28px;
+  --fs-h2: 20px;
+  --fs-body: 15px;
+  --fs-small: 12.5px;
+  --fs-label: 13px;
+
+  /* 装飾用ノイズ（紙の粒子感）。1枚だけ定義して使い回す */
+  --noise: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4"/></filter><rect width="200" height="200" filter="url(%23n)" opacity="0.3"/></svg>');
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------
+   リセット
+   --------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--parchment-300);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+img, svg { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+h1, h2, h3, h4, p, dl, dd { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+input { font: inherit; }
+
+/* 390×844 を基準にした「一枚の紙」。デスクトップの広い画面でも
+   実機同様の見え方を保つため、はみ出す横幅は中央寄せの余白にする */
+.frame {
+  position: relative;
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------------------
+   2つの気分（燈明かりの暗さ／羊皮紙の明るさ）
+   --------------------------------------------------------------------- */
+body.dark {
+  background-color: var(--bg-dark);
+  color: var(--parchment-300);
+}
+body.dark .frame {
+  background-image: var(--noise);
+}
+
+body.paper {
+  background-color: var(--bg-paper);
+  color: var(--ink);
+}
+body.paper .frame {
+  background-image: var(--noise);
+}
+
+/* 燈明かりの周辺減光（画面端を暗く落とす） */
+.vignette-dark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 140px 44px rgba(0, 0, 0, 0.82);
+  z-index: 1;
+}
+.vignette-paper {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 70px 16px rgba(96, 68, 30, 0.24);
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------------------
+   タイポグラフィ
+   --------------------------------------------------------------------- */
+.hero-title {
+  font-family: var(--font-head);
+  font-size: var(--fs-display);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+h1, .h1 {
+  font-family: var(--font-head);
+  font-size: var(--fs-h1);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+h2, .h2 {
+  font-family: var(--font-head);
+  font-size: var(--fs-h2);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+.body-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 2;
+  letter-spacing: 0.02em;
+}
+.label {
+  font-family: var(--font-label);
+  font-size: var(--fs-label);
+  letter-spacing: 0.16em;
+  text-transform: none;
+}
+.italic-en {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+}
+.small {
+  font-size: var(--fs-small);
+}
+
+/* ---------------------------------------------------------------------
+   ボタン（必ず flex で並べる。inline-block にしない）
+   --------------------------------------------------------------------- */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 14px;
+  border: 1px solid var(--gold-700);
+  background: linear-gradient(180deg, rgba(206, 168, 100, 0.2), rgba(206, 168, 100, 0.05));
+  color: inherit;
+  font-family: var(--font-head);
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 儀式的な「主要な次の一手」ボタン（朱の大ボタン） */
+.btn-primary {
+  border: none;
+  background: linear-gradient(180deg, var(--shu-300), var(--shu-700));
+  color: #fbebe0;
+  font-size: 20px;
+  letter-spacing: 0.28em;
+  padding: 18px 0;
+  box-shadow: 0 10px 18px -4px rgba(90, 28, 16, 0.5), inset 0 1px 0 rgba(255, 190, 160, 0.28);
+}
+
+/* 燈下（暗い画面）向けの、地味だが確実な主要ボタン */
+.btn-lamp {
+  border-top: 1px solid rgba(184, 150, 88, 0.42);
+  border-bottom: 1px solid rgba(184, 150, 88, 0.42);
+  background: linear-gradient(180deg, rgba(206, 168, 100, 0.15), rgba(206, 168, 100, 0.03));
+  color: var(--parchment-100);
+  font-size: 20px;
+  letter-spacing: 0.3em;
+  padding: 17px 0;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 230, 220, 0.4);
+}
+
+.btn-link {
+  flex: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-label);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+/* ---------------------------------------------------------------------
+   カード（羊皮紙の一枚・暗室の額縁、どちらの土台にも使う）
+   --------------------------------------------------------------------- */
+.card {
+  position: relative;
+  background-color: var(--parchment-500);
+  background-image:
+    radial-gradient(ellipse 120% 55% at 50% -8%, rgba(255, 251, 238, 0.5), transparent 58%),
+    linear-gradient(102deg, rgba(255, 251, 238, 0.34), rgba(255, 251, 238, 0) 46%),
+    var(--noise);
+  color: var(--ink);
+  box-shadow: 0 16px 30px -8px rgba(0, 0, 0, 0.6);
+}
+.card-inset {
+  padding: 20px;
+}
+
+/* ---------------------------------------------------------------------
+   ヘッダ／フッタ帯（ui.js の mountHeader / mountFooter が描画する） */
+.hdr-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-label);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  color: var(--gold-700);
+}
+.hdr-bar .hdr-title { display: flex; align-items: center; gap: 8px; }
+
+.ftr-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(140, 119, 82, 0.26);
+  font-family: var(--font-label);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  color: var(--gold-700);
+}
+body.dark .ftr-bar { color: #a4805c; border-top-color: rgba(180, 140, 100, 0.24); }
+.ftr-bar a { text-decoration: none; border-bottom: 1px solid currentColor; }
+.ftr-bar .points-badge { font-family: var(--font-label); letter-spacing: 0.12em; }
+
+/* ---------------------------------------------------------------------
+   「通信なし」印（オフライン時のみ表示。控えめに、しかし気づける位置に） */
+.offline-mark {
+  position: fixed;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid rgba(196, 142, 62, 0.5);
+  background: rgba(20, 16, 12, 0.86);
+  color: var(--gold-300);
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.offline-mark::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--shu-300);
+}
+.offline-mark[hidden] { display: none; }
+
+/* ---------------------------------------------------------------------
+   トースト（軽い通知。ui.js の toast() が使う） */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 60;
+  max-width: 320px;
+  padding: 12px 18px;
+  background: rgba(20, 16, 12, 0.94);
+  border: 1px solid var(--gold-700);
+  color: var(--parchment-100);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------------------------------------------------------------------
+   誤答の shake（かな枠・カードに付けて短く揺らす） */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(7px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(2px); }
+}
+.shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* ---------------------------------------------------------------------
+   誤答メッセージ・エラーメッセージ */
+.wrong-msg, .pid-error {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  color: var(--shu-300);
+  letter-spacing: 0.04em;
+}
+.wrong-msg[hidden], .pid-error[hidden] { display: none; }
+
+/* ---------------------------------------------------------------------
+   スケルトン共通レイアウト（各ページはこの中に画面固有の装飾を積む） */
+.screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.screen-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 26px 26px;
+}
+.screen-body.no-scroll { overflow: hidden; }
+
+/* ---------------------------------------------------------------------
+   横向き（landscape）対応：燈の大きな装飾を控えめにして本文を確保する */
+@media (orientation: landscape) and (max-height: 540px) {
+  .hero-title { font-size: 26px; }
+  h1, .h1 { font-size: 20px; }
+  .screen-body { padding: 18px 22px; }
+  .crest-frame { width: 96px !important; height: 96px !important; }
+}
+
+/* prefers-reduced-motion への配慮：燈のちらつき等は自動アニメ扱いなので止める */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}

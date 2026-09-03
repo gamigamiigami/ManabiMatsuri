@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>掲示用謎QRポスター（運営用・印刷して会場に貼る）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 8px; }
+  .note { font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+
+  .setup-form {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+  .form-group input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .output-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .output-section h2 {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .status-message {
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .status-message.warning {
+    background: #fff3cd;
+    color: #856404;
+    display: block;
+  }
+
+  button {
+    padding: 8px 16px;
+    margin-right: 8px;
+    margin-top: 12px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  button:hover { background: #0052a3; }
+  button.secondary {
+    background: #666;
+  }
+  button.secondary:hover { background: #555; }
+
+  /* 印刷用スタイル */
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: white; }
+    .setup-form { display: none; }
+    .output-section { display: none; }
+    .print-only { display: block !important; }
+  }
+
+  .print-only { display: none; }
+
+  .puzzle-sheet {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 5mm;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+  }
+
+  .puzzle-poster {
+    flex: 1;
+    min-height: 0;
+    background: linear-gradient(178deg, #100a1c 0%, #0a0614 55%, #050309 100%);
+    border: 3px solid #8a6a34;
+    outline: 1px solid rgba(212, 175, 106, 0.5);
+    outline-offset: -10px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22px 28px 16px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    break-inside: avoid;
+  }
+
+  .puzzle-poster::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(212, 175, 106, 0.5);
+    clip-path: polygon(
+      24px 0, calc(100% - 24px) 0, 100% 24px,
+      100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%,
+      0 calc(100% - 24px), 0 24px
+    );
+    pointer-events: none;
+  }
+
+  .puzzle-title {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+    color: #ecca87;
+    text-shadow: 0 0 16px rgba(212, 175, 106, 0.6);
+    margin: 16px 0 8px;
+    text-align: center;
+    position: relative;
+  }
+
+  .puzzle-room {
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    font-size: 1rem;
+    color: #d4af6a;
+    text-shadow: 0 0 8px rgba(212, 175, 106, 0.4);
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .puzzle-qr-frame {
+    margin: 14px 0;
+    padding: 14px;
+    background: #fdfaf2;
+    border: 2px solid #d4af6a;
+    border-radius: 14px;
+    position: relative;
+  }
+
+  .puzzle-qr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+    min-height: 200px;
+  }
+
+  .puzzle-qr svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .puzzle-code {
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #222;
+    text-align: center;
+    margin-top: 8px;
+    letter-spacing: 0.2em;
+  }
+
+  .puzzle-tab {
+    flex: none;
+    width: 100%;
+    background: #fff;
+    border-top: 2px dashed #999;
+    padding: 8px 20px 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #555;
+  }
+
+  .puzzle-tab .scissors { font-size: 0.9rem; }
+  .puzzle-tab .staff-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #222;
+    letter-spacing: 0.08em;
+    margin: 4px 0 2px;
+  }
+  .puzzle-tab .staff-place { color: #444; }
+
+  @media print {
+    .puzzle-sheet {
+      margin: 0;
+      box-shadow: none;
+    }
+    .puzzle-sheet:last-child { page-break-after: auto; break-after: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🖨 掲示用謎QRポスター（運営用）</h1>
+  <p class="note">
+    ブラウザの印刷（Ctrl / Cmd + P）を押すと、生成されたポスターが
+    <strong>1謎1ページ</strong>で印刷されます（用紙はA4）。
+    拡大縮小は「100%（実寸）」のままでOKです。
+  </p>
+
+  <div class="setup-form">
+    <div class="form-group">
+      <label for="baseUrl">ベースURL（デフォルト: 現在のページから自動）</label>
+      <input type="text" id="baseUrl" placeholder="https://example.com/ManabiMatsuri/v2/">
+    </div>
+
+    <button onclick="generatePosters()">ポスターを生成</button>
+    <div class="status-message" id="statusMessage"></div>
+  </div>
+
+  <div class="output-section" id="printSection" style="display:none;">
+    <button class="secondary" onclick="window.print()">このポスター一覧を印刷</button>
+    <p class="note">
+      ⚠ 濃い背景はCSSで強制的に印刷されるようにしてありますが、
+      もし印刷プレビューが真っ白に見えたときだけ、詳細設定の
+      <strong>「背景のグラフィック」（Safariでは「背景を印刷」）をON</strong>にしてください。
+    </p>
+    <p class="note">
+      ⚠ 各ポスターの一番下に、点線で区切った「STAFF ONLY」の耳が付いています。
+      <strong>会場に貼ったら、必ずその部分を切り取って捨ててください。</strong>
+      本体だけになれば、参加者からはどの謎のQRか分かりません。
+    </p>
+  </div>
+
+  <div class="print-only" id="printContainer"></div>
+</div>
+
+<script src="../js/vendor/qrcode-generator.js"></script>
+<script type="module">
+  import { qrSvg } from "../js/qr-gen.js";
+
+  window.generatePosters = async function() {
+    try {
+      // config.js をロード
+      const configModule = await import('../js/config.js');
+      const { CONFIG, roomName } = configModule;
+
+      if (!CONFIG.MANUAL_CODES) {
+        const msg = document.getElementById('statusMessage');
+        msg.className = 'status-message warning';
+        msg.textContent = '⚠ CONFIG.MANUAL_CODES が見つかりません。config.js を確認してください。';
+        return;
+      }
+
+      // ベースURL
+      let baseUrl = document.getElementById('baseUrl').value.trim();
+      if (!baseUrl) {
+        baseUrl = window.location.origin + window.location.pathname.replace(/tools.*$/, '') + 'v2/';
+      }
+      if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+      // ポスター生成
+      const printContainer = document.getElementById('printContainer');
+      printContainer.innerHTML = '';
+
+      Object.entries(CONFIG.MANUAL_CODES).forEach(([code, puzzle]) => {
+        const url = baseUrl + 'sheet.html?q=' + encodeURIComponent(puzzle.q) + '&room=' + encodeURIComponent(puzzle.room);
+
+        const sheet = document.createElement('div');
+        sheet.className = 'puzzle-sheet';
+
+        // QR生成
+        const qr = window.qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+        const qrSvg = qr.createSvgTag(6, 24);
+
+        const roomDisplayName = roomName ? roomName(puzzle.room) : puzzle.room;
+
+        sheet.innerHTML = `
+          <div class="puzzle-poster">
+            <div class="puzzle-title">謎を解く</div>
+            <div class="puzzle-room">${roomDisplayName}</div>
+            <div class="puzzle-qr-frame">
+              <div class="puzzle-qr">${qrSvg}</div>
+            </div>
+            <div class="puzzle-code">${code}</div>
+          </div>
+          <div class="puzzle-tab">
+            <span class="scissors">✂️ ―――――――――――――――――――――――――――――― ✂️</span><br>
+            <span class="staff-label">STAFF ONLY　謎 ${puzzle.q}</span><br>
+            <span class="staff-place">掲示場所: ${puzzle.room}</span><br>
+            掲示したら、この帯を切り取って捨ててください。
+          </div>
+        `;
+
+        printContainer.appendChild(sheet);
+      });
+
+      document.getElementById('printSection').style.display = 'block';
+    } catch (err) {
+      const msg = document.getElementById('statusMessage');
+      msg.className = 'status-message warning';
+      msg.textContent = '⚠ エラー: ' + err.message;
+      console.error(err);
+    }
+  };
+</script>
+</body>
+</html>

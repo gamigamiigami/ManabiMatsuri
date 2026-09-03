@@ -1,0 +1,626 @@
+/* ========================================================================
+   應中秘寶調査録 v2 — components.css
+   画面固有の意匠部品。style.css の土台の上に積む。
+   紋の枠 / 證書 / 室タブ / スキャン枠 / かな入力・4枠 / クロスワード盤面 /
+   帳面のタブと綴じ穴 / 共同調査の「二つの半分」パネル。
+   ======================================================================== */
+
+/* ---------------------------------------------------------------------
+   紋（crest）— renderCrest() が返す SVG を包む枠。
+   サイズは呼び出し側が size で指定するので、ここでは配置と
+   「まだ持たぬ證」用のロック表現だけを持つ。 */
+.crest-frame {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.crest-frame.crest-locked svg {
+  filter: grayscale(1) opacity(0.4);
+}
+.crest-dot {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+/* ---------------------------------------------------------------------
+   燈下の額縁（羅針の環・周辺の淡いリング）。Start / Seal などの
+   暗い画面で、紋の背後にうっすら回る目盛りを敷くための飾り。 */
+.compass-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(212, 176, 112, 0.08) 0 0.35deg, transparent 0.35deg 6deg);
+  border: 1px solid rgba(212, 176, 112, 0.14);
+}
+
+/* ---------------------------------------------------------------------
+   證書（certificate）— seal.html・folio.html のタブ内で使う「大きな一枚」 */
+.certificate {
+  position: relative;
+  width: 100%;
+  max-width: 274px;
+  margin: 0 auto;
+  padding: 22px 20px 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.certificate::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(74, 54, 22, 0.4);
+  pointer-events: none;
+}
+.certificate::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(74, 54, 22, 0.18);
+  pointer-events: none;
+}
+.certificate .cert-no {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--gold-700);
+}
+.certificate .cert-date {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  font-family: var(--font-italic);
+  font-size: 11px;
+  color: var(--gold-700);
+}
+.certificate .cert-crest {
+  width: 178px;
+  height: 178px;
+  margin: 8px auto 0;
+}
+.certificate .cert-title {
+  margin-top: 16px;
+  font-family: var(--font-head);
+  font-size: var(--fs-h2);
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+.certificate .cert-sub {
+  margin-top: 5px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+.certificate .cert-desc {
+  margin-top: 7px;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.9;
+  color: var(--ink-soft);
+}
+.certificate .cert-issued {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--fs-small);
+  color: var(--gold-700);
+}
+.certificate .cert-issued::before,
+.certificate .cert-issued::after {
+  content: "";
+  width: 34px;
+  height: 1px;
+  background: rgba(74, 54, 22, 0.4);
+}
+.certificate.cert-full {
+  max-width: none;
+  width: 100%;
+}
+
+/* 帳面（Folio）綴じ穴 */
+.punch-holes {
+  position: absolute;
+  left: 10px;
+  top: 92px;
+  bottom: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.punch-holes span {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #4a3f28;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* ---------------------------------------------------------------------
+   帳面のタブ（自分の證／相手の證の切り替え） */
+.folio-tabs {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+}
+.folio-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 0;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+.folio-tab[aria-selected="true"] {
+  background: var(--parchment-500);
+  color: var(--ink);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.28);
+}
+.folio-tab[aria-selected="false"] {
+  background: rgba(216, 198, 160, 0.26);
+  color: #cbb98f;
+  box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.22);
+}
+.folio-tab .crest-dot { width: 20px; height: 20px; }
+
+.folio-points {
+  text-align: right;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 240, 200, 0.3);
+  background: rgba(0, 0, 0, 0.18);
+  flex: none;
+}
+.folio-points .label { display: block; color: var(--parchment-300); }
+.folio-points .points-badge {
+  font-family: var(--font-italic);
+  font-size: 28px;
+  color: var(--parchment-100);
+  line-height: 1.15;
+}
+
+.folio-resolve {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--fs-small);
+  color: rgba(203, 187, 146, 0.75);
+  text-decoration: none;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.folio-resolve[hidden] { display: none; }
+
+/* ---------------------------------------------------------------------
+   室タブ（scan.html 上部の4室） */
+.room-tabs {
+  display: flex;
+  gap: 5px;
+}
+.room-tab {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(140, 119, 82, 0.3);
+  color: #8b7a55;
+  background: none;
+}
+.room-tab.active {
+  color: var(--parchment-100);
+  background: rgba(163, 53, 32, 0.34);
+  border-color: rgba(206, 170, 102, 0.4);
+}
+.room-tab.dashed {
+  border-style: dashed;
+  color: #6e6044;
+}
+
+/* ---------------------------------------------------------------------
+   スキャン枠（ビューファインダー） */
+.scan-frame {
+  position: relative;
+  margin-top: 24px;
+  padding: 12px;
+  border: 1px solid rgba(176, 146, 96, 0.24);
+  background: linear-gradient(180deg, rgba(120, 96, 52, 0.16), rgba(60, 46, 24, 0.1));
+}
+.scan-frame .rivet {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--gold-300), #6d5730);
+}
+.scan-frame .rivet.tl { left: 5px; top: 5px; }
+.scan-frame .rivet.tr { right: 5px; top: 5px; }
+.scan-frame .rivet.bl { left: 5px; bottom: 5px; }
+.scan-frame .rivet.br { right: 5px; bottom: 5px; }
+
+.scan-view {
+  position: relative;
+  height: 282px;
+  overflow: hidden;
+  background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.66));
+  box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.75);
+}
+.scan-view video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scan-view canvas { display: none; }
+.scan-view .corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #b5492c;
+  z-index: 2;
+  pointer-events: none;
+}
+.scan-view .corner.tl { left: 0; top: 0; border-right: none; border-bottom: none; }
+.scan-view .corner.tr { right: 0; top: 0; border-left: none; border-bottom: none; }
+.scan-view .corner.bl { left: 0; bottom: 0; border-right: none; border-top: none; }
+.scan-view .corner.br { right: 0; bottom: 0; border-left: none; border-top: none; }
+.scan-view .crosshair-v {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0; width: 1px;
+  background: repeating-linear-gradient(180deg, rgba(198, 166, 110, 0.3) 0 6px, transparent 6px 14px);
+  z-index: 2;
+}
+.scan-view .crosshair-h {
+  position: absolute;
+  top: 50%; left: 0; right: 0; height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(198, 166, 110, 0.3) 0 6px, transparent 6px 14px);
+  z-index: 2;
+}
+.scan-view .crosshair-ring {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 54px; height: 54px;
+  margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  border: 1px solid rgba(198, 166, 110, 0.28);
+  z-index: 2;
+}
+.scan-view .sweep {
+  position: absolute;
+  left: 9%; right: 9%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c2603c, transparent);
+  box-shadow: 0 0 14px rgba(194, 96, 60, 0.65);
+  animation: sweep 3s ease-in-out infinite alternate;
+  z-index: 2;
+}
+@keyframes sweep { 0% { top: 16%; } 100% { top: 78%; } }
+.scan-view .tag {
+  position: absolute;
+  font-family: var(--font-label);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  color: #7b6841;
+  z-index: 2;
+}
+.scan-view .tag.bl { left: 8px; bottom: 6px; }
+.scan-view .tag.tr { right: 8px; top: 6px; font-family: var(--font-italic); }
+.scan-view .status {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 8px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--parchment-100);
+  z-index: 3;
+}
+.scan-view .status.err { color: var(--shu-300); }
+.scan-view .status[hidden] { display: none; }
+
+.manual-entry {
+  margin-top: 11px;
+  display: flex;
+  gap: 10px;
+}
+.manual-entry input {
+  flex: 1;
+  padding: 15px 14px;
+  border: 1px solid #6a5a3c;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+  color: var(--parchment-100);
+  font-family: var(--font-italic);
+  font-size: 19px;
+  letter-spacing: 0.22em;
+  text-align: left;
+  min-width: 0;
+}
+.manual-entry input::placeholder { color: #7b6a49; }
+.manual-entry button {
+  flex: none;
+  padding: 15px 20px;
+  border: 1px solid #8a7247;
+  background: linear-gradient(180deg, rgba(206, 168, 100, 0.2), rgba(206, 168, 100, 0.05));
+  color: var(--parchment-100);
+  font-family: var(--font-head);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.manual-entry-hint {
+  margin-top: 22px;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  color: #8e7d59;
+  line-height: 1.9;
+}
+.staff-hint {
+  margin-top: 10px;
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--fs-small);
+  color: var(--gold-300);
+}
+
+/* ---------------------------------------------------------------------
+   紙の資料カード（sheet.html の「配布資料」プレースホルダ） */
+.sheet-card {
+  position: relative;
+  margin-top: 18px;
+  height: 206px;
+  background: repeating-linear-gradient(135deg, rgba(96, 72, 38, 0.12) 0 9px, transparent 9px 18px);
+  border: 1px solid rgba(74, 54, 22, 0.35);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.sheet-card .corner-fold {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+}
+.sheet-card .corner-fold.tl { left: -1px; top: -1px; background: linear-gradient(135deg, #4a3a1e 50%, transparent 50%); }
+.sheet-card .corner-fold.tr { right: -1px; top: -1px; background: linear-gradient(225deg, #4a3a1e 50%, transparent 50%); }
+.sheet-card .corner-fold.bl { left: -1px; bottom: -1px; background: linear-gradient(45deg, #4a3a1e 50%, transparent 50%); }
+.sheet-card .corner-fold.br { right: -1px; bottom: -1px; background: linear-gradient(315deg, #4a3a1e 50%, transparent 50%); }
+.sheet-card .sheet-label {
+  font-family: var(--font-label);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: #5c4522;
+  line-height: 1.9;
+}
+.sheet-card .sheet-name {
+  font-family: var(--font-head);
+  font-size: 21px;
+  letter-spacing: 0.08em;
+  color: #3c2c12;
+}
+.tape {
+  position: absolute;
+  width: 78px;
+  height: 26px;
+  background: linear-gradient(180deg, rgba(232, 220, 190, 0.5), rgba(214, 198, 160, 0.42));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.tape.left { left: 44px; top: 16px; transform: rotate(-3.5deg); }
+.tape.right { right: 40px; top: 18px; width: 70px; transform: rotate(2.5deg); }
+
+/* ---------------------------------------------------------------------
+   かな入力：4枠の答案欄 */
+.kana-input { display: flex; flex-direction: column; gap: 20px; }
+.kana-boxes {
+  display: grid;
+  grid-template-columns: repeat(var(--kana-len, 4), 1fr);
+  border: 1.5px solid var(--shu-700);
+  background: rgba(255, 253, 246, 0.36);
+}
+body.dark .kana-boxes { background: rgba(255, 253, 246, 0.08); }
+.kana-box {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid rgba(141, 55, 34, 0.55);
+  font-family: var(--font-head);
+  font-size: 40px;
+  color: var(--ai-700);
+}
+body.dark .kana-box { color: var(--parchment-100); }
+.kana-box:last-child { border-right: none; }
+.kana-box::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  bottom: 8%;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, rgba(141, 55, 34, 0.3) 0 4px, transparent 4px 9px);
+}
+.kana-box.filled { font-size: 40px; }
+.kana-box.current {
+  box-shadow: inset 0 0 0 2px var(--shu-300);
+}
+
+.kana-keyboard {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+.kana-key {
+  padding: 14px 0;
+  text-align: center;
+  border: 1px solid rgba(60, 44, 22, 0.34);
+  background: linear-gradient(180deg, rgba(255, 253, 246, 0.6), rgba(226, 212, 180, 0.5));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 3px rgba(0, 0, 0, 0.14);
+  font-family: var(--font-head);
+  font-size: 20px;
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+body.dark .kana-key {
+  background: linear-gradient(180deg, rgba(60, 50, 34, 0.7), rgba(30, 24, 14, 0.6));
+  color: var(--parchment-100);
+  border-color: rgba(184, 150, 88, 0.3);
+}
+.kana-key:active { transform: translateY(1px); }
+.kana-key.kana-key-wide { grid-column: span 2; font-family: var(--font-body); font-size: 14px; letter-spacing: 0.06em; }
+.kana-key.kana-key-mod { font-size: 16px; }
+
+/* ---------------------------------------------------------------------
+   クロスワード盤面 */
+.crossword-grid {
+  display: grid;
+  gap: 3px;
+  padding: 3px;
+  background: var(--sumi-800);
+  box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.5);
+}
+.crossword-cell {
+  aspect-ratio: 1;
+  background: rgba(255, 254, 250, 0.94);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-head);
+  font-size: 22px;
+  color: var(--ink);
+}
+.crossword-cell.block { background: var(--sumi-800); }
+.crossword-cell.prefilled { color: var(--shu-700); }
+
+.crossword-clue {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(74, 54, 22, 0.34);
+  border-bottom: 1px solid rgba(74, 54, 22, 0.34);
+}
+.crossword-clue .clue-label {
+  font-family: var(--font-label);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  color: var(--gold-700);
+  margin-bottom: 6px;
+}
+.crossword-clue .clue-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.9;
+}
+
+.answer-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1.5px solid var(--shu-700);
+  background: rgba(255, 253, 246, 0.32);
+}
+.answer-strip .cell {
+  height: 60px;
+  border-right: 1px solid rgba(141, 55, 34, 0.5);
+}
+.answer-strip .cell:last-child { border-right: none; }
+
+/* 方眼罫の敷き紙（folio / crossword の背景として使う） */
+.graph-paper {
+  background-image:
+    linear-gradient(rgba(74, 102, 140, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 102, 140, 0.14) 1px, transparent 1px),
+    var(--noise);
+  background-size: 100% 13px, 13px 100%, auto;
+}
+
+/* ---------------------------------------------------------------------
+   共同調査（together.html）— 二つの半分 */
+.halves-wrap { display: flex; flex-direction: column; gap: 12px; }
+
+.half-panel {
+  position: relative;
+  padding: 18px;
+}
+.half-panel.mine {
+  clip-path: polygon(0 2%, 100% 0, 99% 98%, 1% 100%);
+  background: linear-gradient(135deg, rgba(160, 58, 37, 0.32), rgba(37, 64, 122, 0.32));
+  border: 1px solid rgba(255, 224, 212, 0.28);
+}
+.half-panel.theirs {
+  clip-path: polygon(1% 0, 99% 2%, 100% 100%, 0 98%);
+  background: linear-gradient(200deg, rgba(37, 64, 122, 0.4), rgba(37, 64, 122, 0.16));
+  border: 1px dashed rgba(198, 214, 255, 0.32);
+}
+.half-panel .half-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+}
+.half-panel.mine .half-label { color: #f4d0c2; }
+.half-panel.theirs .half-label { color: #c0d2f2; }
+.half-panel .half-value {
+  margin-top: 8px;
+  font-family: var(--font-head);
+  font-size: 34px;
+  letter-spacing: 0.3em;
+  color: #fff3ea;
+}
+.half-panel.theirs .kana-boxes {
+  margin-top: 10px;
+  border-color: rgba(198, 214, 255, 0.38);
+  background: transparent;
+}
+.half-panel.theirs .kana-box {
+  color: #fff;
+  border-right-color: rgba(198, 214, 255, 0.28);
+  font-size: 30px;
+}
+
+.together-blocked {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 224, 212, 0.4);
+  background: rgba(0, 0, 0, 0.3);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.9;
+  text-align: center;
+}
+.together-blocked[hidden] { display: none; }
+
+/* 相手のQRを読む／自分のQRを見せる、の切り替えパネル */
+.my-qr-panel {
+  margin-top: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  gap: 8px;
+}
+.my-qr-panel .pid-label {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--sumi-900);
+}
+.my-qr-panel svg { width: 168px; height: 168px; }
+
+/* ---------------------------------------------------------------------
+   Dossier（Start画面）の縦書きサイドカラム */
+.vertical-jp {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}

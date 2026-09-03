@@ -207,15 +207,9 @@
       <input type="text" id="baseUrl" placeholder="https://example.com/ManabiMatsuri/v2/">
     </div>
 
-    <div class="form-group">
-      <label for="team1Count">甲組の人数</label>
-      <input type="number" id="team1Count" min="1" max="1000" value="30">
-    </div>
-
-    <div class="form-group">
-      <label for="team2Count">乙組の人数</label>
-      <input type="number" id="team2Count" min="1" max="1000" value="30">
-    </div>
+    <!-- 組ごとの人数入力欄は config.js の TEAM_ORDER から作る。
+         組の名をここに書かないのは、当日まで名が変はり得るためである。 -->
+    <div id="teamCounts"></div>
 
     <button onclick="generateAll()">生成する</button>
   </div>
@@ -250,13 +244,30 @@
 <script src="../js/vendor/qrcode-generator.js"></script>
 <script type="module">
   import { qrSvg } from "../js/qr-gen.js";
+  import { CONFIG, team } from "../js/config.js";
+
+  // 組の名・接頭辞はすべて config.js から取る。
+  // このファイルに組の名を直書きすると、名を変へたときに
+  // 「受付で配る札だけ古い名のまま」といふ最悪の取り違へが起きる。
+  const TEAMS = CONFIG.TEAM_ORDER.map((key) => team(key));
+
+  // 人数入力欄を組の数だけ組み立てる
+  const countsEl = document.getElementById('teamCounts');
+  countsEl.innerHTML = TEAMS.map((t) => (
+    '<div class="form-group">' +
+      '<label for="count-' + t.key + '">' + t.name + 'の人数</label>' +
+      '<input type="number" id="count-' + t.key + '" min="1" max="1000" value="30">' +
+    '</div>'
+  )).join('');
 
   window.generateAll = async function() {
-    const team1Count = parseInt(document.getElementById('team1Count').value) || 0;
-    const team2Count = parseInt(document.getElementById('team2Count').value) || 0;
+    const counts = TEAMS.map((t) => ({
+      team: t,
+      n: parseInt(document.getElementById('count-' + t.key).value, 10) || 0,
+    }));
 
-    if (team1Count < 1 || team2Count < 1) {
-      alert('各チームの人数を1以上で入力してください');
+    if (counts.some((c) => c.n < 1)) {
+      alert('各組の人数を1以上で入力してください');
       return;
     }
 
@@ -268,13 +279,17 @@
     }
     if (!baseUrl.endsWith('/')) baseUrl += '/';
 
-    // IDを生成：甲組 K001〜K{team1Count}, 乙組 O001〜O{team2Count}
+    // IDを生成する。接頭辞＋三桁（例 K001）。
+    // 三桁に揃へるのは、受付で読み上げるときと手入力のときに桁数が揺れないやう。
     const ids = [];
-    for (let i = 1; i <= team1Count; i++) {
-      ids.push({ pid: 'K' + String(i).padStart(3, '0'), team: 'K', teamName: '甲組' });
-    }
-    for (let i = 1; i <= team2Count; i++) {
-      ids.push({ pid: 'O' + String(i).padStart(3, '0'), team: 'O', teamName: '乙組' });
+    for (const { team: t, n } of counts) {
+      for (let i = 1; i <= n; i++) {
+        ids.push({
+          pid: t.idPrefix + String(i).padStart(3, '0'),
+          teamKey: t.key,      // DB の participants.team に入る値（team1 / team2）
+          teamName: t.name,    // 札に刷る表示名
+        });
+      }
     }
 
     // CSV生成
@@ -284,7 +299,9 @@
     document.getElementById('csvSection').style.display = 'block';
 
     // SQL生成
-    const sqlLines = ids.map(id => `('${id.pid}', '${id.team}')`);
+    // participants.team は schema.sql の check 制約により 'team1' / 'team2' のみ。
+    // 接頭辞（K / O）をそのまま入れると投入時に落ちる。
+    const sqlLines = ids.map(id => `('${id.pid}', '${id.teamKey}')`);
     const sqlContent = 'insert into participants (pid, team) values\n' + sqlLines.join(',\n') + ';';
     document.getElementById('sqlOutput').textContent = sqlContent;
     document.getElementById('sqlSection').style.display = 'block';
