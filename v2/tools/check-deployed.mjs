@@ -80,7 +80,10 @@ for (let i = 0; i < files.length; i += CHUNK) {
       rel.split('/').map(encodeURIComponent).join('/');
     let res;
     try {
-      res = await fetch(url);
+      // raw.githubusercontent.com は配信網で数分ほど前の版を握つてゐる事がある。
+      // push 直後に走らせると「食ひ違ひ」と出てしまふので、
+      // 都度取り直すやう頼んでおく（それでも遅れる時は少し待つてから再度）。
+      res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } });
     } catch (e) {
       failed.push({ rel, why: e.message });
       return;
@@ -115,6 +118,8 @@ if (bad === 0) {
   console.log('よつて tools/smoke.mjs の結果は、そのまま公開中の中身についての結果です。');
   console.log('（Pages の配信そのものが止まつてゐないかだけは、人が一度開いて確かめること。）');
 } else {
-  console.log('\n食ひ違ひがあります。push を忘れてゐないか、合流し忘れてゐないか確かめること。');
+  console.log('\n食ひ違ひがあります。');
+  console.log('push と合流を済ませた直後なら、配信網が前の版をまだ握つてゐるだけの事が多い。');
+  console.log('数分おいてもう一度走らせて、それでも残るなら本当に上がつてゐない。');
 }
 process.exit(bad === 0 ? 0 : 1);
