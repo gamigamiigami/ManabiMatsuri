@@ -112,8 +112,8 @@ export const CONFIG = {
   // anon key は公開鍵。RLS を有効にしポリシーを一切置かないので、
   // これが漏れても表へは触れない（RPC 経由でしか読み書きできない）。
   SUPABASE: {
-    url: '',
-    anonKey: '',
+    url: 'https://tvtrbvpczafwzdcnzlyu.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dHJidnBjemFmd3pkY256bHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNzA1MTUsImV4cCI6MjA5Nzk0NjUxNX0.wFAhMZ1bWt-GYENV0tGq0RJXA4sbldb5qgQUKRQV_48',
   },
 
   // ?debug=1 のときだけ隅に出る調査用パネル。当日は true のままでよい
