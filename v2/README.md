@@ -96,24 +96,53 @@ SUPABASE: { url: 'https://...', key: 'eyJ...' }
 
 ## デプロイ（GitHub Pages）
 
-### ステップ
-1. `v2/js/config.js` を本番設定に編集
-   - `SUPABASE.url` を実際の Supabase プロジェクト URL に
-   - `SUPABASE.key` を API キーに
-   - `DEBUG_ENABLED` を `false` に
+### 配信されるブランチ
 
-2. コミット・プッシュ
-   ```bash
-   git add v2/
-   git commit -m "Production release for 2027-01-09"
-   git push origin main
-   ```
+**このリポジトリに `main` はない。** GitHub Pages が配るのは
+**既定ブランチ**（Settings → Pages で「Deploy from a branch」に指定したもの）で、
+いまは `claude/handoff-docs-review-8qemhk` である。
+ワークフローによる自動デプロイではないので、`.github/workflows/` も無い。
 
-3. GitHub Pages が自動デプロイ（`.github/workflows/pages.yml` による）
+つまり **作業ブランチに push しただけでは公開サイトは変はらない。**
+既定ブランチへ合流させて初めて反映される。
+
+```bash
+# 作業ブランチで仕事を終へたら
+git push -u origin <作業ブランチ>
+
+# 既定ブランチへ合流させて、はじめて公開される
+git checkout claude/handoff-docs-review-8qemhk
+git merge --ff-only <作業ブランチ>
+git push origin claude/handoff-docs-review-8qemhk
+```
+
+現在の既定ブランチが何かは、GitHub のリポジトリ頁の分岐一覧か
+Settings → Pages で確かめられる。ここを変へたら、この節も直すこと。
+
+### 本番前に直すもの
+
+`v2/js/config.js` の三箇所。
+
+| 項目 | 本番の値 |
+| --- | --- |
+| `SUPABASE.url` | Supabase の Project URL |
+| `SUPABASE.anonKey` | **anon public** の鍵（`service_role` は絶対に貼らない） |
+| `DEBUG_ENABLED` | `false` |
+
+### 反映されたかの確かめ方
+
+```bash
+node v2/tools/check-deployed.mjs
+```
+
+公開ブランチの中身を取り寄せて手元と突き合はせる。
+`一致 <ファイル数>` と出れば、配信されてゐるのは手元と同じもの。
+push の直後は配信網が前の版を握つてゐる事があるので、
+食ひ違つたら数分おいてもう一度走らせる。
 
 ### サイト URL
 ```
-https://{org}.github.io/ManabiMatsuri/v2/
+https://{ユーザ名}.github.io/ManabiMatsuri/v2/
 ```
 
 ## 参加者 ID・謎 QR コード の生成と印刷
